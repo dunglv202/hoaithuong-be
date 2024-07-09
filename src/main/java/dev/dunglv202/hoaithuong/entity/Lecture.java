@@ -22,4 +22,7 @@ public class Lecture {
     private String topic;
 
     private String notes;
+
+    @Column(updatable = false)
+    private String generatedCode;
 }

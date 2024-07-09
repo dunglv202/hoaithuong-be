@@ -21,7 +21,7 @@ public class ReportController {
     @GetMapping("/export")
     public ResponseEntity<Resource> exportXlsx(ReportRange range) {
         Resource xlsx = this.reportService.exportXlsx(range);
-        String filename = "Report-" + range.getMonth() + " - " + range.getYear();
+        String filename = "Report-" + range.getMonth() + "-" + range.getYear();
 
         return ResponseEntity.ok()
             .contentType(MediaType.APPLICATION_OCTET_STREAM)

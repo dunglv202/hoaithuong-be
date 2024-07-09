@@ -2,6 +2,7 @@ package dev.dunglv202.hoaithuong.service;
 
 import dev.dunglv202.hoaithuong.entity.Lecture;
 import dev.dunglv202.hoaithuong.entity.TutorClass;
+import dev.dunglv202.hoaithuong.helper.DateTimeFmt;
 import dev.dunglv202.hoaithuong.model.ReportRange;
 import dev.dunglv202.hoaithuong.repository.LectureRepository;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +18,10 @@ import org.springframework.stereotype.Service;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -35,40 +39,115 @@ public class ReportService {
     }
 
     private Workbook generateReportFile(ReportRange range) {
-        try (Workbook workbook = new XSSFWorkbook()) {
-            List<Lecture> lectures = lectureRepository.findAllInRange(range);
-            Sheet general = workbook.createSheet();
+        Workbook workbook = new XSSFWorkbook();
+        List<Lecture> lectures = lectureRepository.findAllInRange(range);
 
-            for (int i = 1; i <= lectures.size(); i++) {
-                Row row = general.createRow(i);
-                Lecture lecture = lectures.get(i);
-                TutorClass tutorClass = lecture.getTutorClass();
+        writeGeneralReportSheet(workbook, lectures);
+        writeDetailReportSheet(workbook, lectures);
 
-                Cell date = row.createCell(1);
-                date.setCellValue(lecture.getStartTime().toLocalDate());
+        return workbook;
+    }
 
-                Cell student = row.createCell(2);
-                String studentStr = tutorClass.getStudent().getName() + " - " + tutorClass.getCode();
-                student.setCellValue(studentStr);
+    private void writeGeneralReportSheet(Workbook workbook, List<Lecture> lectures) {
+        Map<TutorClass, List<Lecture>> classWithLectures = groupByClass(lectures);
+        Sheet general = workbook.createSheet("General");
 
-                Cell level = row.createCell(3);
-                level.setCellValue(tutorClass.getLevel().getLabel());
+        Row header = general.createRow(0);
+        header.createCell(0).setCellValue("Mã");
+        header.createCell(1).setCellValue("Tên");
+        int maxNumOfLecture = 0;
 
-                Cell time = row.createCell(4);
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("H'h':m");
-                String timeStr = formatter.format(lecture.getStartTime()) + " - " + formatter.format(lecture.getEndTime());
-                time.setCellValue(timeStr);
+        // write record for each class
+        int currentRow = 1;
+        for (var entry : classWithLectures.entrySet()) {
+            Row row = general.createRow(currentRow);
+            TutorClass tutorClass = entry.getKey();
+            List<Lecture> classLectures = entry.getValue();
 
-                Cell topic = row.createCell(5);
-                topic.setCellValue(lecture.getTopic());
+            Cell code = row.createCell(0);
+            code.setCellValue(tutorClass.getCode());
 
-                Cell notes = row.createCell(6);
-                notes.setCellValue(lecture.getNotes());
+            Cell student = row.createCell(1);
+            student.setCellValue(tutorClass.getStudent().getName());
+
+            for (int i = 0; i < classLectures.size(); i++) {
+                Cell lecture = row.createCell(i + 2);
+                String cellValue = DateTimeFmt.D_M_YYYY.format(classLectures.get(i).getStartTime()) + "\n"
+                    + classLectures.get(i).getGeneratedCode();
+                lecture.setCellValue(cellValue);
             }
 
-            return workbook;
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+            maxNumOfLecture = Math.max(maxNumOfLecture, classLectures.size());
+            currentRow++;
+        }
+
+        // write missing header
+        for (int i = 0; i < maxNumOfLecture; i++) {
+            header.createCell(i + 2).setCellValue("Buổi " + (i + 1));
+        }
+    }
+
+    private Map<TutorClass, List<Lecture>> groupByClass(List<Lecture> lectures) {
+        Map<TutorClass, List<Lecture>> classWithLectures = new HashMap<>();
+
+        for (Lecture lecture : lectures) {
+            TutorClass tutorClass = lecture.getTutorClass();
+
+            if (!classWithLectures.containsKey(tutorClass)) {
+                classWithLectures.put(tutorClass, new ArrayList<>());
+            }
+
+            classWithLectures.get(tutorClass).add(lecture);
+        }
+
+        return classWithLectures;
+    }
+
+    private void writeDetailReportSheet(Workbook workbook, List<Lecture> lectures) {
+        Sheet sheet = workbook.createSheet("Detail");
+
+        Row header = sheet.createRow(0);
+        header.createCell(0).setCellValue("STT");
+        header.createCell(1).setCellValue("Ngày");
+        header.createCell(2).setCellValue("Học viên");
+        header.createCell(3).setCellValue("Lớp");
+        header.createCell(4).setCellValue("Giờ học");
+        header.createCell(5).setCellValue("Buổi");
+        header.createCell(6).setCellValue("Nội dung");
+        header.createCell(7).setCellValue("Nhận xét");
+
+        for (int i = 1; i <= lectures.size(); i++) {
+            Row row = sheet.createRow(i);
+            Lecture lecture = lectures.get(i-1);
+            TutorClass tutorClass = lecture.getTutorClass();
+
+            Cell cell = row.createCell(0);
+            cell.setCellValue(i);
+
+            Cell date = row.createCell(1);
+            DateTimeFormatter dateFmt = DateTimeFmt.D_M_YYYY;
+            date.setCellValue(dateFmt.format(lecture.getStartTime().toLocalDate()));
+
+            Cell student = row.createCell(2);
+            String studentStr = tutorClass.getStudent().getName() + " - " + tutorClass.getCode();
+            student.setCellValue(studentStr);
+
+            Cell level = row.createCell(3);
+            level.setCellValue(tutorClass.getLevel().getLabel());
+
+            Cell time = row.createCell(4);
+            DateTimeFormatter timeFmt = DateTimeFmt.H_M;
+            String timeStr = timeFmt.format(lecture.getStartTime()) + "-" + timeFmt.format(lecture.getEndTime());
+            time.setCellValue(timeStr);
+
+            Cell code = row.createCell(5);
+            code.setCellValue(lecture.getGeneratedCode());
+
+            Cell topic = row.createCell(6);
+            topic.setCellValue(lecture.getTopic());
+
+            Cell notes = row.createCell(7);
+            notes.setCellValue(lecture.getNotes());
         }
     }
 }

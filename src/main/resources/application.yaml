@@ -1,0 +1,18 @@
+spring:
+  profiles:
+    active: local
+  datasource:
+    url: jdbc:mysql://${DB_PORT}/${DB_NAME}?createDatabaseIfNotExist=true
+    username: ${DB_USER}
+    password: ${DB_PASS}
+  jpa:
+    show-sql: true
+    generate-ddl: true
+    hibernate:
+      ddl-auto: update
+  servlet:
+    multipart:
+      max-file-size: 5MB
+auth:
+  jwt:
+    secret: ${JWT_SECRET}

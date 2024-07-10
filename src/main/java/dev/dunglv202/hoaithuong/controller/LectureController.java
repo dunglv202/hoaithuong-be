@@ -17,7 +17,7 @@ public class LectureController {
     private final LectureService lectureService;
 
     @PostMapping
-//    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("isAuthenticated()")
     public void addNewLecture(@Valid @RequestBody NewLectureDTO newLectureDTO) {
         lectureService.addNewLecture(newLectureDTO);
     }

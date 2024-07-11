@@ -10,6 +10,7 @@ import org.springframework.data.jpa.domain.Specification;
 @Setter
 public class TutorClassCriteria {
     private String keyword;
+    private Boolean active;
 
     public static Specification<TutorClass> containsKeyword(String keyword) {
         if (keyword == null || keyword.isBlank()) {
@@ -25,7 +26,15 @@ public class TutorClassCriteria {
         };
     }
 
+    public static Specification<TutorClass> hasActiveStatus(Boolean active) {
+        if (active == null) return Specification.where(null);
+
+        return (root, query, cb) -> {
+            return cb.equal(root.get(TutorClass_.ACTIVE), active);
+        };
+    }
+
     public Specification<TutorClass> toSpecification() {
-        return containsKeyword(keyword);
+        return hasActiveStatus(active).and(containsKeyword(keyword));
     }
 }

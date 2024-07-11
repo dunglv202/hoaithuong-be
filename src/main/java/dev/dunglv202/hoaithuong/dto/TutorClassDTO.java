@@ -11,9 +11,10 @@ public class TutorClassDTO {
     private String code;
     private StudentDTO student;
     private String level;
-    private Integer totalLecture;
+    private int totalLecture;
     private Integer learned;
     private String notes;
+    private boolean active;
 
     public TutorClassDTO(TutorClass tutorClass) {
         this.id = tutorClass.getId();
@@ -23,5 +24,6 @@ public class TutorClassDTO {
         this.totalLecture = tutorClass.getTotalLecture();
         this.learned = tutorClass.getLearned();
         this.notes = tutorClass.getNotes();
+        this.active = tutorClass.isActive();
     }
 }

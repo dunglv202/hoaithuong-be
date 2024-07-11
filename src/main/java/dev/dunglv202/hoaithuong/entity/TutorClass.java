@@ -22,4 +22,16 @@ public class TutorClass {
     private int totalLecture;
 
     private int learned;
+
+    private boolean active;
+
+    @PrePersist
+    public void prePersist() {
+        active = learned < totalLecture;
+    }
+
+    @PreUpdate
+    public void preUpdate() {
+        active = learned < totalLecture;
+    }
 }

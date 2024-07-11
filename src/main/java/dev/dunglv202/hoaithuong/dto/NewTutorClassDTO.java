@@ -20,8 +20,8 @@ public class NewTutorClassDTO {
     @NotNull(message = "{tutor_class.level.required}")
     private String level;
 
-    @NotNull(message = "{tutor_class.total_lecture.required}")
-    private Integer totalLecture;
+    @Positive(message = "{tutor_class.total_lecture.positive}")
+    private int totalLecture;
 
     @Positive(message = "{tutor_class.learned.positive}")
     private Integer learned;

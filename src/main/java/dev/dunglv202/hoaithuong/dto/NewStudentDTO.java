@@ -12,7 +12,7 @@ public class NewStudentDTO {
     @NotBlank(message = "{student.name.not_blank}")
     private String name;
 
-    @Length(max = 256, message = "{student.notes.max_length}")
+    @Length(max = 256, message = "{student.notes.length}")
     private String notes;
 
     public Student toEntity() {

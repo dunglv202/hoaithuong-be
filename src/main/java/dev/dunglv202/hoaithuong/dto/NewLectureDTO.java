@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.validator.constraints.Length;
 
 import java.time.LocalDateTime;
 
@@ -23,6 +24,7 @@ public class NewLectureDTO {
     @NotBlank(message = "{lecture.topic.required}")
     private String topic;
 
+    @Length(max = 256, message = "{lecture.notes.length}")
     private String notes;
 
     public Lecture toEntity() {

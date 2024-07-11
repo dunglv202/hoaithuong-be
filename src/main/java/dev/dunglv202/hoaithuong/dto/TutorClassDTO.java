@@ -19,7 +19,7 @@ public class TutorClassDTO {
         this.id = tutorClass.getId();
         this.code = tutorClass.getCode();
         this.student = new StudentDTO(tutorClass.getStudent());
-        this.level = tutorClass.getLevel().getLabel();
+        this.level = tutorClass.getLevel();
         this.totalLecture = tutorClass.getTotalLecture();
         this.learned = tutorClass.getLearned();
         this.notes = tutorClass.getNotes();

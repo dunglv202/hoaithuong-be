@@ -16,7 +16,7 @@ public class NewTutorClassDTO {
     private Long studentId;
 
     @NotNull(message = "{tutor_class.level.required}")
-    private String levelCode;
+    private String level;
 
     @NotNull(message = "{tutor_class.total_lecture.required}")
     private Integer totalLecture;
@@ -28,6 +28,7 @@ public class NewTutorClassDTO {
         tutorClass.setCode(code);
         tutorClass.setNotes(notes);
         tutorClass.setTotalLecture(totalLecture);
+        tutorClass.setLevel(level);
         return tutorClass;
     }
 }

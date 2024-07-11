@@ -15,8 +15,7 @@ public class TutorClass {
     @ManyToOne
     private Student student;
 
-    @ManyToOne
-    private Level level;
+    private String level;
 
     private String notes;
 

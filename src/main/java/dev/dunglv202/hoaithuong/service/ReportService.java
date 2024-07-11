@@ -133,7 +133,7 @@ public class ReportService {
             student.setCellValue(studentStr);
 
             Cell level = row.createCell(3);
-            level.setCellValue(tutorClass.getLevel().getLabel());
+            level.setCellValue(tutorClass.getLevel());
 
             Cell time = row.createCell(4);
             DateTimeFormatter timeFmt = DateTimeFmt.H_M;

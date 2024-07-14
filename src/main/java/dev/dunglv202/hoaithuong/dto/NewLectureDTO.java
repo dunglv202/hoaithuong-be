@@ -18,9 +18,6 @@ public class NewLectureDTO {
     @NotNull(message = "{lecture.start_time.required}")
     private Instant startTime;
 
-    @NotNull(message = "{lecture.end_time.required}")
-    private Instant endTime;
-
     @NotBlank(message = "{lecture.topic.required}")
     private String topic;
 
@@ -30,7 +27,6 @@ public class NewLectureDTO {
     public Lecture toEntity() {
         Lecture lecture = new Lecture();
         lecture.setStartTime(startTime);
-        lecture.setEndTime(endTime);
         lecture.setTopic(topic);
         lecture.setNotes(notes);
         return lecture;

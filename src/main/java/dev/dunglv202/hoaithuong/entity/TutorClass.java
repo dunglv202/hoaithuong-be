@@ -3,6 +3,8 @@ package dev.dunglv202.hoaithuong.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.time.Duration;
+
 @Entity
 @Data
 public class TutorClass {
@@ -23,6 +25,10 @@ public class TutorClass {
 
     private int learned;
 
+    private int durationInMinute;
+
+    private int payForLecture;
+
     private boolean active;
 
     @PrePersist
@@ -33,5 +39,9 @@ public class TutorClass {
     @PreUpdate
     public void preUpdate() {
         active = learned < totalLecture;
+    }
+
+    public Duration getDuration() {
+        return Duration.ofMinutes(durationInMinute);
     }
 }

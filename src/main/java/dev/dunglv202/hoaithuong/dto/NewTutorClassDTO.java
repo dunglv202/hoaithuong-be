@@ -4,9 +4,13 @@ import dev.dunglv202.hoaithuong.entity.TutorClass;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
+
+import static dev.dunglv202.hoaithuong.constant.Configuration.DEFAULT_LECTURE_DURATION_IN_MINUTE;
+import static dev.dunglv202.hoaithuong.constant.Configuration.DEFAULT_PAY_FOR_LECTURE;
 
 @Getter
 @Setter
@@ -23,11 +27,17 @@ public class NewTutorClassDTO {
     @Positive(message = "{tutor_class.total_lecture.positive}")
     private int totalLecture;
 
-    @Positive(message = "{tutor_class.learned.positive}")
-    private Integer learned;
+    @PositiveOrZero(message = "{tutor_class.learned.positive}")
+    private Integer learned = 0;
 
     @Length(max = 256, message = "{tutor_class.notes.length}")
     private String notes;
+
+    @Positive(message = "{tutor_class.duration.invalid}")
+    private Integer durationInMinute = DEFAULT_LECTURE_DURATION_IN_MINUTE;
+
+    @PositiveOrZero(message = "{tutor_class.pay.positive}")
+    private Integer payForLecture = DEFAULT_PAY_FOR_LECTURE;
 
     public TutorClass toEntity() {
         TutorClass tutorClass = new TutorClass();
@@ -35,7 +45,9 @@ public class NewTutorClassDTO {
         tutorClass.setNotes(notes);
         tutorClass.setTotalLecture(totalLecture);
         tutorClass.setLevel(level);
-        tutorClass.setLearned(learned == null ? 0 : learned);
+        tutorClass.setLearned(learned);
+        tutorClass.setDurationInMinute(durationInMinute);
+        tutorClass.setPayForLecture(payForLecture);
         return tutorClass;
     }
 }

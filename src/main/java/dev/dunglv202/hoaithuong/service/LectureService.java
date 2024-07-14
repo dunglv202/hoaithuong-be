@@ -22,11 +22,6 @@ public class LectureService {
     public void addNewLecture(NewLectureDTO newLectureDTO) {
         Lecture lecture = newLectureDTO.toEntity();
 
-        // validate duration
-        if (newLectureDTO.getStartTime().isAfter(newLectureDTO.getEndTime())) {
-            throw new ClientVisibleException("{tutor_class.duration.invalid}");
-        }
-
         // set class
         TutorClass tutorClass = tutorClassRepository.findById(newLectureDTO.getClassId())
             .orElseThrow(() -> new ClientVisibleException("{tutor_class.not_exist}"));

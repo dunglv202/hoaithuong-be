@@ -7,6 +7,8 @@ import lombok.Data;
 import java.time.Instant;
 import java.time.ZoneId;
 
+import static dev.dunglv202.hoaithuong.constant.Configuration.TEACHER_CODE;
+
 @Entity
 @Data
 public class Lecture {
@@ -19,15 +21,17 @@ public class Lecture {
 
     private Instant startTime;
 
-    private Instant endTime;
-
     private String topic;
 
     private String notes;
 
     private int lectureNo;
 
+    public Instant getEndTime() {
+        return startTime.plus(tutorClass.getDuration());
+    }
+
     public String getGeneratedCode(ZoneId timeZone) {
-        return tutorClass.getCode() + "I26" + DateTimeFmt.MMM.format(startTime.atZone(timeZone)) + lectureNo;
+        return tutorClass.getCode() + TEACHER_CODE + DateTimeFmt.MMM.format(startTime.atZone(timeZone)).toUpperCase() + lectureNo;
     }
 }

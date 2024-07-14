@@ -1,5 +1,6 @@
 package dev.dunglv202.hoaithuong.service;
 
+import dev.dunglv202.hoaithuong.dto.ReportDTO;
 import dev.dunglv202.hoaithuong.entity.Lecture;
 import dev.dunglv202.hoaithuong.entity.TutorClass;
 import dev.dunglv202.hoaithuong.helper.DateTimeFmt;
@@ -117,6 +118,8 @@ public class ReportService {
         header.createCell(5).setCellValue("Buổi");
         header.createCell(6).setCellValue("Nội dung");
         header.createCell(7).setCellValue("Nhận xét");
+        header.createCell(8).setCellValue("Thời lượng (phút)");
+        header.createCell(9).setCellValue("Số tiền (1000đ)");
 
         for (int i = 1; i <= lectures.size(); i++) {
             Row row = sheet.createRow(i);
@@ -152,6 +155,20 @@ public class ReportService {
 
             Cell notes = row.createCell(7);
             notes.setCellValue(lecture.getNotes());
+
+            Cell duration = row.createCell(8);
+            duration.setCellValue(lecture.getTutorClass().getDurationInMinute());
+
+            Cell paid = row.createCell(9);
+            paid.setCellValue(lecture.getTutorClass().getPayForLecture());
         }
+    }
+
+    public ReportDTO getReport(ReportRange range) {
+        ReportDTO reportDTO = new ReportDTO();
+        int totalEarned = lectureRepository.getTotalEarnedByRange(range);
+        reportDTO.setTotalEarned(totalEarned);
+
+        return reportDTO;
     }
 }

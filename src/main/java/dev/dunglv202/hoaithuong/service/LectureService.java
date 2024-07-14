@@ -1,9 +1,12 @@
 package dev.dunglv202.hoaithuong.service;
 
+import dev.dunglv202.hoaithuong.dto.LectureDTO;
 import dev.dunglv202.hoaithuong.dto.NewLectureDTO;
+import dev.dunglv202.hoaithuong.dto.ReportDTO;
 import dev.dunglv202.hoaithuong.entity.Lecture;
 import dev.dunglv202.hoaithuong.entity.TutorClass;
 import dev.dunglv202.hoaithuong.exception.ClientVisibleException;
+import dev.dunglv202.hoaithuong.model.ReportRange;
 import dev.dunglv202.hoaithuong.repository.LectureRepository;
 import dev.dunglv202.hoaithuong.repository.TutorClassRepository;
 import lombok.RequiredArgsConstructor;
@@ -50,5 +53,12 @@ public class LectureService {
 
         lectureRepository.save(lecture);
         tutorClassRepository.save(tutorClass);
+    }
+
+    public List<LectureDTO> getAllLectures(ReportRange range) {
+        return lectureRepository.findAllInRange(range)
+            .stream()
+            .map(LectureDTO::new)
+            .toList();
     }
 }

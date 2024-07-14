@@ -1,5 +1,6 @@
 package dev.dunglv202.hoaithuong.model;
 
+import jakarta.validation.constraints.Positive;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -13,7 +14,11 @@ import java.time.ZoneId;
 @Getter
 public class ReportRange {
     private ZoneId timeZone = LocaleContextHolder.getTimeZone().toZoneId();
+
+    @Positive(message = "{range.invalid}")
     private int month;
+
+    @Positive(message = "{range.invalid}")
     private int year;
 
     public Instant getStartTime() {

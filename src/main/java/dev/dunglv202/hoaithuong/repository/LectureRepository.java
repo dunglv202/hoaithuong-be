@@ -29,4 +29,12 @@ public interface LectureRepository extends JpaRepository<Lecture, Long> {
         @Param("tutorClass") TutorClass tutorClass,
         @Param("from") Instant from
     );
+
+    @Query("""
+        SELECT SUM(l.tutorClass.payForLecture)
+        FROM Lecture l
+        WHERE (:#{#range.startTime} IS NULL OR l.startTime >= :#{#range.startTime})
+            AND (:#{#range.endTime} IS NULL OR l.startTime <= :#{#range.endTime})
+    """)
+    int getTotalEarnedByRange(ReportRange range);
 }

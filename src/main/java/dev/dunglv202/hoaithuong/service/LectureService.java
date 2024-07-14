@@ -4,18 +4,17 @@ import dev.dunglv202.hoaithuong.dto.NewLectureDTO;
 import dev.dunglv202.hoaithuong.entity.Lecture;
 import dev.dunglv202.hoaithuong.entity.TutorClass;
 import dev.dunglv202.hoaithuong.exception.ClientVisibleException;
-import dev.dunglv202.hoaithuong.helper.DateTimeFmt;
 import dev.dunglv202.hoaithuong.repository.LectureRepository;
 import dev.dunglv202.hoaithuong.repository.TutorClassRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class LectureService {
-    private static final String TEACHER_CODE = "I26";
-
     private final TutorClassRepository tutorClassRepository;
     private final LectureRepository lectureRepository;
 
@@ -40,12 +39,19 @@ public class LectureService {
         }
         tutorClass.setLearned(learned);
 
-        // set code
-        String generatedCode = tutorClass.getCode()
-            + TEACHER_CODE
-            + DateTimeFmt.MMM.format(lecture.getStartTime()).toUpperCase()
-            + learned;
-        lecture.setGeneratedCode(generatedCode);
+        // set lecture no
+        List<Lecture> lecturesAfterThis = lectureRepository.findAllByClassIdFromTime(
+            lecture.getTutorClass(),
+            lecture.getStartTime()
+        );
+        if (lecturesAfterThis.isEmpty()) {
+            lecture.setLectureNo(learned);
+        } else {
+            // update lecture no for ones after this lecture
+            lecture.setLectureNo(lecturesAfterThis.get(0).getLectureNo());
+            lecturesAfterThis.forEach(lec -> lec.setLectureNo(lecture.getLectureNo() + 1));
+            lectureRepository.saveAll(lecturesAfterThis);
+        }
 
         lectureRepository.save(lecture);
         tutorClassRepository.save(tutorClass);

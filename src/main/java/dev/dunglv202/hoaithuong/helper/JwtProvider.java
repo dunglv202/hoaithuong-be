@@ -10,8 +10,7 @@ import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.time.Duration;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
+import java.time.Instant;
 import java.util.Date;
 import java.util.Map;
 
@@ -24,16 +23,16 @@ public class JwtProvider {
     }
 
     public Token generateToken(String subject, Duration lifetime, Map<String, String> extras) {
-        LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
-        LocalDateTime expiration = now.plus(lifetime);
+        Instant now = Instant.now();
+        Instant expiration = now.plus(lifetime);
         JwtBuilder builder =  Jwts.builder()
             .subject(subject)
-            .issuedAt(Date.from(now.toInstant(ZoneOffset.UTC)))
-            .expiration(Date.from(expiration.toInstant(ZoneOffset.UTC)))
+            .issuedAt(Date.from(now))
+            .expiration(Date.from(expiration))
             .claims(extras)
             .signWith(secretKey);
 
-        return new Token(builder.compact(), LocalDateTime.from(expiration.minusSeconds(5)));
+        return new Token(builder.compact(), expiration);
     }
 
     public Claims verifyToken(String token) {

@@ -7,7 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Setter
 @Getter
@@ -16,10 +16,10 @@ public class NewLectureDTO {
     private Long classId;
 
     @NotNull(message = "{lecture.start_time.required}")
-    private LocalDateTime startTime;
+    private Instant startTime;
 
     @NotNull(message = "{lecture.end_time.required}")
-    private LocalDateTime endTime;
+    private Instant endTime;
 
     @NotBlank(message = "{lecture.topic.required}")
     private String topic;

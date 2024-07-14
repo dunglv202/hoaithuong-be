@@ -1,9 +1,11 @@
 package dev.dunglv202.hoaithuong.entity;
 
+import dev.dunglv202.hoaithuong.helper.DateTimeFmt;
 import jakarta.persistence.*;
 import lombok.Data;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.time.ZoneId;
 
 @Entity
 @Data
@@ -15,14 +17,17 @@ public class Lecture {
     @ManyToOne
     private TutorClass tutorClass;
 
-    private LocalDateTime startTime;
+    private Instant startTime;
 
-    private LocalDateTime endTime;
+    private Instant endTime;
 
     private String topic;
 
     private String notes;
 
-    @Column(updatable = false)
-    private String generatedCode;
+    private int lectureNo;
+
+    public String getGeneratedCode(ZoneId timeZone) {
+        return tutorClass.getCode() + "I26" + DateTimeFmt.MMM.format(startTime.atZone(timeZone)) + lectureNo;
+    }
 }

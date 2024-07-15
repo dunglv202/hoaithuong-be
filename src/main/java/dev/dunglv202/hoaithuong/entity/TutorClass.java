@@ -7,7 +7,7 @@ import java.time.Duration;
 
 @Entity
 @Data
-public class TutorClass {
+public class TutorClass extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -31,13 +31,15 @@ public class TutorClass {
 
     private boolean active;
 
-    @PrePersist
+    @Override
     public void prePersist() {
+        super.prePersist();
         active = learned < totalLecture;
     }
 
-    @PreUpdate
+    @Override
     public void preUpdate() {
+        super.preUpdate();
         active = learned < totalLecture;
     }
 

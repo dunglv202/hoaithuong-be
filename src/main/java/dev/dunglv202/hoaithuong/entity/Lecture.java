@@ -2,7 +2,8 @@ package dev.dunglv202.hoaithuong.entity;
 
 import dev.dunglv202.hoaithuong.helper.DateTimeFmt;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.Instant;
 import java.time.ZoneId;
@@ -10,8 +11,9 @@ import java.time.ZoneId;
 import static dev.dunglv202.hoaithuong.constant.Configuration.TEACHER_CODE;
 
 @Entity
-@Data
-public class Lecture {
+@Getter
+@Setter
+public class Lecture extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

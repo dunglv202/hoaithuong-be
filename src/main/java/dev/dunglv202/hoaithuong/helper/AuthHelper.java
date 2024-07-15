@@ -9,13 +9,19 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class AuthHelper {
-    public User getSignedUser() {
+    public static User getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication instanceof AnonymousAuthenticationToken) {
-            throw new RuntimeException("Could not get user from anonymous session");
+        if (authentication instanceof AnonymousAuthenticationToken || authentication == null) {
+            return null;
         }
-
         return ((AppUser) authentication.getPrincipal()).getUser();
+    }
+
+    public User getSignedUser() {
+        User user = getCurrentUser();
+        if (user == null) {
+            throw new RuntimeException("Could not get signed user");
+        }
+        return user;
     }
 }

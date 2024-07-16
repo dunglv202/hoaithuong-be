@@ -29,9 +29,7 @@ public class TutorClassCriteria {
     public static Specification<TutorClass> hasActiveStatus(Boolean active) {
         if (active == null) return Specification.where(null);
 
-        return (root, query, cb) -> {
-            return cb.equal(root.get(TutorClass_.ACTIVE), active);
-        };
+        return (root, query, cb) -> cb.equal(root.get(TutorClass_.ACTIVE), active);
     }
 
     public Specification<TutorClass> toSpecification() {

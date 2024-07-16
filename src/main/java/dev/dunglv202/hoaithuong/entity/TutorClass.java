@@ -1,11 +1,14 @@
 package dev.dunglv202.hoaithuong.entity;
 
+import dev.dunglv202.hoaithuong.model.TimeSlot;
 import jakarta.persistence.*;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.time.Duration;
+import java.util.List;
 
 @Entity
 @Getter
@@ -33,6 +36,9 @@ public class TutorClass extends BaseEntity {
     private int payForLecture;
 
     private boolean active;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    private List<TimeSlot> timeSlots;
 
     @Override
     public void prePersist() {

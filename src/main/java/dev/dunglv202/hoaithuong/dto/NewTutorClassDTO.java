@@ -1,13 +1,14 @@
 package dev.dunglv202.hoaithuong.dto;
 
 import dev.dunglv202.hoaithuong.entity.TutorClass;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.PositiveOrZero;
+import dev.dunglv202.hoaithuong.model.TimeSlot;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
+
+import java.util.List;
 
 import static dev.dunglv202.hoaithuong.constant.Configuration.DEFAULT_LECTURE_DURATION_IN_MINUTE;
 import static dev.dunglv202.hoaithuong.constant.Configuration.DEFAULT_PAY_FOR_LECTURE;
@@ -39,6 +40,10 @@ public class NewTutorClassDTO {
     @PositiveOrZero(message = "{tutor_class.pay.positive}")
     private Integer payForLecture = DEFAULT_PAY_FOR_LECTURE;
 
+    @NotNull(message = "{tutor_class.timeslots.required}")
+    @Size(min = 1, message = "{tutor_class.timeslots.required}")
+    private List<@Valid TimeSlot> timeSlots;
+
     public TutorClass toEntity() {
         TutorClass tutorClass = new TutorClass();
         tutorClass.setCode(code);
@@ -48,6 +53,7 @@ public class NewTutorClassDTO {
         tutorClass.setLearned(learned);
         tutorClass.setDurationInMinute(durationInMinute);
         tutorClass.setPayForLecture(payForLecture);
+        tutorClass.setTimeSlots(timeSlots);
         return tutorClass;
     }
 }

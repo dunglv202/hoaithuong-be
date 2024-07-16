@@ -1,6 +1,5 @@
 package dev.dunglv202.hoaithuong.model;
 
-import dev.dunglv202.hoaithuong.constant.LectureStatus;
 import dev.dunglv202.hoaithuong.entity.Lecture;
 import dev.dunglv202.hoaithuong.entity.Lecture_;
 import dev.dunglv202.hoaithuong.entity.TutorClass;
@@ -31,11 +30,5 @@ public class LectureCriteria {
         if (tutorClass == null) return Specification.where(null);
 
         return (root, query, cb) -> cb.equal(root.get(Lecture_.TUTOR_CLASS), tutorClass);
-    }
-
-    public static Specification<Lecture> hasStatus(LectureStatus status) {
-        if (status == null) return Specification.where(null);
-
-        return (root, query, cb) -> cb.equal(root.get(Lecture_.STATUS), status);
     }
 }

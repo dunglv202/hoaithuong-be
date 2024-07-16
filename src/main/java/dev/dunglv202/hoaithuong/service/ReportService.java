@@ -5,7 +5,6 @@ import dev.dunglv202.hoaithuong.entity.Lecture;
 import dev.dunglv202.hoaithuong.entity.Lecture_;
 import dev.dunglv202.hoaithuong.entity.TutorClass;
 import dev.dunglv202.hoaithuong.helper.DateTimeFmt;
-import dev.dunglv202.hoaithuong.model.LectureCriteria;
 import dev.dunglv202.hoaithuong.model.ReportRange;
 import dev.dunglv202.hoaithuong.repository.LectureRepository;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +27,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static dev.dunglv202.hoaithuong.constant.LectureStatus.COMPLETED;
 import static dev.dunglv202.hoaithuong.model.LectureCriteria.inRange;
 
 @Service
@@ -49,7 +47,7 @@ public class ReportService {
     private Workbook generateReportFile(ReportRange range) {
         Workbook workbook = new XSSFWorkbook();
         List<Lecture> lectures = lectureRepository.findAll(
-            LectureCriteria.hasStatus(COMPLETED).and(inRange(range)),
+            inRange(range),
             Sort.by(Sort.Direction.ASC, Lecture_.START_TIME)
         );
 

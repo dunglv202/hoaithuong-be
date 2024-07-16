@@ -2,11 +2,14 @@ package dev.dunglv202.hoaithuong.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.Duration;
 
 @Entity
-@Data
+@Getter
+@Setter
 public class TutorClass extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

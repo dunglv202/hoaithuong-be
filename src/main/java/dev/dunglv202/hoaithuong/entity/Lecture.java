@@ -1,5 +1,6 @@
 package dev.dunglv202.hoaithuong.entity;
 
+import dev.dunglv202.hoaithuong.constant.LectureStatus;
 import dev.dunglv202.hoaithuong.helper.DateTimeFmt;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -27,7 +28,10 @@ public class Lecture extends BaseEntity {
 
     private String notes;
 
-    private int lectureNo;
+    private Integer lectureNo;
+
+    @Enumerated
+    private LectureStatus status;
 
     public Instant getEndTime() {
         return startTime.plus(tutorClass.getDuration());

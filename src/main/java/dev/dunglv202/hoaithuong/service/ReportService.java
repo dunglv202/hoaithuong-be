@@ -2,8 +2,10 @@ package dev.dunglv202.hoaithuong.service;
 
 import dev.dunglv202.hoaithuong.dto.ReportDTO;
 import dev.dunglv202.hoaithuong.entity.Lecture;
+import dev.dunglv202.hoaithuong.entity.Lecture_;
 import dev.dunglv202.hoaithuong.entity.TutorClass;
 import dev.dunglv202.hoaithuong.helper.DateTimeFmt;
+import dev.dunglv202.hoaithuong.model.LectureCriteria;
 import dev.dunglv202.hoaithuong.model.ReportRange;
 import dev.dunglv202.hoaithuong.repository.LectureRepository;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +16,7 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
@@ -24,6 +27,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static dev.dunglv202.hoaithuong.constant.LectureStatus.COMPLETED;
+import static dev.dunglv202.hoaithuong.model.LectureCriteria.inRange;
 
 @Service
 @RequiredArgsConstructor
@@ -42,7 +48,10 @@ public class ReportService {
 
     private Workbook generateReportFile(ReportRange range) {
         Workbook workbook = new XSSFWorkbook();
-        List<Lecture> lectures = lectureRepository.findAllInRange(range);
+        List<Lecture> lectures = lectureRepository.findAll(
+            LectureCriteria.hasStatus(COMPLETED).and(inRange(range)),
+            Sort.by(Sort.Direction.ASC, Lecture_.START_TIME)
+        );
 
         // write report data
         writeGeneralReportSheet(workbook, lectures, range.getTimeZone());

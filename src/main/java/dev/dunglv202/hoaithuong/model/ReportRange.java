@@ -12,7 +12,7 @@ import java.time.ZoneId;
 
 @Setter
 @Getter
-public class ReportRange {
+public class ReportRange implements Range<Instant> {
     private ZoneId timeZone = LocaleContextHolder.getTimeZone().toZoneId();
 
     @Positive(message = "{range.invalid}")
@@ -21,13 +21,15 @@ public class ReportRange {
     @Positive(message = "{range.invalid}")
     private int year;
 
-    public Instant getStartTime() {
+    @Override
+    public Instant getFrom() {
         return LocalDate.of(year, month, 1)
             .atStartOfDay(timeZone)
             .toInstant();
     }
 
-    public Instant getEndTime() {
+    @Override
+    public Instant getTo() {
         return YearMonth.of(year, month).atEndOfMonth()
             .atStartOfDay(timeZone)
             .toInstant();

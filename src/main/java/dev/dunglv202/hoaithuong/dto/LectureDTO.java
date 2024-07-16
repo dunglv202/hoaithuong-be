@@ -1,5 +1,6 @@
 package dev.dunglv202.hoaithuong.dto;
 
+import dev.dunglv202.hoaithuong.constant.LectureStatus;
 import dev.dunglv202.hoaithuong.entity.Lecture;
 import lombok.Getter;
 
@@ -12,8 +13,9 @@ public class LectureDTO {
     private final String classCode;
     private final StudentDTO student;
     private final String topic;
-    private final int lectureNo;
+    private final Integer lectureNo;
     private final int totalLecture;
+    private final LectureStatus status;
 
     public LectureDTO(Lecture lecture) {
         startTime = lecture.getStartTime();
@@ -23,5 +25,6 @@ public class LectureDTO {
         topic = lecture.getTopic();
         lectureNo = lecture.getLectureNo();
         totalLecture = lecture.getTutorClass().getTotalLecture();
+        status = lecture.getStatus();
     }
 }

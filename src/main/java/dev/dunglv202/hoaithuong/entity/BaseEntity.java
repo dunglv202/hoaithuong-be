@@ -12,13 +12,13 @@ public class BaseEntity {
     private Instant createdAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @Column(name = "created_by")
+    @JoinColumn(name = "created_by")
     private User createdBy;
 
     private Instant updatedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @Column(name = "updated_by")
+    @JoinColumn(name = "updated_by")
     private User updatedBy;
 
     @PrePersist

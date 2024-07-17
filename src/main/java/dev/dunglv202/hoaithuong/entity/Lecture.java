@@ -5,8 +5,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.Instant;
-import java.time.ZoneId;
+import java.time.LocalDateTime;
 
 import static dev.dunglv202.hoaithuong.constant.Configuration.TEACHER_CODE;
 
@@ -21,7 +20,7 @@ public class Lecture extends BaseEntity {
     @ManyToOne
     private TutorClass tutorClass;
 
-    private Instant startTime;
+    private LocalDateTime startTime;
 
     private String topic;
 
@@ -32,11 +31,11 @@ public class Lecture extends BaseEntity {
     @OneToOne
     private Schedule schedule;
 
-    public Instant getEndTime() {
+    public LocalDateTime getEndTime() {
         return startTime.plus(tutorClass.getDuration());
     }
 
-    public String getGeneratedCode(ZoneId timeZone) {
-        return tutorClass.getCode() + TEACHER_CODE + DateTimeFmt.MMM.format(startTime.atZone(timeZone)).toUpperCase() + lectureNo;
+    public String getGeneratedCode() {
+        return tutorClass.getCode() + TEACHER_CODE + DateTimeFmt.MMM.format(startTime).toUpperCase() + lectureNo;
     }
 }

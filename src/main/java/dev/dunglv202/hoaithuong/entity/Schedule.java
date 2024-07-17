@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.Instant;
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -20,7 +20,7 @@ public class Schedule extends BaseEntity {
     @OneToOne(mappedBy = Lecture_.SCHEDULE)
     private Lecture lecture;
 
-    private Instant startTime;
+    private LocalDateTime startTime;
 
-    private Instant endTime;
+    private LocalDateTime endTime;
 }

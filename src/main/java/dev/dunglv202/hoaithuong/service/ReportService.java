@@ -20,7 +20,6 @@ import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -52,13 +51,13 @@ public class ReportService {
         );
 
         // write report data
-        writeGeneralReportSheet(workbook, lectures, range.getTimeZone());
-        writeDetailReportSheet(workbook, lectures, range.getTimeZone());
+        writeGeneralReportSheet(workbook, lectures);
+        writeDetailReportSheet(workbook, lectures);
 
         return workbook;
     }
 
-    private void writeGeneralReportSheet(Workbook workbook, List<Lecture> lectures, ZoneId timeZone) {
+    private void writeGeneralReportSheet(Workbook workbook, List<Lecture> lectures) {
         Map<TutorClass, List<Lecture>> classWithLectures = groupByClass(lectures);
         Sheet general = workbook.createSheet("General");
 
@@ -82,8 +81,8 @@ public class ReportService {
 
             for (int i = 0; i < classLectures.size(); i++) {
                 Cell lecture = row.createCell(i + 2);
-                String cellValue = DateTimeFmt.D_M_YYYY.format(classLectures.get(i).getStartTime().atZone(timeZone)) + "\n"
-                    + classLectures.get(i).getGeneratedCode(timeZone);
+                String cellValue = DateTimeFmt.D_M_YYYY.format(classLectures.get(i).getStartTime()) + "\n"
+                    + classLectures.get(i).getGeneratedCode();
                 lecture.setCellValue(cellValue);
             }
 
@@ -113,7 +112,7 @@ public class ReportService {
         return classWithLectures;
     }
 
-    private void writeDetailReportSheet(Workbook workbook, List<Lecture> lectures, ZoneId timeZone) {
+    private void writeDetailReportSheet(Workbook workbook, List<Lecture> lectures) {
         Sheet sheet = workbook.createSheet("Detail");
 
         Row header = sheet.createRow(0);
@@ -138,7 +137,7 @@ public class ReportService {
 
             Cell date = row.createCell(1);
             DateTimeFormatter dateFmt = DateTimeFmt.D_M_YYYY;
-            date.setCellValue(dateFmt.format(lecture.getStartTime().atZone(timeZone)));
+            date.setCellValue(dateFmt.format(lecture.getStartTime()));
 
             Cell student = row.createCell(2);
             String studentStr = tutorClass.getStudent().getName() + " - " + tutorClass.getCode();
@@ -149,13 +148,13 @@ public class ReportService {
 
             Cell time = row.createCell(4);
             DateTimeFormatter timeFmt = DateTimeFmt.H_M;
-            String timeStr = timeFmt.format(lecture.getStartTime().atZone(timeZone))
+            String timeStr = timeFmt.format(lecture.getStartTime())
                 + "-"
-                + timeFmt.format(lecture.getEndTime().atZone(timeZone));
+                + timeFmt.format(lecture.getEndTime());
             time.setCellValue(timeStr);
 
             Cell code = row.createCell(5);
-            code.setCellValue(lecture.getGeneratedCode(timeZone));
+            code.setCellValue(lecture.getGeneratedCode());
 
             Cell topic = row.createCell(6);
             topic.setCellValue(lecture.getTopic());

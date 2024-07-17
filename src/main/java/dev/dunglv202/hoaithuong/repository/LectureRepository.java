@@ -8,10 +8,10 @@ import org.springframework.data.jpa.repository.Query;
 
 public interface LectureRepository extends JpaRepository<Lecture, Long>, JpaSpecificationExecutor<Lecture> {
     @Query("""
-        SELECT SUM(l.tutorClass.payForLecture)
+        SELECT COALESCE(SUM(l.tutorClass.payForLecture), 0)
         FROM Lecture l
-        WHERE (:#{#range.from} IS NULL OR l.startTime >= :#{#range.from})
-            AND (:#{#range.to} IS NULL OR l.startTime <= :#{#range.to})
+        WHERE (:#{#range.from} IS NULL OR CAST(l.startTime AS DATE) >= :#{#range.from})
+            AND (:#{#range.to} IS NULL OR CAST(l.startTime AS DATE) <= :#{#range.to})
     """)
     int getTotalEarnedByRange(ReportRange range);
 }

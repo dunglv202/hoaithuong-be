@@ -18,7 +18,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -73,7 +73,7 @@ public class TutorClassService {
             Schedule schedule = new Schedule();
             schedule.setTutorClass(newTutorClass);
             /* @TODO: calculate start time & move to next time slot */
-            Instant startTime = Instant.now();
+            LocalDateTime startTime = LocalDateTime.now();
             schedule.setStartTime(startTime);
             schedule.setEndTime(startTime.plus(newTutorClass.getDuration()));
 

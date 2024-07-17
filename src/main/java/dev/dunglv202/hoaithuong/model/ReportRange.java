@@ -3,18 +3,13 @@ package dev.dunglv202.hoaithuong.model;
 import jakarta.validation.constraints.Positive;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.context.i18n.LocaleContextHolder;
 
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.YearMonth;
-import java.time.ZoneId;
 
 @Setter
 @Getter
-public class ReportRange implements Range<Instant> {
-    private ZoneId timeZone = LocaleContextHolder.getTimeZone().toZoneId();
-
+public class ReportRange implements Range<LocalDate> {
     @Positive(message = "{range.invalid}")
     private int month;
 
@@ -22,16 +17,12 @@ public class ReportRange implements Range<Instant> {
     private int year;
 
     @Override
-    public Instant getFrom() {
-        return LocalDate.of(year, month, 1)
-            .atStartOfDay(timeZone)
-            .toInstant();
+    public LocalDate getFrom() {
+        return LocalDate.of(year, month, 1);
     }
 
     @Override
-    public Instant getTo() {
-        return YearMonth.of(year, month).atEndOfMonth()
-            .atStartOfDay(timeZone)
-            .toInstant();
+    public LocalDate getTo() {
+        return YearMonth.of(year, month).atEndOfMonth();
     }
 }

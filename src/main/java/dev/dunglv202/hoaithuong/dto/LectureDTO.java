@@ -3,12 +3,12 @@ package dev.dunglv202.hoaithuong.dto;
 import dev.dunglv202.hoaithuong.entity.Lecture;
 import lombok.Getter;
 
-import java.time.Instant;
+import java.time.LocalDateTime;
 
 @Getter
 public class LectureDTO {
-    private final Instant startTime;
-    private final Instant endTime;
+    private final LocalDateTime startTime;
+    private final LocalDateTime endTime;
     private final String classCode;
     private final StudentDTO student;
     private final String topic;

@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
 
+import java.time.Instant;
 import java.util.List;
 
 import static dev.dunglv202.hoaithuong.constant.Configuration.DEFAULT_LECTURE_DURATION_IN_MINUTE;
@@ -43,6 +44,8 @@ public class NewTutorClassDTO {
     @NotNull(message = "{tutor_class.timeslots.required}")
     @Size(min = 1, message = "{tutor_class.timeslots.required}")
     private List<@Valid TimeSlot> timeSlots;
+
+    private Instant startDate;
 
     public TutorClass toEntity() {
         TutorClass tutorClass = new TutorClass();

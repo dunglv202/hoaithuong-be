@@ -15,11 +15,16 @@ import dev.dunglv202.hoaithuong.repository.ScheduleRepository;
 import dev.dunglv202.hoaithuong.repository.StudentRepository;
 import dev.dunglv202.hoaithuong.repository.TutorClassRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.DayOfWeek;
+import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static dev.dunglv202.hoaithuong.model.TutorClassCriteria.hasActiveStatus;
@@ -47,7 +52,7 @@ public class TutorClassService {
 
         // set end time for time slots before save & check for conflict
         tutorClass.getTimeSlots().forEach(t -> t.setEndTime(t.getStartTime().plus(tutorClass.getDuration())));
-        addToSchedule(authHelper.getSignedUser(), tutorClass);
+        addToTeacherSchedule(authHelper.getSignedUser(), tutorClass);
 
         tutorClassRepository.save(tutorClass);
     }
@@ -57,9 +62,9 @@ public class TutorClassService {
      *
      * @throws ConflictScheduleException Schedule conflicts with other classes
      */
-    private void addToSchedule(User teacher, TutorClass newTutorClass) {
+    private void addToTeacherSchedule(User teacher, TutorClass newClass) {
         // check for conflicts
-        for (TimeSlot timeSlot : newTutorClass.getTimeSlots()) {
+        for (TimeSlot timeSlot : newClass.getTimeSlots()) {
             List<TimeSlot> currentTimeSlots = getActiveTimeSlotsForTeacher(teacher);
 
             if (overlapsWithOtherTimeSlots(timeSlot, currentTimeSlots)) {
@@ -67,21 +72,51 @@ public class TutorClassService {
             }
         }
 
+        // sort timeslots in ascending order
+        Collections.sort(newClass.getTimeSlots());
+
         // add to schedule
         List<Schedule> schedules = new ArrayList<>();
-        for (int i = 1; i <= newTutorClass.getTotalLecture(); i++) {
-            Schedule schedule = new Schedule();
-            schedule.setTutorClass(newTutorClass);
-            /* @TODO: calculate start time & move to next time slot */
-            LocalDateTime startTime = LocalDateTime.now();
-            schedule.setStartTime(startTime);
-            schedule.setEndTime(startTime.plus(newTutorClass.getDuration()));
+        int numOfLectures = newClass.getTotalLecture() - newClass.getLearned();
+        LocalDate date = newClass.getStartDate() != null
+            ? newClass.getStartDate()
+            : Instant.now().atZone(LocaleContextHolder.getTimeZone().toZoneId()).toLocalDate();
+        // loop over days until no lecture remain
+        while (numOfLectures > 0) {
+            // get time slots for today -> if available -> make schedule
+            DayOfWeek today = date.getDayOfWeek();
+            List<TimeSlot> todaySlots = newClass.getTimeSlots()
+                .stream()
+                .filter(s -> s.getWeekday() == today)
+                .toList();
+            for (TimeSlot slot : todaySlots) {
+                if (numOfLectures <= 0) break;
+                schedules.add(makeScheduleForSlot(newClass, date, slot));
+                numOfLectures--;
+            }
 
-            schedules.add(schedule);
+            // go to next day
+            date = date.plusDays(1);
         }
         scheduleRepository.saveAll(schedules);
     }
 
+    /**
+     * Make schedule instance for class and date with time slot
+     */
+    private Schedule makeScheduleForSlot(TutorClass tutorClass, LocalDate date, TimeSlot slot) {
+        Schedule schedule = new Schedule();
+        schedule.setTutorClass(tutorClass);
+        schedule.setStartTime(date.atTime(slot.getStartTime()));
+        schedule.setEndTime(date.atTime(slot.getEndTime()));
+        return schedule;
+    }
+
+    /**
+     * TODO: Add from day
+     *
+     * @return List of time slots that teacher is having in their schedule
+     */
     private List<TimeSlot> getActiveTimeSlotsForTeacher(User teacher) {
         List<TutorClass> activeClasses = tutorClassRepository.findAll(ofTeacher(teacher).and(hasActiveStatus(true)));
 

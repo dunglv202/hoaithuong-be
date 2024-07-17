@@ -45,6 +45,7 @@ public class NewTutorClassDTO {
     @Size(min = 1, message = "{tutor_class.timeslots.required}")
     private List<@Valid TimeSlot> timeSlots;
 
+    @FutureOrPresent(message = "{tutor_class.start_data.today_or_future}")
     private LocalDate startDate;
 
     public TutorClass toEntity() {
@@ -57,6 +58,7 @@ public class NewTutorClassDTO {
         tutorClass.setDurationInMinute(durationInMinute);
         tutorClass.setPayForLecture(payForLecture);
         tutorClass.setTimeSlots(timeSlots);
+        if (learned == 0) tutorClass.setStartDate(startDate);
         return tutorClass;
     }
 }

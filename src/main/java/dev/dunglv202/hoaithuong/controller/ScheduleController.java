@@ -1,7 +1,6 @@
 package dev.dunglv202.hoaithuong.controller;
 
 import dev.dunglv202.hoaithuong.dto.ScheduleDTO;
-import dev.dunglv202.hoaithuong.model.Range;
 import dev.dunglv202.hoaithuong.model.ScheduleRange;
 import dev.dunglv202.hoaithuong.service.ScheduleService;
 import jakarta.validation.Valid;
@@ -11,7 +10,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.time.LocalDate;
 import java.util.List;
 
 @RestController

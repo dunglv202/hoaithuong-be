@@ -15,7 +15,6 @@ public class NewLectureDTO {
     @NotNull(message = "{lecture.class.required}")
     private Long classId;
 
-    @NotNull(message = "{lecture.start_time.required}")
     private LocalDateTime startTime;
 
     @NotBlank(message = "{lecture.topic.required}")
@@ -24,9 +23,10 @@ public class NewLectureDTO {
     @Length(max = 256, message = "{lecture.notes.length}")
     private String notes;
 
+    private Long scheduleId;
+
     public Lecture toEntity() {
         Lecture lecture = new Lecture();
-        lecture.setStartTime(startTime);
         lecture.setTopic(topic);
         lecture.setNotes(notes);
         return lecture;

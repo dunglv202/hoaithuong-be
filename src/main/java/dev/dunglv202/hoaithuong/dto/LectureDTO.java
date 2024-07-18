@@ -14,6 +14,7 @@ public class LectureDTO {
     private final String topic;
     private final Integer lectureNo;
     private final int totalLecture;
+    private final String notes;
 
     public LectureDTO(Lecture lecture) {
         startTime = lecture.getStartTime();
@@ -23,5 +24,6 @@ public class LectureDTO {
         topic = lecture.getTopic();
         lectureNo = lecture.getLectureNo();
         totalLecture = lecture.getTutorClass().getTotalLecture();
+        notes = lecture.getNotes();
     }
 }

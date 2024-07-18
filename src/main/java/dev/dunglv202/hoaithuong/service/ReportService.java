@@ -2,7 +2,6 @@ package dev.dunglv202.hoaithuong.service;
 
 import dev.dunglv202.hoaithuong.dto.ReportDTO;
 import dev.dunglv202.hoaithuong.entity.Lecture;
-import dev.dunglv202.hoaithuong.entity.Lecture_;
 import dev.dunglv202.hoaithuong.entity.TutorClass;
 import dev.dunglv202.hoaithuong.helper.DateTimeFmt;
 import dev.dunglv202.hoaithuong.model.ReportRange;
@@ -27,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 import static dev.dunglv202.hoaithuong.model.LectureCriteria.inRange;
+import static dev.dunglv202.hoaithuong.model.LectureCriteria.sortByStartTime;
 
 @Service
 @RequiredArgsConstructor
@@ -45,10 +45,7 @@ public class ReportService {
 
     private Workbook generateReportFile(ReportRange range) {
         Workbook workbook = new XSSFWorkbook();
-        List<Lecture> lectures = lectureRepository.findAll(
-            inRange(range),
-            Sort.by(Sort.Direction.ASC, Lecture_.START_TIME)
-        );
+        List<Lecture> lectures = lectureRepository.findAll(inRange(range).and(sortByStartTime(Sort.Direction.ASC)));
 
         // write report data
         writeGeneralReportSheet(workbook, lectures);

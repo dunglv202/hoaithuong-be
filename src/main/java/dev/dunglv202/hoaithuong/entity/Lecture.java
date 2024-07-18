@@ -20,8 +20,6 @@ public class Lecture extends BaseEntity {
     @ManyToOne
     private TutorClass tutorClass;
 
-    private LocalDateTime startTime;
-
     private String topic;
 
     private String notes;
@@ -31,11 +29,15 @@ public class Lecture extends BaseEntity {
     @OneToOne
     private Schedule schedule;
 
+    public LocalDateTime getStartTime() {
+        return schedule.getStartTime();
+    }
+
     public LocalDateTime getEndTime() {
-        return startTime.plus(tutorClass.getDuration());
+        return schedule.getEndTime();
     }
 
     public String getGeneratedCode() {
-        return tutorClass.getCode() + TEACHER_CODE + DateTimeFmt.MMM.format(startTime).toUpperCase() + lectureNo;
+        return tutorClass.getCode() + TEACHER_CODE + DateTimeFmt.MMM.format(getStartTime()).toUpperCase() + lectureNo;
     }
 }

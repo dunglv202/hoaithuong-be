@@ -1,4 +1,4 @@
-package dev.dunglv202.hoaithuong.service;
+package dev.dunglv202.hoaithuong.service.impl;
 
 import dev.dunglv202.hoaithuong.dto.LectureDTO;
 import dev.dunglv202.hoaithuong.dto.NewLectureDTO;
@@ -12,6 +12,7 @@ import dev.dunglv202.hoaithuong.model.ReportRange;
 import dev.dunglv202.hoaithuong.repository.LectureRepository;
 import dev.dunglv202.hoaithuong.repository.ScheduleRepository;
 import dev.dunglv202.hoaithuong.repository.TutorClassRepository;
+import dev.dunglv202.hoaithuong.service.ScheduleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -28,23 +29,11 @@ public class LectureService {
     private final TutorClassRepository tutorClassRepository;
     private final LectureRepository lectureRepository;
     private final ScheduleRepository scheduleRepository;
+    private final ScheduleService scheduleService;
 
     @Transactional
     public void addNewLecture(NewLectureDTO newLectureDTO) {
         Lecture lecture = newLectureDTO.toEntity();
-
-        if (newLectureDTO.getScheduleId() != null) {
-            Schedule schedule = scheduleRepository.findById(newLectureDTO.getScheduleId())
-                .orElseThrow(() -> new ClientVisibleException("{schedule.not_found}"));
-
-            if (schedule.getLecture() != null) {
-                throw new ClientVisibleException("{schedule.attached_to_lecture}");
-            }
-
-            lecture.setSchedule(schedule);
-        } else {
-            // TODO: create new schedule then assign for this lecture
-        }
 
         // set class
         TutorClass tutorClass = tutorClassRepository.getReferenceById(newLectureDTO.getClassId());
@@ -56,6 +45,24 @@ public class LectureService {
             throw new ClientVisibleException("{tutor_class.lecture.exceed}");
         }
         tutorClass.setLearned(learned);
+
+        // set schedule for lecture
+        Schedule schedule;
+        if (newLectureDTO.getScheduleId() != null) {
+            schedule = scheduleRepository.findById(newLectureDTO.getScheduleId())
+                .orElseThrow(() -> new ClientVisibleException("{schedule.not_found}"));
+
+            if (schedule.getLecture() != null) {
+                throw new ClientVisibleException("{schedule.attached_to_lecture}");
+            }
+        } else {
+            // create new schedule
+            schedule = scheduleService.addScheduleForClass(
+                lecture.getTutorClass(),
+                newLectureDTO.getStartTime()
+            );
+        }
+        lecture.setSchedule(schedule);
 
         // set lecture no
         List<Lecture> lecturesAfterThis = lectureRepository.findAll(

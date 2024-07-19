@@ -9,7 +9,8 @@ import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
 
 import java.time.LocalDate;
-import java.util.List;
+import java.util.ArrayList;
+import java.util.Set;
 
 import static dev.dunglv202.hoaithuong.constant.Configuration.DEFAULT_LECTURE_DURATION_IN_MINUTE;
 import static dev.dunglv202.hoaithuong.constant.Configuration.DEFAULT_PAY_FOR_LECTURE;
@@ -43,8 +44,9 @@ public class NewTutorClassDTO {
 
     @NotNull(message = "{tutor_class.timeslots.required}")
     @Size(min = 1, message = "{tutor_class.timeslots.required}")
-    private List<@Valid TimeSlot> timeSlots;
+    private Set<@Valid TimeSlot> timeSlots;
 
+    @NotNull(message = "{tutor_class.start_date.required}")
     @FutureOrPresent(message = "{tutor_class.start_data.today_or_future}")
     private LocalDate startDate;
 
@@ -55,9 +57,10 @@ public class NewTutorClassDTO {
         tutorClass.setTotalLecture(totalLecture);
         tutorClass.setLevel(level);
         tutorClass.setLearned(learned);
+        tutorClass.setInitialLearned(learned);
         tutorClass.setDurationInMinute(durationInMinute);
         tutorClass.setPayForLecture(payForLecture);
-        tutorClass.setTimeSlots(timeSlots);
+        tutorClass.setTimeSlots(new ArrayList<>(timeSlots.stream().sorted().toList()));
         if (learned == 0) tutorClass.setStartDate(startDate);
         return tutorClass;
     }

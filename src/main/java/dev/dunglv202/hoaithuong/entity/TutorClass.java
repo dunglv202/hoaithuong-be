@@ -32,6 +32,8 @@ public class TutorClass extends BaseEntity {
 
     private int learned;
 
+    private int initialLearned;
+
     private int durationInMinute;
 
     private int payForLecture;

@@ -1,7 +1,7 @@
 package dev.dunglv202.hoaithuong.controller;
 
 import dev.dunglv202.hoaithuong.dto.UserInfoDTO;
-import dev.dunglv202.hoaithuong.service.UserService;
+import dev.dunglv202.hoaithuong.service.impl.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;

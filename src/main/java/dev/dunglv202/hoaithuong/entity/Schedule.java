@@ -1,5 +1,6 @@
 package dev.dunglv202.hoaithuong.entity;
 
+import jakarta.annotation.Nonnull;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -23,4 +24,14 @@ public class Schedule extends BaseEntity {
     private LocalDateTime startTime;
 
     private LocalDateTime endTime;
+
+    public boolean overlaps(@Nonnull Schedule another) {
+        return this.startTime.isBefore(another.startTime)
+            ? this.endTime.isAfter(another.startTime)
+            : this.startTime.isBefore(another.endTime);
+    }
+
+    public boolean isAfter(Schedule another) {
+        return this.startTime.isAfter(another.endTime);
+    }
 }

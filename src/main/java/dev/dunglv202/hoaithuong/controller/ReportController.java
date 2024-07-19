@@ -2,7 +2,7 @@ package dev.dunglv202.hoaithuong.controller;
 
 import dev.dunglv202.hoaithuong.dto.ReportDTO;
 import dev.dunglv202.hoaithuong.model.ReportRange;
-import dev.dunglv202.hoaithuong.service.ReportService;
+import dev.dunglv202.hoaithuong.service.impl.ReportService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;

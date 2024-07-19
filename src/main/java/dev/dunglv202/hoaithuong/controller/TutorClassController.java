@@ -3,7 +3,7 @@ package dev.dunglv202.hoaithuong.controller;
 import dev.dunglv202.hoaithuong.dto.NewTutorClassDTO;
 import dev.dunglv202.hoaithuong.dto.TutorClassDTO;
 import dev.dunglv202.hoaithuong.model.TutorClassCriteria;
-import dev.dunglv202.hoaithuong.service.TutorClassService;
+import dev.dunglv202.hoaithuong.service.impl.TutorClassService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;

@@ -1,4 +1,4 @@
-package dev.dunglv202.hoaithuong.service;
+package dev.dunglv202.hoaithuong.service.impl;
 
 import dev.dunglv202.hoaithuong.dto.CredentialDTO;
 import dev.dunglv202.hoaithuong.helper.JwtProvider;

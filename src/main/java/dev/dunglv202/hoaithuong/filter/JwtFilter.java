@@ -1,14 +1,20 @@
 package dev.dunglv202.hoaithuong.filter;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.dunglv202.hoaithuong.config.SecurityConfig;
+import dev.dunglv202.hoaithuong.dto.ApiError;
 import dev.dunglv202.hoaithuong.helper.JwtProvider;
 import dev.dunglv202.hoaithuong.model.AppUser;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.lang.NonNull;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -19,6 +25,9 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
+
+import static dev.dunglv202.hoaithuong.constant.ApiErrorCode.EXPIRED_ACCESS_TOKEN;
 
 @Component
 @RequiredArgsConstructor
@@ -31,11 +40,26 @@ public class JwtFilter extends OncePerRequestFilter {
         @NonNull HttpServletResponse response,
         @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
-        if (request.getCookies() != null) {
-            Arrays.stream(request.getCookies())
+        if (request.getCookies() != null && !"/api/auth/refresh".equals(request.getServletPath())) {
+            Optional<Cookie> tokenCookie = Arrays.stream(request.getCookies())
                 .filter(cookie -> SecurityConfig.ACCESS_TOKEN_COOKIE.equals(cookie.getName()))
-                .findFirst()
-                .ifPresent(cookie -> validateAccessToken(cookie.getValue()));
+                .findFirst();
+
+            if (tokenCookie.isPresent()) {
+                try {
+                    validateAccessToken(tokenCookie.get().getValue());
+                } catch (ExpiredJwtException e) {
+                    String resp = new ObjectMapper().writeValueAsString(ApiError.withCode(EXPIRED_ACCESS_TOKEN));
+                    response.setStatus(HttpStatus.UNAUTHORIZED.value());
+                    response.getWriter().write(resp);
+                    return;
+                } catch (JwtException e) {
+                    String resp = new ObjectMapper().writeValueAsString(ApiError.withError("{access_token.invalid}"));
+                    response.setStatus(HttpStatus.UNAUTHORIZED.value());
+                    response.getWriter().write(resp);
+                    return;
+                }
+            }
         }
 
         filterChain.doFilter(request, response);

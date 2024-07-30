@@ -49,7 +49,7 @@ public class AuthController {
             ACCESS_TOKEN_COOKIE,
             authResult.getAccessToken().getValue(),
             COOKIE_PATH_ACCESS,
-            (int) ACCESS_TOKEN_LIFETIME.toSeconds()
+            (int) REFRESH_TOKEN_LIFETIME.toSeconds()
         );
         response.addCookie(accessCookie);
 

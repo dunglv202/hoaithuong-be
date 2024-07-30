@@ -28,9 +28,9 @@ public class SecurityConfig {
     public static final String JWT_TOKEN_TYPE_KEY = "type";
     public static final String JWT_TOKEN_TYPE_REFRESH = "refresh";
     public static final String ACCESS_TOKEN_COOKIE = "accessToken";
-    public static final Duration ACCESS_TOKEN_LIFETIME = Duration.ofSeconds(5);
+    public static final Duration ACCESS_TOKEN_LIFETIME = Duration.ofMinutes(30);
     public static final String REFRESH_TOKEN_COOKIE = "refreshToken";
-    public static final Duration REFRESH_TOKEN_LIFETIME = Duration.ofDays(3);
+    public static final Duration REFRESH_TOKEN_LIFETIME = Duration.ofDays(30);
 
     private final JwtFilter jwtFilter;
 

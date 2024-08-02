@@ -12,7 +12,7 @@ import static dev.dunglv202.hoaithuong.constant.Configuration.TEACHER_CODE;
 @Entity
 @Getter
 @Setter
-public class Lecture extends BaseEntity {
+public class Lecture extends Auditable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

@@ -15,7 +15,7 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
-public class TutorClass extends BaseEntity {
+public class TutorClass extends Auditable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -44,15 +44,13 @@ public class TutorClass extends BaseEntity {
     @JdbcTypeCode(SqlTypes.JSON)
     private List<TimeSlot> timeSlots;
 
-    @Override
+    @PrePersist
     public void prePersist() {
-        super.prePersist();
         active = learned < totalLecture;
     }
 
-    @Override
+    @PreUpdate
     public void preUpdate() {
-        super.preUpdate();
         active = learned < totalLecture;
     }
 

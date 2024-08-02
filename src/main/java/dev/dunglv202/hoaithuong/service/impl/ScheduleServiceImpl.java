@@ -6,6 +6,8 @@ import dev.dunglv202.hoaithuong.entity.TutorClass;
 import dev.dunglv202.hoaithuong.exception.ClientVisibleException;
 import dev.dunglv202.hoaithuong.exception.ConflictScheduleException;
 import dev.dunglv202.hoaithuong.model.Range;
+import dev.dunglv202.hoaithuong.model.ScheduleCriteria;
+import dev.dunglv202.hoaithuong.model.SimpleRange;
 import dev.dunglv202.hoaithuong.model.TimeSlot;
 import dev.dunglv202.hoaithuong.repository.ScheduleRepository;
 import dev.dunglv202.hoaithuong.service.ScheduleService;
@@ -19,6 +21,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import static dev.dunglv202.hoaithuong.model.ScheduleCriteria.inRange;
+
 @Service
 @RequiredArgsConstructor
 public class ScheduleServiceImpl implements ScheduleService {
@@ -26,7 +30,7 @@ public class ScheduleServiceImpl implements ScheduleService {
 
     @Override
     public List<ScheduleDTO> getSchedule(Range<LocalDate> range) {
-        return scheduleRepository.findAllInRange(range.getFrom(), range.getTo())
+        return scheduleRepository.findAll(ScheduleCriteria.fetchAll().and(inRange(range)))
             .stream()
             .map(ScheduleDTO::new)
             .toList();
@@ -52,6 +56,10 @@ public class ScheduleServiceImpl implements ScheduleService {
         // check for conflicts with other schedules
         Schedule firstSchedule = schedules.get(0);
         Schedule lastSchedule = schedules.get(schedules.size() - 1);
+        Range<LocalDate> range = SimpleRange
+            .from(firstSchedule.getStartTime().toLocalDate())
+            .to(lastSchedule.getEndTime().toLocalDate());
+        scheduleRepository.findAll(ScheduleCriteria.fetchAll().and(inRange(range)));
         List<Schedule> activeSchedules = scheduleRepository.findAllInRange(
             firstSchedule.getStartTime().toLocalDate(),
             lastSchedule.getEndTime().toLocalDate()

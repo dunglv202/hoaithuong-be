@@ -57,7 +57,7 @@ public class LectureService {
             }
         } else {
             // create new schedule
-            schedule = scheduleService.addScheduleForClass(
+            schedule = scheduleService.addSingleScheduleForClass(
                 lecture.getTutorClass(),
                 newLectureDTO.getStartTime()
             );

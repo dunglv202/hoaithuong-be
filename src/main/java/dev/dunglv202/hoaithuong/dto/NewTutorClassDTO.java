@@ -3,7 +3,10 @@ package dev.dunglv202.hoaithuong.dto;
 import dev.dunglv202.hoaithuong.entity.TutorClass;
 import dev.dunglv202.hoaithuong.model.TimeSlot;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
@@ -42,13 +45,9 @@ public class NewTutorClassDTO {
     @PositiveOrZero(message = "{tutor_class.pay.positive}")
     private Integer payForLecture = DEFAULT_PAY_FOR_LECTURE;
 
-    @NotNull(message = "{tutor_class.timeslots.required}")
-    @Size(min = 1, message = "{tutor_class.timeslots.required}")
     private Set<@Valid TimeSlot> timeSlots;
 
-    @NotNull(message = "{tutor_class.start_date.required}")
-    @FutureOrPresent(message = "{tutor_class.start_data.today_or_future}")
-    private LocalDate startDate;
+    private LocalDate startDate = LocalDate.now();
 
     public TutorClass toEntity() {
         TutorClass tutorClass = new TutorClass();
@@ -61,7 +60,6 @@ public class NewTutorClassDTO {
         tutorClass.setDurationInMinute(durationInMinute);
         tutorClass.setPayForLecture(payForLecture);
         tutorClass.setTimeSlots(new ArrayList<>(timeSlots.stream().sorted().toList()));
-        if (learned == 0) tutorClass.setStartDate(startDate);
         return tutorClass;
     }
 }

@@ -3,6 +3,7 @@ package dev.dunglv202.hoaithuong.repository;
 import dev.dunglv202.hoaithuong.entity.Schedule;
 import dev.dunglv202.hoaithuong.entity.TutorClass;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -32,4 +33,11 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
         LIMIT 1
     """)
     Schedule findLastByTutorClass(@Param("tutorClass") TutorClass tutorClass);
+
+    @Modifying
+    @Query("""
+        DELETE FROM Schedule s
+        WHERE s.tutorClass = :tutorClass AND CAST(s.startTime AS DATE) >= :startDate
+    """)
+    void deleteAllFromDateByClass(@Param("tutorClass") TutorClass tutorClass, @Param("startDate") LocalDate startDate);
 }

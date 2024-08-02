@@ -1,5 +1,7 @@
 package dev.dunglv202.hoaithuong.entity;
 
+import dev.dunglv202.hoaithuong.dto.UpdatedTutorClassDTO;
+import dev.dunglv202.hoaithuong.mapper.TutorClassMapper;
 import dev.dunglv202.hoaithuong.model.TimeSlot;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -8,7 +10,6 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 import java.time.Duration;
-import java.time.LocalDate;
 import java.util.List;
 
 @Entity
@@ -43,8 +44,6 @@ public class TutorClass extends BaseEntity {
     @JdbcTypeCode(SqlTypes.JSON)
     private List<TimeSlot> timeSlots;
 
-    private LocalDate startDate;
-
     @Override
     public void prePersist() {
         super.prePersist();
@@ -59,5 +58,10 @@ public class TutorClass extends BaseEntity {
 
     public Duration getDuration() {
         return Duration.ofMinutes(durationInMinute);
+    }
+
+    public TutorClass merge(UpdatedTutorClassDTO updated) {
+        TutorClassMapper.INSTANCE.mergeTutorClass(this, updated);
+        return this;
     }
 }

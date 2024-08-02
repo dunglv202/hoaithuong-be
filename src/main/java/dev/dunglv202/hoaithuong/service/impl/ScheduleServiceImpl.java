@@ -17,6 +17,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -39,9 +40,12 @@ public class ScheduleServiceImpl implements ScheduleService {
         scheduleRepository.delete(schedule);
     }
 
+    /**
+     * Add new class to schedule if that class have timeslots
+     */
     @Override
-    public void addClassToMySchedule(TutorClass newClass) {
-        List<Schedule> schedules = makeScheduleForClass(newClass);
+    public void addClassToMySchedule(TutorClass newClass, LocalDate startDate) {
+        List<Schedule> schedules = makeScheduleForClass(newClass, startDate);
 
         if (schedules.isEmpty()) return;
 
@@ -69,7 +73,7 @@ public class ScheduleServiceImpl implements ScheduleService {
      * {@inheritDoc}
      */
     @Override
-    public Schedule addScheduleForClass(TutorClass tutorClass, LocalDateTime startTime) {
+    public Schedule addSingleScheduleForClass(TutorClass tutorClass, LocalDateTime startTime) {
         Schedule schedule = makeSchedule(tutorClass, startTime);
 
         // check if conflict TODO: same sub-logic with #addClassToMySchedule() => might separate to another method
@@ -94,11 +98,25 @@ public class ScheduleServiceImpl implements ScheduleService {
     }
 
     /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void updateScheduleForClass(TutorClass tutorClass, LocalDate startDate, Set<TimeSlot> timeSlots) {
+        scheduleRepository.deleteAllFromDateByClass(tutorClass, startDate);
+        tutorClass.setTimeSlots(new ArrayList<>(timeSlots));
+        addClassToMySchedule(tutorClass, startDate);
+    }
+
+    /**
      * Make schedule list in ascending order by date and time for tutor class
      */
-    private List<Schedule> makeScheduleForClass(TutorClass tutorClass) {
+    private List<Schedule> makeScheduleForClass(TutorClass tutorClass, LocalDate startDate) {
+        if (tutorClass.getTimeSlots() == null || tutorClass.getTimeSlots().isEmpty()) {
+            return List.of();
+        }
+
         List<Schedule> schedules = new ArrayList<>();
-        LocalDate date = tutorClass.getStartDate();
+        LocalDate date = startDate;
         int numOfLecture = tutorClass.getTotalLecture() - tutorClass.getLearned();
 
         // sort time slots by ascending order

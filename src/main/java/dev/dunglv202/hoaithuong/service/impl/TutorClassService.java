@@ -6,6 +6,7 @@ import dev.dunglv202.hoaithuong.dto.TutorClassDTO;
 import dev.dunglv202.hoaithuong.dto.UpdatedTutorClassDTO;
 import dev.dunglv202.hoaithuong.entity.Student;
 import dev.dunglv202.hoaithuong.entity.TutorClass;
+import dev.dunglv202.hoaithuong.entity.TutorClass_;
 import dev.dunglv202.hoaithuong.exception.ClientVisibleException;
 import dev.dunglv202.hoaithuong.mapper.TutorClassMapper;
 import dev.dunglv202.hoaithuong.model.TutorClassCriteria;
@@ -13,6 +14,7 @@ import dev.dunglv202.hoaithuong.repository.StudentRepository;
 import dev.dunglv202.hoaithuong.repository.TutorClassRepository;
 import dev.dunglv202.hoaithuong.service.ScheduleService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,7 +47,8 @@ public class TutorClassService {
     }
 
     public List<TutorClassDTO> getAllClasses(TutorClassCriteria criteria) {
-        return tutorClassRepository.findAll(joinFetch().and(criteria.toSpecification()))
+        Sort activeFirst = Sort.by(Sort.Direction.DESC, TutorClass_.ACTIVE);
+        return tutorClassRepository.findAll(joinFetch().and(criteria.toSpecification()), activeFirst)
             .stream()
             .map(TutorClassDTO::new)
             .toList();

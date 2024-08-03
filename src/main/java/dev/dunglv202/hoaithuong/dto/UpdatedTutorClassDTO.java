@@ -27,8 +27,6 @@ public class UpdatedTutorClassDTO {
     @Length(max = 256, message = "{tutor_class.notes.length}")
     private String notes;
 
-    @NotNull(message = "{tutor_class.timeslots.required}")
-    @Size(min = 1, message = "{tutor_class.timeslots.required}")
     private Set<@Valid TimeSlot> timeSlots;
 
     private LocalDate startDate = LocalDate.now();

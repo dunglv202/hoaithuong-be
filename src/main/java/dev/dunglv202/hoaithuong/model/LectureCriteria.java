@@ -1,9 +1,6 @@
 package dev.dunglv202.hoaithuong.model;
 
-import dev.dunglv202.hoaithuong.entity.Lecture;
-import dev.dunglv202.hoaithuong.entity.Lecture_;
-import dev.dunglv202.hoaithuong.entity.Schedule_;
-import dev.dunglv202.hoaithuong.entity.TutorClass;
+import dev.dunglv202.hoaithuong.entity.*;
 import jakarta.persistence.criteria.Order;
 import jakarta.persistence.criteria.Path;
 import org.springframework.data.domain.Sort;
@@ -13,6 +10,14 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public class LectureCriteria {
+    public static Specification<Lecture> joinFetch() {
+        return (root, query, cb) -> {
+            root.fetch(Lecture_.tutorClass).fetch(TutorClass_.student);
+            root.fetch(Lecture_.schedule);
+            return cb.conjunction();
+        };
+    }
+
     public static Specification<Lecture> from(LocalDateTime from) {
         if (from == null) return Specification.where(null);
 

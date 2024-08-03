@@ -25,8 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static dev.dunglv202.hoaithuong.model.LectureCriteria.inRange;
-import static dev.dunglv202.hoaithuong.model.LectureCriteria.sortByStartTime;
+import static dev.dunglv202.hoaithuong.model.LectureCriteria.*;
 
 @Service
 @RequiredArgsConstructor
@@ -45,7 +44,7 @@ public class ReportService {
 
     private Workbook generateReportFile(ReportRange range) {
         Workbook workbook = new XSSFWorkbook();
-        List<Lecture> lectures = lectureRepository.findAll(inRange(range).and(sortByStartTime(Sort.Direction.ASC)));
+        List<Lecture> lectures = lectureRepository.findAll(joinFetch().and(inRange(range)).and(sortByStartTime(Sort.Direction.ASC)));
 
         // write report data
         writeGeneralReportSheet(workbook, lectures);

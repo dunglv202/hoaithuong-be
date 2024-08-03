@@ -15,13 +15,13 @@ import dev.dunglv202.hoaithuong.repository.TutorClassRepository;
 import dev.dunglv202.hoaithuong.service.ScheduleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-import static dev.dunglv202.hoaithuong.model.LectureCriteria.from;
-import static dev.dunglv202.hoaithuong.model.LectureCriteria.sortByStartTime;
+import static dev.dunglv202.hoaithuong.model.LectureCriteria.*;
 
 @Service
 @RequiredArgsConstructor
@@ -83,7 +83,11 @@ public class LectureService {
     }
 
     public List<LectureDTO> getAllLectures(ReportRange range) {
-        return lectureRepository.findAll(LectureCriteria.inRange(range).and(sortByStartTime(Sort.Direction.DESC)))
+        Specification<Lecture> criteria = Specification.allOf(
+            inRange(range),
+            sortByStartTime(Sort.Direction.DESC)
+        );
+        return lectureRepository.findAll(LectureCriteria.joinFetch().and(criteria))
             .stream()
             .map(LectureDTO::new)
             .toList();

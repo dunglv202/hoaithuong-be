@@ -13,6 +13,13 @@ public class TutorClassCriteria {
     private String keyword;
     private Boolean active;
 
+    public static Specification<TutorClass> joinFetch() {
+        return (root, query, cb) -> {
+            root.fetch(TutorClass_.student);
+            return cb.conjunction();
+        };
+    }
+
     public static Specification<TutorClass> containsKeyword(String keyword) {
         if (keyword == null || keyword.isBlank()) {
             return Specification.where(null);

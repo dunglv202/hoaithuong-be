@@ -19,6 +19,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.HashSet;
 import java.util.List;
 
+import static dev.dunglv202.hoaithuong.model.TutorClassCriteria.joinFetch;
+
 @Service
 @RequiredArgsConstructor
 public class TutorClassService {
@@ -43,7 +45,7 @@ public class TutorClassService {
     }
 
     public List<TutorClassDTO> getAllClasses(TutorClassCriteria criteria) {
-        return tutorClassRepository.findAll(criteria.toSpecification())
+        return tutorClassRepository.findAll(joinFetch().and(criteria.toSpecification()))
             .stream()
             .map(TutorClassDTO::new)
             .toList();

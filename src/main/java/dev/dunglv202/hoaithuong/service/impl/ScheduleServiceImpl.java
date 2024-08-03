@@ -30,7 +30,7 @@ public class ScheduleServiceImpl implements ScheduleService {
 
     @Override
     public List<ScheduleDTO> getSchedule(Range<LocalDate> range) {
-        return scheduleRepository.findAll(ScheduleCriteria.fetchAll().and(inRange(range)))
+        return scheduleRepository.findAll(ScheduleCriteria.joinFetch().and(inRange(range)))
             .stream()
             .map(ScheduleDTO::new)
             .toList();
@@ -59,7 +59,7 @@ public class ScheduleServiceImpl implements ScheduleService {
         Range<LocalDate> range = SimpleRange
             .from(firstSchedule.getStartTime().toLocalDate())
             .to(lastSchedule.getEndTime().toLocalDate());
-        scheduleRepository.findAll(ScheduleCriteria.fetchAll().and(inRange(range)));
+        scheduleRepository.findAll(ScheduleCriteria.joinFetch().and(inRange(range)));
         List<Schedule> activeSchedules = scheduleRepository.findAllInRange(
             firstSchedule.getStartTime().toLocalDate(),
             lastSchedule.getEndTime().toLocalDate()

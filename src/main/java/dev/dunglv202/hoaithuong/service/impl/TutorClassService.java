@@ -9,17 +9,19 @@ import dev.dunglv202.hoaithuong.entity.TutorClass;
 import dev.dunglv202.hoaithuong.entity.TutorClass_;
 import dev.dunglv202.hoaithuong.exception.ClientVisibleException;
 import dev.dunglv202.hoaithuong.mapper.TutorClassMapper;
+import dev.dunglv202.hoaithuong.model.Page;
+import dev.dunglv202.hoaithuong.model.Pagination;
 import dev.dunglv202.hoaithuong.model.TutorClassCriteria;
 import dev.dunglv202.hoaithuong.repository.StudentRepository;
 import dev.dunglv202.hoaithuong.repository.TutorClassRepository;
 import dev.dunglv202.hoaithuong.service.ScheduleService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
-import java.util.List;
 
 import static dev.dunglv202.hoaithuong.model.TutorClassCriteria.joinFetch;
 
@@ -46,12 +48,13 @@ public class TutorClassService {
         scheduleService.addClassToMySchedule(tutorClass, newTutorClassDTO.getStartDate());
     }
 
-    public List<TutorClassDTO> getAllClasses(TutorClassCriteria criteria) {
+    public Page<TutorClassDTO> getAllClasses(TutorClassCriteria criteria, Pagination pagination) {
         Sort activeFirst = Sort.by(Sort.Direction.DESC, TutorClass_.ACTIVE);
-        return tutorClassRepository.findAll(joinFetch().and(criteria.toSpecification()), activeFirst)
-            .stream()
-            .map(TutorClassDTO::new)
-            .toList();
+        Pageable pageable = pagination.withSort(activeFirst).pageable();
+        return new Page<>(
+            tutorClassRepository.findAll(joinFetch().and(criteria.toSpecification()), pageable)
+                .map(TutorClassDTO::new)
+        );
     }
 
     @Transactional

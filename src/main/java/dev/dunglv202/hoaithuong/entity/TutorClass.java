@@ -15,6 +15,10 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
+@NamedEntityGraph(
+    name = "TutorClass.student",
+    attributeNodes = @NamedAttributeNode(TutorClass_.STUDENT)
+)
 public class TutorClass extends Auditable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

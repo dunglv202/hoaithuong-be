@@ -23,8 +23,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
 
-import static dev.dunglv202.hoaithuong.model.TutorClassCriteria.joinFetch;
-
 @Service
 @RequiredArgsConstructor
 public class TutorClassService {
@@ -52,7 +50,7 @@ public class TutorClassService {
         Sort activeFirst = Sort.by(Sort.Direction.DESC, TutorClass_.ACTIVE);
         Pageable pageable = pagination.withSort(activeFirst).pageable();
         return new Page<>(
-            tutorClassRepository.findAll(joinFetch().and(criteria.toSpecification()), pageable)
+            tutorClassRepository.findAll(criteria.toSpecification(), pageable)
                 .map(TutorClassDTO::new)
         );
     }

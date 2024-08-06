@@ -10,7 +10,7 @@ import org.springframework.data.domain.Sort;
 @Getter
 @Setter
 public class Pagination {
-    private int page = 0;
+    private int page = 1;
     private int size = 20;
     @Setter(AccessLevel.PRIVATE)
     private Sort sort;
@@ -26,6 +26,7 @@ public class Pagination {
     }
 
     public Pageable pageable() {
-        return PageRequest.of(page, size).withSort(sort);
+        if (sort == null) return Pageable.ofSize(size).withPage(page - 1);
+        return PageRequest.of(page - 1, size).withSort(sort);
     }
 }

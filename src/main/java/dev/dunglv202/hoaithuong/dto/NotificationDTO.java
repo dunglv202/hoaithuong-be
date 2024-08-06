@@ -1,21 +1,15 @@
 package dev.dunglv202.hoaithuong.dto;
 
-import dev.dunglv202.hoaithuong.entity.Notification;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.time.Instant;
 
 @Getter
+@Setter
 public class NotificationDTO {
-    private final long id;
-    private final String content;
-    private final boolean read;
-    private final Instant timestamp;
-
-    public NotificationDTO(Notification notification) {
-        id = notification.getId();
-        content = notification.getContent();
-        read = notification.isRead();
-        timestamp = notification.getTimestamp();
-    }
+    private long id;
+    private String content;
+    private boolean read;
+    private Instant timestamp;
 }

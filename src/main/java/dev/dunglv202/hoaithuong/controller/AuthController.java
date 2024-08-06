@@ -15,7 +15,7 @@ import static dev.dunglv202.hoaithuong.config.SecurityConfig.REFRESH_TOKEN_COOKI
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AuthController {
-    public static final String COOKIE_PATH_ACCESS = "/api";
+    public static final String COOKIE_PATH_ACCESS = "/";
     public static final String COOKIE_PATH_REFRESH = "/api/auth/refresh";
 
     private final AuthService authService;

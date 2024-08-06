@@ -1,23 +1,35 @@
 package dev.dunglv202.hoaithuong.controller;
 
 import dev.dunglv202.hoaithuong.dto.NotificationWrapperDTO;
+import dev.dunglv202.hoaithuong.model.Pagination;
+import dev.dunglv202.hoaithuong.repository.UserRepository;
 import dev.dunglv202.hoaithuong.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/notifications")
-@PreAuthorize("isAuthenticated()")
 @RequiredArgsConstructor
 public class NotificationController {
+    private final UserRepository userRepository;
     private final NotificationService notificationService;
 
     @GetMapping
-    public NotificationWrapperDTO getNotifications(@RequestParam(required = false, defaultValue = "0") int page) {
-        return notificationService.getNotifications(page);
+    @PreAuthorize("isAuthenticated()")
+    public NotificationWrapperDTO getNotifications(Pagination pagination) {
+        return notificationService.getNotifications(pagination.limit(20));
+    }
+
+    @PostMapping("/read_all")
+    @PreAuthorize("isAuthenticated()")
+    public void markAllAsRead() {
+        notificationService.markAllAsRead();
+    }
+
+    @PostMapping("/{id}/read")
+    @PreAuthorize("isAuthenticated()")
+    public void readNotification(@PathVariable long id) {
+        notificationService.readNotification(id);
     }
 }

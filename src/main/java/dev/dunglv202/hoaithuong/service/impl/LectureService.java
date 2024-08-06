@@ -2,6 +2,7 @@ package dev.dunglv202.hoaithuong.service.impl;
 
 import dev.dunglv202.hoaithuong.dto.LectureDTO;
 import dev.dunglv202.hoaithuong.dto.NewLectureDTO;
+import dev.dunglv202.hoaithuong.dto.UpdatedLecture;
 import dev.dunglv202.hoaithuong.entity.Lecture;
 import dev.dunglv202.hoaithuong.entity.Lecture_;
 import dev.dunglv202.hoaithuong.entity.Schedule;
@@ -91,5 +92,11 @@ public class LectureService {
             .stream()
             .map(LectureDTO::new)
             .toList();
+    }
+
+    public void updateLecture(UpdatedLecture updatedLecture) {
+        Lecture lecture = lectureRepository.findById(updatedLecture.getId())
+            .orElseThrow();
+        lectureRepository.save(lecture.merge(updatedLecture));
     }
 }

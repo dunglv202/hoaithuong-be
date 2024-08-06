@@ -2,6 +2,7 @@ package dev.dunglv202.hoaithuong.controller;
 
 import dev.dunglv202.hoaithuong.dto.LectureDTO;
 import dev.dunglv202.hoaithuong.dto.NewLectureDTO;
+import dev.dunglv202.hoaithuong.dto.UpdatedLecture;
 import dev.dunglv202.hoaithuong.model.ReportRange;
 import dev.dunglv202.hoaithuong.service.impl.LectureService;
 import jakarta.validation.Valid;
@@ -27,5 +28,12 @@ public class LectureController {
     @PreAuthorize("isAuthenticated()")
     public List<LectureDTO> getAllLectures(@Valid ReportRange range) {
         return lectureService.getAllLectures(range);
+    }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("isAuthenticated()")
+    public void updateLecture(@Valid @RequestBody UpdatedLecture updatedLecture, @PathVariable long id) {
+        updatedLecture.setId(id);
+        lectureService.updateLecture(updatedLecture);
     }
 }

@@ -1,5 +1,6 @@
 package dev.dunglv202.hoaithuong.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.annotation.Nonnull;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -15,6 +16,7 @@ public class TimeSlot implements Comparable<TimeSlot> {
     private DayOfWeek weekday;
 
     @NotNull(message = "{timeslot.start_time.required}")
+    @JsonFormat(pattern = "HH:mm")
     private LocalTime startTime;
 
     @Override

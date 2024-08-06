@@ -20,6 +20,9 @@ public class NewLectureDTO {
     @NotBlank(message = "{lecture.topic.required}")
     private String topic;
 
+    @Length(max = 256, message = "{lecture.comment.length}")
+    private String comment;
+
     @Length(max = 256, message = "{lecture.notes.length}")
     private String notes;
 
@@ -28,6 +31,7 @@ public class NewLectureDTO {
     public Lecture toEntity() {
         Lecture lecture = new Lecture();
         lecture.setTopic(topic);
+        lecture.setComment(comment);
         lecture.setNotes(notes);
         return lecture;
     }

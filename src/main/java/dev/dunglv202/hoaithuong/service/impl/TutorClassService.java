@@ -48,7 +48,8 @@ public class TutorClassService {
 
     public Page<TutorClassDTO> getAllClasses(TutorClassCriteria criteria, Pagination pagination) {
         Sort activeFirst = Sort.by(Sort.Direction.DESC, TutorClass_.ACTIVE);
-        Pageable pageable = pagination.withSort(activeFirst).pageable();
+        Sort moreLearnedFirst = Sort.by(Sort.Direction.DESC, TutorClass_.LEARNED);
+        Pageable pageable = pagination.withSort(activeFirst.and(moreLearnedFirst)).pageable();
         return new Page<>(
             tutorClassRepository.findAll(criteria.toSpecification(), pageable)
                 .map(TutorClassDTO::new)

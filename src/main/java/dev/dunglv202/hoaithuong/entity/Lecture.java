@@ -1,6 +1,8 @@
 package dev.dunglv202.hoaithuong.entity;
 
+import dev.dunglv202.hoaithuong.dto.UpdatedLecture;
 import dev.dunglv202.hoaithuong.helper.DateTimeFmt;
+import dev.dunglv202.hoaithuong.mapper.LectureMapper;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -22,6 +24,8 @@ public class Lecture extends Auditable {
 
     private String topic;
 
+    private String comment;
+
     private String notes;
 
     private Integer lectureNo;
@@ -39,5 +43,10 @@ public class Lecture extends Auditable {
 
     public String getGeneratedCode() {
         return tutorClass.getCode() + TEACHER_CODE + DateTimeFmt.MMM.format(getStartTime()).toUpperCase() + lectureNo;
+    }
+
+    public Lecture merge(UpdatedLecture updatedLecture) {
+        LectureMapper.INSTANCE.mergeLecture(this, updatedLecture);
+        return this;
     }
 }

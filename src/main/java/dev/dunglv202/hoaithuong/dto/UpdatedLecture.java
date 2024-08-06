@@ -1,5 +1,6 @@
 package dev.dunglv202.hoaithuong.dto;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
@@ -8,6 +9,10 @@ import org.hibernate.validator.constraints.Length;
 @Setter
 public class UpdatedLecture {
     private long id;
+
+    @NotBlank(message = "{lecture.topic.required}")
+    @Length(max = 128, message = "{lecture.topic.length}")
+    private String topic;
 
     @Length(max = 256, message = "{lecture.comment.length}")
     private String comment;

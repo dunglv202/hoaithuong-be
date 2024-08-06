@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 
 @Getter
 public class LectureDTO {
+    private final long id;
     private final LocalDateTime startTime;
     private final LocalDateTime endTime;
     private final String classCode;
@@ -18,6 +19,7 @@ public class LectureDTO {
     private final String notes;
 
     public LectureDTO(Lecture lecture) {
+        id = lecture.getId();
         startTime = lecture.getStartTime();
         endTime = lecture.getEndTime();
         classCode = lecture.getTutorClass().getCode();

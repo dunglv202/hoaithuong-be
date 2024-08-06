@@ -18,6 +18,7 @@ public class NewLectureDTO {
     private LocalDateTime startTime;
 
     @NotBlank(message = "{lecture.topic.required}")
+    @Length(max = 128, message = "{lecture.topic.length}")
     private String topic;
 
     @Length(max = 256, message = "{lecture.comment.length}")

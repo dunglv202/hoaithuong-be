@@ -1,10 +1,12 @@
 package dev.dunglv202.hoaithuong.config;
 
 import dev.dunglv202.hoaithuong.filter.JwtFilter;
+import dev.dunglv202.hoaithuong.model.Oauth2AuthHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -33,10 +35,13 @@ public class SecurityConfig {
     public static final Duration REFRESH_TOKEN_LIFETIME = Duration.ofDays(30);
 
     private final JwtFilter jwtFilter;
+    private final Oauth2AuthHandler oauth2AuthHandler;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http.cors(configurer -> configurer.configurationSource(corsConfigurationSource()))
+            .oauth2Login(oauth2 -> oauth2.successHandler(oauth2AuthHandler))
+            .oauth2Client(Customizer.withDefaults())
             .csrf(AbstractHttpConfigurer::disable)
             .sessionManagement(conf -> conf.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)

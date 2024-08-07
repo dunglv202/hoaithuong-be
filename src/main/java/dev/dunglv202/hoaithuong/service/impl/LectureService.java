@@ -3,16 +3,14 @@ package dev.dunglv202.hoaithuong.service.impl;
 import dev.dunglv202.hoaithuong.dto.LectureDTO;
 import dev.dunglv202.hoaithuong.dto.NewLectureDTO;
 import dev.dunglv202.hoaithuong.dto.UpdatedLecture;
-import dev.dunglv202.hoaithuong.entity.Lecture;
-import dev.dunglv202.hoaithuong.entity.Lecture_;
-import dev.dunglv202.hoaithuong.entity.Schedule;
-import dev.dunglv202.hoaithuong.entity.TutorClass;
+import dev.dunglv202.hoaithuong.entity.*;
 import dev.dunglv202.hoaithuong.exception.ClientVisibleException;
 import dev.dunglv202.hoaithuong.model.LectureCriteria;
 import dev.dunglv202.hoaithuong.model.ReportRange;
 import dev.dunglv202.hoaithuong.repository.LectureRepository;
 import dev.dunglv202.hoaithuong.repository.ScheduleRepository;
 import dev.dunglv202.hoaithuong.repository.TutorClassRepository;
+import dev.dunglv202.hoaithuong.service.NotificationService;
 import dev.dunglv202.hoaithuong.service.ScheduleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
@@ -31,6 +29,7 @@ public class LectureService {
     private final LectureRepository lectureRepository;
     private final ScheduleRepository scheduleRepository;
     private final ScheduleService scheduleService;
+    private final NotificationService notificationService;
 
     @Transactional
     public void addNewLecture(NewLectureDTO newLectureDTO) {
@@ -77,6 +76,20 @@ public class LectureService {
             lecture.setLectureNo(lecturesAfterThis.get(0).getLectureNo());
             lecturesAfterThis.forEach(lec -> lec.setLectureNo(lec.getLectureNo() + 1));
             lectureRepository.saveAll(lecturesAfterThis);
+        }
+
+        // send alert notification
+        if (tutorClass.getLearned() == 18) {
+            String noti = String.format(
+                "Your class: %s - %s has reached lecture of %d/%d",
+                tutorClass.getCode(),
+                tutorClass.getStudent().getName(),
+                tutorClass.getLearned(),
+                tutorClass.getTotalLecture()
+            );
+            notificationService.addNotification(
+                Notification.forUser(tutorClass.getCreatedBy()).content(noti)
+            );
         }
 
         lectureRepository.save(lecture);

@@ -2,7 +2,6 @@ package dev.dunglv202.hoaithuong.controller;
 
 import dev.dunglv202.hoaithuong.dto.NotificationWrapperDTO;
 import dev.dunglv202.hoaithuong.model.Pagination;
-import dev.dunglv202.hoaithuong.repository.UserRepository;
 import dev.dunglv202.hoaithuong.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -12,7 +11,6 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/notifications")
 @RequiredArgsConstructor
 public class NotificationController {
-    private final UserRepository userRepository;
     private final NotificationService notificationService;
 
     @GetMapping

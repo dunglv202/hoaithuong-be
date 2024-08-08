@@ -4,8 +4,10 @@ import dev.dunglv202.hoaithuong.dto.ReportDTO;
 import dev.dunglv202.hoaithuong.entity.Lecture;
 import dev.dunglv202.hoaithuong.entity.TutorClass;
 import dev.dunglv202.hoaithuong.helper.DateTimeFmt;
+import dev.dunglv202.hoaithuong.model.LectureCriteria;
 import dev.dunglv202.hoaithuong.model.ReportRange;
 import dev.dunglv202.hoaithuong.repository.LectureRepository;
+import dev.dunglv202.hoaithuong.repository.StudentRepository;
 import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -15,6 +17,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
@@ -31,6 +34,7 @@ import static dev.dunglv202.hoaithuong.model.LectureCriteria.*;
 @RequiredArgsConstructor
 public class ReportService {
     private final LectureRepository lectureRepository;
+    private final StudentRepository studentRepository;
 
     public Resource exportXlsx(ReportRange range) {
         try (Workbook workbook = generateReportFile(range)) {
@@ -156,21 +160,23 @@ public class ReportService {
             topic.setCellValue(lecture.getTopic());
 
             Cell notes = row.createCell(7);
-            notes.setCellValue(lecture.getNotes());
+            notes.setCellValue(lecture.getComment());
 
             Cell duration = row.createCell(8);
             duration.setCellValue(lecture.getTutorClass().getDurationInMinute());
 
             Cell paid = row.createCell(9);
-            paid.setCellValue(lecture.getTutorClass().getPayForLecture());
+            paid.setCellValue((double) lecture.getTutorClass().getPayForLecture() / 1000);
         }
     }
 
     public ReportDTO getReport(ReportRange range) {
-        ReportDTO reportDTO = new ReportDTO();
-        int totalEarned = lectureRepository.getTotalEarnedByRange(range);
-        reportDTO.setTotalEarned(totalEarned);
+        Specification<Lecture> criteria = Specification.allOf(
+            inRange(range),
+            sortByStartTime(Sort.Direction.DESC)
+        );
+        List<Lecture> lectures = lectureRepository.findAll(LectureCriteria.joinFetch().and(criteria));
 
-        return reportDTO;
+        return new ReportDTO(lectures);
     }
 }

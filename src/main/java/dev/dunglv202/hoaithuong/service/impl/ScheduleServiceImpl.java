@@ -5,6 +5,7 @@ import dev.dunglv202.hoaithuong.entity.Schedule;
 import dev.dunglv202.hoaithuong.entity.TutorClass;
 import dev.dunglv202.hoaithuong.exception.ClientVisibleException;
 import dev.dunglv202.hoaithuong.exception.ConflictScheduleException;
+import dev.dunglv202.hoaithuong.mapper.ScheduleMapper;
 import dev.dunglv202.hoaithuong.model.Range;
 import dev.dunglv202.hoaithuong.model.ScheduleCriteria;
 import dev.dunglv202.hoaithuong.model.SimpleRange;
@@ -32,7 +33,7 @@ public class ScheduleServiceImpl implements ScheduleService {
     public List<ScheduleDTO> getSchedule(Range<LocalDate> range) {
         return scheduleRepository.findAll(ScheduleCriteria.joinFetch().and(inRange(range)))
             .stream()
-            .map(ScheduleDTO::new)
+            .map(ScheduleMapper.INSTANCE::toScheduleDTO)
             .toList();
     }
 

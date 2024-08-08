@@ -1,6 +1,5 @@
 package dev.dunglv202.hoaithuong.dto;
 
-import dev.dunglv202.hoaithuong.entity.Lecture;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -28,12 +27,4 @@ public class NewLectureDTO {
     private String notes;
 
     private Long scheduleId;
-
-    public Lecture toEntity() {
-        Lecture lecture = new Lecture();
-        lecture.setTopic(topic);
-        lecture.setComment(comment);
-        lecture.setNotes(notes);
-        return lecture;
-    }
 }

@@ -1,6 +1,5 @@
 package dev.dunglv202.hoaithuong.dto;
 
-import dev.dunglv202.hoaithuong.entity.TutorClass;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -15,15 +14,4 @@ public class TutorClassDTO {
     private Integer learned;
     private String notes;
     private boolean active;
-
-    public TutorClassDTO(TutorClass tutorClass) {
-        this.id = tutorClass.getId();
-        this.code = tutorClass.getCode();
-        this.student = new StudentDTO(tutorClass.getStudent());
-        this.level = tutorClass.getLevel();
-        this.totalLecture = tutorClass.getTotalLecture();
-        this.learned = tutorClass.getLearned();
-        this.notes = tutorClass.getNotes();
-        this.active = tutorClass.isActive();
-    }
 }

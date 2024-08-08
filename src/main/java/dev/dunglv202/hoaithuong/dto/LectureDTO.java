@@ -1,33 +1,21 @@
 package dev.dunglv202.hoaithuong.dto;
 
-import dev.dunglv202.hoaithuong.entity.Lecture;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
 @Getter
+@Setter
 public class LectureDTO {
-    private final long id;
-    private final LocalDateTime startTime;
-    private final LocalDateTime endTime;
-    private final String classCode;
-    private final StudentDTO student;
-    private final String topic;
-    private final Integer lectureNo;
-    private final int totalLecture;
-    private final String comment;
-    private final String notes;
-
-    public LectureDTO(Lecture lecture) {
-        id = lecture.getId();
-        startTime = lecture.getStartTime();
-        endTime = lecture.getEndTime();
-        classCode = lecture.getTutorClass().getCode();
-        student = new StudentDTO(lecture.getTutorClass().getStudent());
-        topic = lecture.getTopic();
-        lectureNo = lecture.getLectureNo();
-        totalLecture = lecture.getTutorClass().getTotalLecture();
-        comment = lecture.getComment();
-        notes = lecture.getNotes();
-    }
+    private long id;
+    private LocalDateTime startTime;
+    private LocalDateTime endTime;
+    private String classCode;
+    private StudentDTO student;
+    private String topic;
+    private Integer lectureNo;
+    private int totalLecture;
+    private String comment;
+    private String notes;
 }

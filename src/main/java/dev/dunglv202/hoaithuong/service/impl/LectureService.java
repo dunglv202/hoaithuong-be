@@ -5,6 +5,7 @@ import dev.dunglv202.hoaithuong.dto.NewLectureDTO;
 import dev.dunglv202.hoaithuong.dto.UpdatedLecture;
 import dev.dunglv202.hoaithuong.entity.*;
 import dev.dunglv202.hoaithuong.exception.ClientVisibleException;
+import dev.dunglv202.hoaithuong.mapper.LectureMapper;
 import dev.dunglv202.hoaithuong.model.LectureCriteria;
 import dev.dunglv202.hoaithuong.model.ReportRange;
 import dev.dunglv202.hoaithuong.repository.LectureRepository;
@@ -33,7 +34,7 @@ public class LectureService {
 
     @Transactional
     public void addNewLecture(NewLectureDTO newLectureDTO) {
-        Lecture lecture = newLectureDTO.toEntity();
+        Lecture lecture = LectureMapper.INSTANCE.toLecture(newLectureDTO);
 
         // set class
         TutorClass tutorClass = tutorClassRepository.getReferenceById(newLectureDTO.getClassId());
@@ -103,7 +104,7 @@ public class LectureService {
         );
         return lectureRepository.findAll(LectureCriteria.joinFetch().and(criteria))
             .stream()
-            .map(LectureDTO::new)
+            .map(LectureMapper.INSTANCE::toLectureDTO)
             .toList();
     }
 

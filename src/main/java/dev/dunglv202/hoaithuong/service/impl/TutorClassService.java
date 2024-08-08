@@ -32,7 +32,7 @@ public class TutorClassService {
 
     @Transactional
     public void addNewClass(NewTutorClassDTO newTutorClassDTO) {
-        TutorClass tutorClass = newTutorClassDTO.toEntity();
+        TutorClass tutorClass = TutorClassMapper.INSTANCE.toTutorClass(newTutorClassDTO);
 
         Student student = studentRepository.findById(newTutorClassDTO.getStudentId())
             .orElseThrow(() -> new ClientVisibleException("{student.not_found}"));
@@ -52,7 +52,7 @@ public class TutorClassService {
         Pageable pageable = pagination.withSort(activeFirst.and(moreLearnedFirst)).pageable();
         return new Page<>(
             tutorClassRepository.findAll(criteria.toSpecification(), pageable)
-                .map(TutorClassDTO::new)
+                .map(TutorClassMapper.INSTANCE::toTutorClassDTO)
         );
     }
 

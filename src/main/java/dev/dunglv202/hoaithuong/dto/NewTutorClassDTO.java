@@ -1,6 +1,5 @@
 package dev.dunglv202.hoaithuong.dto;
 
-import dev.dunglv202.hoaithuong.entity.TutorClass;
 import dev.dunglv202.hoaithuong.model.TimeSlot;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -12,7 +11,6 @@ import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.Set;
 
 import static dev.dunglv202.hoaithuong.constant.Configuration.DEFAULT_LECTURE_DURATION_IN_MINUTE;
@@ -48,18 +46,4 @@ public class NewTutorClassDTO {
     private Set<@Valid TimeSlot> timeSlots;
 
     private LocalDate startDate = LocalDate.now();
-
-    public TutorClass toEntity() {
-        TutorClass tutorClass = new TutorClass();
-        tutorClass.setCode(code);
-        tutorClass.setNotes(notes);
-        tutorClass.setTotalLecture(totalLecture);
-        tutorClass.setLevel(level);
-        tutorClass.setLearned(learned);
-        tutorClass.setInitialLearned(learned);
-        tutorClass.setDurationInMinute(durationInMinute);
-        tutorClass.setPayForLecture(payForLecture);
-        tutorClass.setTimeSlots(new ArrayList<>(timeSlots.stream().sorted().toList()));
-        return tutorClass;
-    }
 }

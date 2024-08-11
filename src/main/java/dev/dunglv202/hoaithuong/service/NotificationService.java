@@ -12,4 +12,6 @@ public interface NotificationService {
     void markAllAsRead();
 
     void readNotification(long id);
+
+    void resolveNotification(long id);
 }

@@ -92,6 +92,16 @@ public class LectureService {
                 Notification.forUser(tutorClass.getCreatedBy()).content(noti)
             );
         }
+        if (tutorClass.getLearned() == tutorClass.getTotalLecture()) {
+            String noti = String.format(
+                "%s - %s has just reached its last lecture. Do you want to renew this class?",
+                tutorClass.getCode(),
+                tutorClass.getStudent().getName()
+            );
+            notificationService.addNotification(
+                Notification.forUser(tutorClass.getCreatedBy()).content(noti)
+            );
+        }
 
         lectureRepository.save(lecture);
         tutorClassRepository.save(tutorClass);

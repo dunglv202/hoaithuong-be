@@ -30,10 +30,4 @@ public class NotificationController {
     public void readNotification(@PathVariable long id) {
         notificationService.readNotification(id);
     }
-
-    @PostMapping("/{id}/resolve")
-    @PreAuthorize("isAuthenticated()")
-    public void markNotiAsResolved(@PathVariable long id) {
-        notificationService.resolveNotification(id);
-    }
 }

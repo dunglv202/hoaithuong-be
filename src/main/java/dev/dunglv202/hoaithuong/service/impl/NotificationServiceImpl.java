@@ -57,14 +57,6 @@ public class NotificationServiceImpl implements NotificationService {
     public void readNotification(long id) {
         Notification notification = notificationRepository.findById(id).orElseThrow();
         if (notification.isRead()) throw new RuntimeException("{notification.already_read}");
-        notification.setRead(true);
-        notificationRepository.save(notification);
-    }
-
-    @Override
-    public void resolveNotification(long id) {
-        Notification notification = notificationRepository.findById(id).orElseThrow();
-        notification.setResolved(true);
-        notificationRepository.save(notification);
+        notificationRepository.save(notification.read());
     }
 }

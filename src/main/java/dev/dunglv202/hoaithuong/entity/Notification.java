@@ -1,17 +1,16 @@
 package dev.dunglv202.hoaithuong.entity;
 
-import dev.dunglv202.hoaithuong.constant.NotiType;
 import jakarta.persistence.*;
 import lombok.Getter;
-import lombok.Setter;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
+import lombok.NoArgsConstructor;
 
 import java.time.Instant;
 
+import static lombok.AccessLevel.PROTECTED;
+
 @Entity
 @Getter
-@Setter
+@NoArgsConstructor(access = PROTECTED)
 public class Notification extends Auditable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,19 +20,24 @@ public class Notification extends Auditable {
 
     private boolean read = false;
 
-    @Enumerated(EnumType.STRING)
-    private NotiType type;
-
-    @JdbcTypeCode(SqlTypes.JSON)
-    private Object payload;
-
-    /**
-     * Processed by user (for notifications that require user's action). Example: REVIEW_CLASS...
-     */
-    private boolean resolved;
-
     private Instant timestamp = Instant.now();
 
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;
+
+    public static Notification forUser(User user) {
+        Notification notification = new Notification();
+        notification.user = user;
+        return notification;
+    }
+
+    public Notification content(String content) {
+        this.content = content;
+        return this;
+    }
+
+    public Notification read() {
+        this.read = true;
+        return this;
+    }
 }

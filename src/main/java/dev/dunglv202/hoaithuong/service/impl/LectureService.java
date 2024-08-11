@@ -7,7 +7,6 @@ import dev.dunglv202.hoaithuong.entity.*;
 import dev.dunglv202.hoaithuong.exception.ClientVisibleException;
 import dev.dunglv202.hoaithuong.mapper.LectureMapper;
 import dev.dunglv202.hoaithuong.model.LectureCriteria;
-import dev.dunglv202.hoaithuong.model.NotiBuilder;
 import dev.dunglv202.hoaithuong.model.ReportRange;
 import dev.dunglv202.hoaithuong.repository.LectureRepository;
 import dev.dunglv202.hoaithuong.repository.ScheduleRepository;
@@ -22,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-import static dev.dunglv202.hoaithuong.constant.NotiType.RENEW_CLASS;
 import static dev.dunglv202.hoaithuong.model.LectureCriteria.*;
 
 @Service
@@ -90,22 +88,9 @@ public class LectureService {
                 tutorClass.getLearned(),
                 tutorClass.getTotalLecture()
             );
-            Notification notification = NotiBuilder.forUser(tutorClass.getCreatedBy())
-                .content(noti)
-                .build();
-            notificationService.addNotification(notification);
-        } else if (tutorClass.getTotalLecture() == tutorClass.getLearned()) {
-            String noti = String.format(
-                "%s - %s has just reached its last lecture. Do you want to renew this class?",
-                tutorClass.getCode(),
-                tutorClass.getStudent().getName()
+            notificationService.addNotification(
+                Notification.forUser(tutorClass.getCreatedBy()).content(noti)
             );
-            Notification notification = NotiBuilder.forUser(tutorClass.getCreatedBy())
-                .content(noti)
-                .type(RENEW_CLASS)
-                .payload(tutorClass.getId().toString())
-                .build();
-            notificationService.addNotification(notification);
         }
 
         lectureRepository.save(lecture);

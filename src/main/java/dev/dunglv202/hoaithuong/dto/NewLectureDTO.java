@@ -1,10 +1,12 @@
 package dev.dunglv202.hoaithuong.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
 
@@ -14,6 +16,7 @@ public class NewLectureDTO {
     @NotNull(message = "{lecture.class.required}")
     private Long classId;
 
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime startTime;
 
     @NotBlank(message = "{lecture.topic.required}")

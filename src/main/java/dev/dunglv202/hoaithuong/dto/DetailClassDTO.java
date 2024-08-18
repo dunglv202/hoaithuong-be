@@ -19,4 +19,5 @@ public class DetailClassDTO {
     private int durationInMinute;
     private int payForLecture;
     private List<TimeSlot> timeSlots;
+    private boolean active;
 }

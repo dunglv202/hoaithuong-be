@@ -60,6 +60,10 @@ public class TutorClassService {
     public void updateClass(UpdatedTutorClassDTO updated) {
         TutorClass old = tutorClassRepository.findById(updated.getId()).orElseThrow();
 
+        if (!old.isActive()) {
+            throw new ClientVisibleException("{tutor_class.update_not_allowed}");
+        }
+
         if (!old.getCode().equals(updated.getCode()) && tutorClassRepository.existsByCode(updated.getCode())) {
             throw new ClientVisibleException("{tutor_class.code.existed}");
         }

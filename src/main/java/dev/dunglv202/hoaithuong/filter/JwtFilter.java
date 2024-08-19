@@ -3,6 +3,7 @@ package dev.dunglv202.hoaithuong.filter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.dunglv202.hoaithuong.config.SecurityConfig;
 import dev.dunglv202.hoaithuong.dto.ApiError;
+import dev.dunglv202.hoaithuong.helper.AuthHelper;
 import dev.dunglv202.hoaithuong.helper.JwtProvider;
 import dev.dunglv202.hoaithuong.model.AppUser;
 import io.jsonwebtoken.Claims;
@@ -32,6 +33,7 @@ import static dev.dunglv202.hoaithuong.constant.ApiErrorCode.EXPIRED_ACCESS_TOKE
 @Component
 @RequiredArgsConstructor
 public class JwtFilter extends OncePerRequestFilter {
+    private final AuthHelper authHelper;
     private final JwtProvider jwtProvider;
 
     @Override
@@ -55,6 +57,7 @@ public class JwtFilter extends OncePerRequestFilter {
                     return;
                 } catch (JwtException e) {
                     String resp = new ObjectMapper().writeValueAsString(ApiError.withError("{access_token.invalid}"));
+                    authHelper.removeAuthCookies(response);
                     response.setStatus(HttpStatus.UNAUTHORIZED.value());
                     response.getWriter().write(resp);
                     return;

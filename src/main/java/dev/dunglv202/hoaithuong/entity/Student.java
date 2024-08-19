@@ -6,6 +6,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.Formula;
 
 @Entity
 @Getter
@@ -16,6 +17,9 @@ public class Student extends Auditable {
     private Long id;
 
     private String name;
+
+    @Formula("(SELECT COUNT(*) > 0 FROM tutor_class c WHERE c.student_id = id AND c.active = TRUE)")
+    private boolean active;
 
     private String notes;
 }

@@ -2,12 +2,13 @@ package dev.dunglv202.hoaithuong.service.impl;
 
 import dev.dunglv202.hoaithuong.dto.ReportDTO;
 import dev.dunglv202.hoaithuong.entity.Lecture;
+import dev.dunglv202.hoaithuong.entity.Schedule;
 import dev.dunglv202.hoaithuong.entity.TutorClass;
 import dev.dunglv202.hoaithuong.helper.DateTimeFmt;
 import dev.dunglv202.hoaithuong.model.LectureCriteria;
 import dev.dunglv202.hoaithuong.model.ReportRange;
 import dev.dunglv202.hoaithuong.repository.LectureRepository;
-import dev.dunglv202.hoaithuong.repository.StudentRepository;
+import dev.dunglv202.hoaithuong.repository.ScheduleRepository;
 import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -34,7 +35,7 @@ import static dev.dunglv202.hoaithuong.model.LectureCriteria.*;
 @RequiredArgsConstructor
 public class ReportService {
     private final LectureRepository lectureRepository;
-    private final StudentRepository studentRepository;
+    private final ScheduleRepository scheduleRepository;
 
     public Resource exportXlsx(ReportRange range) {
         try (Workbook workbook = generateReportFile(range)) {
@@ -175,8 +176,9 @@ public class ReportService {
             inRange(range),
             sortByStartTime(Sort.Direction.DESC)
         );
+        List<Schedule> schedules = scheduleRepository.findAllInRange(range.getFrom(), range.getTo());
         List<Lecture> lectures = lectureRepository.findAll(LectureCriteria.joinFetch().and(criteria));
 
-        return new ReportDTO(lectures);
+        return new ReportDTO(schedules, lectures);
     }
 }

@@ -41,4 +41,11 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long>, JpaSp
         WHERE s.tutorClass = :tutorClass AND CAST(s.startTime AS DATE) >= :startDate
     """)
     void deleteAllFromDateByClass(@Param("tutorClass") TutorClass tutorClass, @Param("startDate") LocalDate startDate);
+
+    @Query("""
+        SELECT SUM(s.tutorClass.payForLecture)
+        FROM Schedule s
+        WHERE CAST(s.startTime AS DATE) BETWEEN :from AND :to
+    """)
+    int getEstimatedTotalInRange(@Param("from") LocalDate from, @Param("to") LocalDate to);
 }

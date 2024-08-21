@@ -1,7 +1,6 @@
 package dev.dunglv202.hoaithuong.dto;
 
 import dev.dunglv202.hoaithuong.entity.Lecture;
-import dev.dunglv202.hoaithuong.entity.Schedule;
 import dev.dunglv202.hoaithuong.entity.TutorClass;
 import dev.dunglv202.hoaithuong.mapper.LectureMapper;
 import lombok.Getter;
@@ -19,14 +18,9 @@ public class ReportDTO {
     private int totalStudents;
     private List<LectureDTO> lectures;
 
-    public ReportDTO(List<Schedule> schedules, List<Lecture> lectures) {
+    public ReportDTO(List<Lecture> lectures) {
         this.totalEarned = lectures.stream()
             .map(Lecture::getTutorClass)
-            .map(TutorClass::getPayForLecture)
-            .reduce(Integer::sum)
-            .orElse(0);
-        this.estimatedTotal = schedules.stream()
-            .map(Schedule::getTutorClass)
             .map(TutorClass::getPayForLecture)
             .reduce(Integer::sum)
             .orElse(0);

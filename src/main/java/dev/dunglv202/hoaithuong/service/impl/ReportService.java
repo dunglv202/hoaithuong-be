@@ -176,9 +176,12 @@ public class ReportService {
             inRange(range),
             sortByStartTime(Sort.Direction.DESC)
         );
-        List<Schedule> schedules = scheduleRepository.findAllInRange(range.getFrom(), range.getTo());
-        List<Lecture> lectures = lectureRepository.findAll(LectureCriteria.joinFetch().and(criteria));
 
-        return new ReportDTO(schedules, lectures);
+        List<Lecture> lectures = lectureRepository.findAll(LectureCriteria.joinFetch().and(criteria));
+        ReportDTO report = new ReportDTO(lectures);
+        int estimatedTotal = scheduleRepository.getEstimatedTotalInRange(range.getFrom(), range.getTo());
+        report.setEstimatedTotal(estimatedTotal);
+
+        return report;
     }
 }

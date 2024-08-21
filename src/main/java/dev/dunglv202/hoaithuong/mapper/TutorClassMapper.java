@@ -1,9 +1,6 @@
 package dev.dunglv202.hoaithuong.mapper;
 
-import dev.dunglv202.hoaithuong.dto.DetailClassDTO;
-import dev.dunglv202.hoaithuong.dto.NewTutorClassDTO;
-import dev.dunglv202.hoaithuong.dto.TutorClassDTO;
-import dev.dunglv202.hoaithuong.dto.UpdatedTutorClassDTO;
+import dev.dunglv202.hoaithuong.dto.*;
 import dev.dunglv202.hoaithuong.entity.TutorClass;
 import dev.dunglv202.hoaithuong.model.TimeSlot;
 import org.mapstruct.Mapper;
@@ -25,6 +22,8 @@ public interface TutorClassMapper {
     DetailClassDTO toDetailClassDTO(TutorClass tutorClass);
 
     TutorClassDTO toTutorClassDTO(TutorClass tutorClass);
+
+    ScheduleClassDTO toScheduleClassDTO(TutorClass tutorClass);
 
     @Mapping(target = "initialLearned", source = "learned")
     @Mapping(target = "timeSlots")

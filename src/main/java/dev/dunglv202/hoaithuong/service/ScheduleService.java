@@ -1,6 +1,6 @@
 package dev.dunglv202.hoaithuong.service;
 
-import dev.dunglv202.hoaithuong.dto.ScheduleDTO;
+import dev.dunglv202.hoaithuong.dto.MinimalScheduleDTO;
 import dev.dunglv202.hoaithuong.entity.Schedule;
 import dev.dunglv202.hoaithuong.entity.TutorClass;
 import dev.dunglv202.hoaithuong.model.Range;
@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Set;
 
 public interface ScheduleService {
-    List<ScheduleDTO> getSchedule(Range<LocalDate> range);
+    List<MinimalScheduleDTO> getSchedule(Range<LocalDate> range);
 
     void deleteSchedule(Long id);
 

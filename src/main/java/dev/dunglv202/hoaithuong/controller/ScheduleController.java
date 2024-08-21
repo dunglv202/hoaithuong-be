@@ -1,6 +1,6 @@
 package dev.dunglv202.hoaithuong.controller;
 
-import dev.dunglv202.hoaithuong.dto.ScheduleDTO;
+import dev.dunglv202.hoaithuong.dto.MinimalScheduleDTO;
 import dev.dunglv202.hoaithuong.model.ScheduleRange;
 import dev.dunglv202.hoaithuong.service.impl.ScheduleServiceImpl;
 import jakarta.validation.Valid;
@@ -18,7 +18,7 @@ public class ScheduleController {
 
     @GetMapping
     @PreAuthorize("isAuthenticated()")
-    public List<ScheduleDTO> getSchedule(@Valid ScheduleRange range) {
+    public List<MinimalScheduleDTO> getSchedule(@Valid ScheduleRange range) {
         return scheduleService.getSchedule(range);
     }
 

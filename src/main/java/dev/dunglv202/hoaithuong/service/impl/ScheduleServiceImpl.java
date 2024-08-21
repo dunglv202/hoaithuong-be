@@ -1,6 +1,6 @@
 package dev.dunglv202.hoaithuong.service.impl;
 
-import dev.dunglv202.hoaithuong.dto.ScheduleDTO;
+import dev.dunglv202.hoaithuong.dto.MinimalScheduleDTO;
 import dev.dunglv202.hoaithuong.entity.Schedule;
 import dev.dunglv202.hoaithuong.entity.TutorClass;
 import dev.dunglv202.hoaithuong.exception.ClientVisibleException;
@@ -30,10 +30,10 @@ public class ScheduleServiceImpl implements ScheduleService {
     private final ScheduleRepository scheduleRepository;
 
     @Override
-    public List<ScheduleDTO> getSchedule(Range<LocalDate> range) {
+    public List<MinimalScheduleDTO> getSchedule(Range<LocalDate> range) {
         return scheduleRepository.findAll(ScheduleCriteria.joinFetch().and(inRange(range)))
             .stream()
-            .map(ScheduleMapper.INSTANCE::toScheduleDTO)
+            .map(ScheduleMapper.INSTANCE::toMinimalScheduleDTO)
             .toList();
     }
 

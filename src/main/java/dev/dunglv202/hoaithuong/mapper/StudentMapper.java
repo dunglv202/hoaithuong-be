@@ -1,5 +1,6 @@
 package dev.dunglv202.hoaithuong.mapper;
 
+import dev.dunglv202.hoaithuong.dto.MinimalStudentDTO;
 import dev.dunglv202.hoaithuong.dto.NewStudentDTO;
 import dev.dunglv202.hoaithuong.dto.StudentDTO;
 import dev.dunglv202.hoaithuong.entity.Student;
@@ -13,4 +14,6 @@ public interface StudentMapper {
     Student toStudent(NewStudentDTO newStudent);
 
     StudentDTO toStudentDTO(Student student);
+
+    MinimalStudentDTO toMinimalStudentDTO(Student student);
 }

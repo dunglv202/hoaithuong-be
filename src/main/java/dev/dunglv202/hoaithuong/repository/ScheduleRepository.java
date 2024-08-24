@@ -43,7 +43,7 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long>, JpaSp
     void deleteAllFromDateByClass(@Param("tutorClass") TutorClass tutorClass, @Param("startDate") LocalDate startDate);
 
     @Query("""
-        SELECT SUM(s.tutorClass.payForLecture)
+        SELECT COALESCE(SUM(s.tutorClass.payForLecture), 0)
         FROM Schedule s
         WHERE CAST(s.startTime AS DATE) BETWEEN :from AND :to
     """)

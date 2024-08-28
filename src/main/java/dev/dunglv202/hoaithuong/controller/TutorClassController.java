@@ -46,4 +46,10 @@ public class TutorClassController {
     public void stopClass(@PathVariable long id, @RequestBody FutureUpdateDTO updateDTO) {
         tutorClassService.stopClass(id, updateDTO.getEffectiveDate());
     }
+
+    @PostMapping("/{id}/resume")
+    @PreAuthorize("isAuthenticated()")
+    public void resumeClass(@PathVariable long id, @RequestBody FutureUpdateDTO updateDTO) {
+        tutorClassService.resumeClass(id, updateDTO.getEffectiveDate());
+    }
 }

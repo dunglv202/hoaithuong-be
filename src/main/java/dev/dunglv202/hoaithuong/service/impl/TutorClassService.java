@@ -86,8 +86,22 @@ public class TutorClassService {
     @Transactional
     public void stopClass(long id, LocalDate effectiveDate) {
         TutorClass tutorClass = tutorClassRepository.getReferenceById(id);
+        if (!tutorClass.isActive()) {
+            throw new ClientVisibleException("{class.inactive}");
+        }
         scheduleRepository.deleteAllFromDateByClass(tutorClass, effectiveDate);
         tutorClass.setActive(false);
+        tutorClassRepository.save(tutorClass);
+    }
+
+    @Transactional
+    public void resumeClass(long id, LocalDate effectiveDate) {
+        TutorClass tutorClass = tutorClassRepository.getReferenceById(id);
+        if (tutorClass.isActive()) {
+            throw new ClientVisibleException("{class.still_active}");
+        }
+        scheduleService.addClassToMySchedule(tutorClass, effectiveDate);
+        tutorClass.setActive(true);
         tutorClassRepository.save(tutorClass);
     }
 }

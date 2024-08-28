@@ -1,9 +1,6 @@
 package dev.dunglv202.hoaithuong.controller;
 
-import dev.dunglv202.hoaithuong.dto.DetailClassDTO;
-import dev.dunglv202.hoaithuong.dto.NewTutorClassDTO;
-import dev.dunglv202.hoaithuong.dto.TutorClassDTO;
-import dev.dunglv202.hoaithuong.dto.UpdatedTutorClassDTO;
+import dev.dunglv202.hoaithuong.dto.*;
 import dev.dunglv202.hoaithuong.model.Page;
 import dev.dunglv202.hoaithuong.model.Pagination;
 import dev.dunglv202.hoaithuong.model.TutorClassCriteria;
@@ -42,5 +39,11 @@ public class TutorClassController {
     public void updateClass(@Valid @RequestBody UpdatedTutorClassDTO updatedTutorClassDTO, @PathVariable long id) {
         updatedTutorClassDTO.setId(id);
         tutorClassService.updateClass(updatedTutorClassDTO);
+    }
+
+    @PostMapping("/{id}/stop")
+    @PreAuthorize("isAuthenticated()")
+    public void stopClass(@PathVariable long id, @RequestBody FutureUpdateDTO updateDTO) {
+        tutorClassService.stopClass(id, updateDTO.getEffectiveDate());
     }
 }

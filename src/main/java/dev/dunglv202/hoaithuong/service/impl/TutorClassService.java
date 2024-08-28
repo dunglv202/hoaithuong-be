@@ -12,6 +12,7 @@ import dev.dunglv202.hoaithuong.mapper.TutorClassMapper;
 import dev.dunglv202.hoaithuong.model.Page;
 import dev.dunglv202.hoaithuong.model.Pagination;
 import dev.dunglv202.hoaithuong.model.TutorClassCriteria;
+import dev.dunglv202.hoaithuong.repository.ScheduleRepository;
 import dev.dunglv202.hoaithuong.repository.StudentRepository;
 import dev.dunglv202.hoaithuong.repository.TutorClassRepository;
 import dev.dunglv202.hoaithuong.service.ScheduleService;
@@ -21,6 +22,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.HashSet;
 
 @Service
@@ -29,6 +31,7 @@ public class TutorClassService {
     private final TutorClassRepository tutorClassRepository;
     private final StudentRepository studentRepository;
     private final ScheduleService scheduleService;
+    private final ScheduleRepository scheduleRepository;
 
     @Transactional
     public void addNewClass(NewTutorClassDTO newTutorClassDTO) {
@@ -78,5 +81,13 @@ public class TutorClassService {
     public DetailClassDTO getDetailClass(long id) {
         TutorClass tutorClass = tutorClassRepository.findById(id).orElseThrow();
         return TutorClassMapper.INSTANCE.toDetailClassDTO(tutorClass);
+    }
+
+    @Transactional
+    public void stopClass(long id, LocalDate effectiveDate) {
+        TutorClass tutorClass = tutorClassRepository.getReferenceById(id);
+        scheduleRepository.deleteAllFromDateByClass(tutorClass, effectiveDate);
+        tutorClass.setActive(false);
+        tutorClassRepository.save(tutorClass);
     }
 }

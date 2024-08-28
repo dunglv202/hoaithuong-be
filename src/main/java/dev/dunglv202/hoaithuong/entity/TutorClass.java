@@ -55,7 +55,9 @@ public class TutorClass extends Auditable {
 
     @PreUpdate
     public void preUpdate() {
-        active = learned < totalLecture;
+        if (learned >= totalLecture) {
+            active = false;
+        }
     }
 
     public Duration getDuration() {

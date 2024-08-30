@@ -14,6 +14,7 @@ import dev.dunglv202.hoaithuong.model.AppUser;
 import dev.dunglv202.hoaithuong.repository.UserRepository;
 import dev.dunglv202.hoaithuong.service.ConfigService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -22,6 +23,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UserService implements UserDetailsService {
     private final AuthHelper authHelper;
     private final UserRepository userRepository;
@@ -66,11 +68,14 @@ public class UserService implements UserDetailsService {
             Sheets sheetService = googleHelper.getSheetService(authHelper.getSignedUser());
             sheetService.spreadsheets().get(sheetId).execute();
             return true;
+        } catch (ClientVisibleException e) {
+            throw new ClientVisibleException("{config.google_sheet_id.could_not_be_updated}");
         } catch (GoogleJsonResponseException e) {
             if (e.getStatusCode() == HttpStatus.NOT_FOUND.value()) return false;
-            throw new RuntimeException(e);
+            log.error("Could not validate sheet id", e);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            log.error("Could not validate sheet id", e);
         }
+        return false;
     }
 }

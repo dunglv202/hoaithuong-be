@@ -83,10 +83,10 @@ public class ReportServiceImpl implements ReportService {
             // get sheet instance (create if not exist)
             User signedUser = authHelper.getSignedUser();
             Configuration config = configService.getConfigsByUser(signedUser);
+            Sheets sheetsService = googleHelper.getSheetService(signedUser);
             if (config.getReportSheetId() == null) {
                 throw new ClientVisibleException("{export.google_sheet_id.required}");
             }
-            Sheets sheetsService = googleHelper.getSheetService(signedUser);
             Spreadsheet spreadsheet = sheetsService.spreadsheets().get(config.getReportSheetId()).execute();
             String sheetName = getReportSheetName(range);
             if (spreadsheet.getSheets().stream().noneMatch(sheet -> sheetName.equals(sheet.getProperties().getTitle()))) {

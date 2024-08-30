@@ -3,6 +3,7 @@ package dev.dunglv202.hoaithuong.service.impl;
 import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.model.*;
 import dev.dunglv202.hoaithuong.dto.ReportDTO;
+import dev.dunglv202.hoaithuong.dto.SheetExportResultDTO;
 import dev.dunglv202.hoaithuong.entity.Configuration;
 import dev.dunglv202.hoaithuong.entity.Lecture;
 import dev.dunglv202.hoaithuong.entity.TutorClass;
@@ -78,7 +79,7 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
-    public void exportGoogleSheet(ReportRange range) {
+    public SheetExportResultDTO exportGoogleSheet(ReportRange range) {
         try {
             // get sheet instance (create if not exist)
             User signedUser = authHelper.getSignedUser();
@@ -88,10 +89,16 @@ public class ReportServiceImpl implements ReportService {
                 throw new ClientVisibleException("{export.google_sheet_id.required}");
             }
             Spreadsheet spreadsheet = sheetsService.spreadsheets().get(config.getReportSheetId()).execute();
-            String sheetName = getReportSheetName(range);
-            if (spreadsheet.getSheets().stream().noneMatch(sheet -> sheetName.equals(sheet.getProperties().getTitle()))) {
+            String reportSheetName = getReportSheetName(range);
+            var reportSheet = spreadsheet.getSheets().stream()
+                .filter(sheet -> reportSheetName.equals(sheet.getProperties().getTitle()))
+                .findFirst();
+            Integer reportSheetId;
+            if (reportSheet.isEmpty()) {
                 // not exist => add new sheet
-                addNewSheetToGoogleSpreadSheet(sheetsService, config.getReportSheetId(), sheetName);
+                reportSheetId = addSheetToSpreadSheet(sheetsService, config.getReportSheetId(), reportSheetName);
+            } else {
+                reportSheetId = reportSheet.get().getProperties().getSheetId();
             }
 
             // clear report sheet
@@ -115,6 +122,10 @@ public class ReportServiceImpl implements ReportService {
                 getReportSheetName(range),
                 valueRange
             ).setValueInputOption("RAW").execute();
+
+            String reportUrl = spreadsheet.getSpreadsheetUrl() + "?gid=" + reportSheetId;
+
+            return new SheetExportResultDTO(reportUrl);
         } catch (ClientVisibleException e) {
             throw e;
         } catch (Exception e) {
@@ -122,16 +133,19 @@ public class ReportServiceImpl implements ReportService {
         }
     }
 
-    private void addNewSheetToGoogleSpreadSheet(Sheets sheetService, String reportSheetId, String newSheetName) {
+    private Integer addSheetToSpreadSheet(Sheets sheetService, String reportSheetId, String newSheetName) {
         try {
             // add new sheet request
             AddSheetRequest addSheetRequest = new AddSheetRequest();
             addSheetRequest.setProperties(new SheetProperties().setTitle(newSheetName));
 
             // execute update
-            BatchUpdateSpreadsheetRequest batchUpdateSpreadsheetRequest = new BatchUpdateSpreadsheetRequest()
+            var batchUpdateSpreadsheetRequest = new BatchUpdateSpreadsheetRequest()
                 .setRequests(List.of(new Request().setAddSheet(addSheetRequest)));
-            sheetService.spreadsheets().batchUpdate(reportSheetId, batchUpdateSpreadsheetRequest).execute();
+            var response = sheetService.spreadsheets()
+                .batchUpdate(reportSheetId, batchUpdateSpreadsheetRequest)
+                .execute();
+            return response.getReplies().get(0).getAddSheet().getProperties().getSheetId();
         } catch (IOException e) {
             throw new RuntimeException("Could not add new sheet", e);
         }

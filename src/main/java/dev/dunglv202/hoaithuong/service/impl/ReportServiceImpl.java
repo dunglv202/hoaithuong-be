@@ -1,6 +1,5 @@
 package dev.dunglv202.hoaithuong.service.impl;
 
-import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.model.*;
 import dev.dunglv202.hoaithuong.dto.ReportDTO;
@@ -8,6 +7,7 @@ import dev.dunglv202.hoaithuong.entity.Configuration;
 import dev.dunglv202.hoaithuong.entity.Lecture;
 import dev.dunglv202.hoaithuong.entity.TutorClass;
 import dev.dunglv202.hoaithuong.entity.User;
+import dev.dunglv202.hoaithuong.exception.AuthenticationException;
 import dev.dunglv202.hoaithuong.exception.ClientVisibleException;
 import dev.dunglv202.hoaithuong.helper.AuthHelper;
 import dev.dunglv202.hoaithuong.helper.DateTimeFmt;
@@ -27,7 +27,6 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Sort;
@@ -42,16 +41,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static dev.dunglv202.hoaithuong.helper.GoogleHelper.HTTP_TRANSPORT;
-import static dev.dunglv202.hoaithuong.helper.GoogleHelper.JSON_FACTORY;
 import static dev.dunglv202.hoaithuong.model.LectureCriteria.*;
 
 @Service
 @RequiredArgsConstructor
 public class ReportServiceImpl implements ReportService {
-    @Value("${spring.application.name}")
-    private String applicationName;
-
     private final LectureRepository lectureRepository;
     private final ScheduleRepository scheduleRepository;
     private final AuthHelper authHelper;
@@ -91,10 +85,10 @@ public class ReportServiceImpl implements ReportService {
             User signedUser = authHelper.getSignedUser();
             Configuration config = configurationRepository.findByUser(signedUser)
                 .orElseThrow(() -> new ClientVisibleException("{user.no_config}"));
-            Credential credential = googleHelper.getCredential(signedUser);
-            Sheets sheetsService = new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, credential)
-                .setApplicationName(applicationName)
-                .build();
+            if (config.getReportSheetId() == null) {
+                throw new ClientVisibleException("{export.google_sheet_id.required}");
+            }
+            Sheets sheetsService = googleHelper.getSheetService(signedUser);
             Spreadsheet spreadsheet = sheetsService.spreadsheets().get(config.getReportSheetId()).execute();
             String sheetName = getReportSheetName(range);
             if (spreadsheet.getSheets().stream().noneMatch(sheet -> sheetName.equals(sheet.getProperties().getTitle()))) {
@@ -123,6 +117,8 @@ public class ReportServiceImpl implements ReportService {
                 getReportSheetName(range),
                 valueRange
             ).setValueInputOption("RAW").execute();
+        } catch (AuthenticationException e) {
+            throw e;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

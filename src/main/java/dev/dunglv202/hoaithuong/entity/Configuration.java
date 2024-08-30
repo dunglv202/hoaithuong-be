@@ -1,5 +1,6 @@
 package dev.dunglv202.hoaithuong.entity;
 
+import dev.dunglv202.hoaithuong.dto.ConfigsDTO;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -22,4 +23,8 @@ public class Configuration extends Auditable {
     private String googleRefreshToken;
 
     private String reportSheetId;
+
+    public void mergeWith(ConfigsDTO configs) {
+        this.reportSheetId = configs.getReportSheetId();
+    }
 }

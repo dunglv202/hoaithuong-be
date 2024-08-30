@@ -8,10 +8,6 @@ spring:
     username: ${DB_USER}
     password: ${DB_PASS}
   jpa:
-    show-sql: true
-    generate-ddl: true
-    hibernate:
-      ddl-auto: update
     properties:
       hibernate:
         globally_quoted_identifiers: true

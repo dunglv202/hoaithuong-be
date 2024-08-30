@@ -7,7 +7,6 @@ import dev.dunglv202.hoaithuong.entity.Configuration;
 import dev.dunglv202.hoaithuong.entity.Lecture;
 import dev.dunglv202.hoaithuong.entity.TutorClass;
 import dev.dunglv202.hoaithuong.entity.User;
-import dev.dunglv202.hoaithuong.exception.AuthenticationException;
 import dev.dunglv202.hoaithuong.exception.ClientVisibleException;
 import dev.dunglv202.hoaithuong.helper.AuthHelper;
 import dev.dunglv202.hoaithuong.helper.DateTimeFmt;
@@ -17,9 +16,9 @@ import dev.dunglv202.hoaithuong.model.ReportRange;
 import dev.dunglv202.hoaithuong.model.sheet.SheetCell;
 import dev.dunglv202.hoaithuong.model.sheet.SheetRange;
 import dev.dunglv202.hoaithuong.model.sheet.SheetRow;
-import dev.dunglv202.hoaithuong.repository.ConfigurationRepository;
 import dev.dunglv202.hoaithuong.repository.LectureRepository;
 import dev.dunglv202.hoaithuong.repository.ScheduleRepository;
+import dev.dunglv202.hoaithuong.service.ConfigService;
 import dev.dunglv202.hoaithuong.service.ReportService;
 import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.Cell;
@@ -50,7 +49,7 @@ public class ReportServiceImpl implements ReportService {
     private final ScheduleRepository scheduleRepository;
     private final AuthHelper authHelper;
     private final GoogleHelper googleHelper;
-    private final ConfigurationRepository configurationRepository;
+    private final ConfigService configService;
 
     @Override
     public Resource downloadXlsx(ReportRange range) {
@@ -83,8 +82,7 @@ public class ReportServiceImpl implements ReportService {
         try {
             // get sheet instance (create if not exist)
             User signedUser = authHelper.getSignedUser();
-            Configuration config = configurationRepository.findByUser(signedUser)
-                .orElseThrow(() -> new ClientVisibleException("{user.no_config}"));
+            Configuration config = configService.getConfigsByUser(signedUser);
             if (config.getReportSheetId() == null) {
                 throw new ClientVisibleException("{export.google_sheet_id.required}");
             }
@@ -117,7 +115,7 @@ public class ReportServiceImpl implements ReportService {
                 getReportSheetName(range),
                 valueRange
             ).setValueInputOption("RAW").execute();
-        } catch (AuthenticationException e) {
+        } catch (ClientVisibleException e) {
             throw e;
         } catch (Exception e) {
             throw new RuntimeException(e);

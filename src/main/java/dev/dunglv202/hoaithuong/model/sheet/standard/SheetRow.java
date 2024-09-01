@@ -1,4 +1,4 @@
-package dev.dunglv202.hoaithuong.model.sheet;
+package dev.dunglv202.hoaithuong.model.sheet.standard;
 
 import lombok.Getter;
 

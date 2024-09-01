@@ -14,9 +14,8 @@ import dev.dunglv202.hoaithuong.helper.DateTimeFmt;
 import dev.dunglv202.hoaithuong.helper.GoogleHelper;
 import dev.dunglv202.hoaithuong.model.LectureCriteria;
 import dev.dunglv202.hoaithuong.model.ReportRange;
-import dev.dunglv202.hoaithuong.model.sheet.SheetCell;
-import dev.dunglv202.hoaithuong.model.sheet.SheetRange;
-import dev.dunglv202.hoaithuong.model.sheet.SheetRow;
+import dev.dunglv202.hoaithuong.model.sheet.GoogleSheetConverter;
+import dev.dunglv202.hoaithuong.model.sheet.standard.*;
 import dev.dunglv202.hoaithuong.repository.LectureRepository;
 import dev.dunglv202.hoaithuong.repository.ScheduleRepository;
 import dev.dunglv202.hoaithuong.service.ConfigService;
@@ -110,18 +109,23 @@ public class ReportServiceImpl implements ReportService {
 
             // generate report data
             List<Lecture> lectures = getLecturesForReport(range);
-            ValueRange valueRange = new ValueRange();
             SheetRange data = generateGeneralReportData(lectures)
                 .addEmptyRow()
                 .union(generateDetailReportData(lectures));
-            valueRange.setValues(data.getValues());
 
             // update sheet
-            sheetsService.spreadsheets().values().update(
-                config.getReportSheetId(),
-                getReportSheetName(range),
-                valueRange
-            ).setValueInputOption("RAW").execute();
+            var gridRange = new GridRange().setSheetId(reportSheetId).setStartRowIndex(0).setStartColumnIndex(0);
+            var converter = new GoogleSheetConverter();
+            var updateRequest = new UpdateCellsRequest()
+                .setFields("*")
+                .setRange(gridRange)
+                .setRows(data.getRows().stream().map(converter::convertRow).toList());
+            sheetsService.spreadsheets().batchUpdate(
+                spreadsheet.getSpreadsheetId(),
+                new BatchUpdateSpreadsheetRequest().setRequests(
+                    List.of(new Request().setUpdateCells(updateRequest))
+                )
+            ).execute();
 
             String reportUrl = spreadsheet.getSpreadsheetUrl() + "?gid=" + reportSheetId;
 
@@ -200,17 +204,22 @@ public class ReportServiceImpl implements ReportService {
     private SheetRange generateDetailReportData(List<Lecture> lectures) {
         SheetRange range = new SheetRange();
         SheetRow header = range.addRow();
-        header.addCell().setValue("STT");
-        header.addCell().setValue("Ngày");
-        header.addCell().setValue("Học viên");
-        header.addCell().setValue("Lớp");
-        header.addCell().setValue("Giờ học");
-        header.addCell().setValue("Buổi");
-        header.addCell().setValue("Nội dung");
-        header.addCell().setValue("Nhận xét");
-        header.addCell().setValue("Thời lượng (phút)");
-        header.addCell().setValue("Số tiền (1000đ)");
+        var headerStyle = new SheetCellStyle()
+            .setBold(true)
+            .setBackgroundColor(new RGBAColor(213, 166, 189, 1f));
+        header.addCell().setValue("STT").setStyle(headerStyle);
+        header.addCell().setValue("Ngày").setStyle(headerStyle);
+        header.addCell().setValue("Học viên").setStyle(headerStyle);
+        header.addCell().setValue("Lớp").setStyle(headerStyle);
+        header.addCell().setValue("Giờ học").setStyle(headerStyle);
+        header.addCell().setValue("Buổi").setStyle(headerStyle);
+        header.addCell().setValue("Nội dung").setStyle(headerStyle);
+        header.addCell().setValue("Nhận xét").setStyle(headerStyle);
+        header.addCell().setValue("Thời lượng (phút)").setStyle(headerStyle);
+        header.addCell().setValue("Số tiền (1000đ)").setStyle(headerStyle);
 
+        var bodyStyle = new SheetCellStyle()
+            .setBorderColor(new RGBAColor(0, 0, 0, 1));
         for (int i = 0; i < lectures.size(); i++) {
             Lecture lecture = lectures.get(i);
 
@@ -252,6 +261,9 @@ public class ReportServiceImpl implements ReportService {
 
             SheetCell paid = row.addCell();
             paid.setValue((double) lecture.getTutorClass().getPayForLecture() / 1000);
+
+            // set border
+            row.getCells().forEach(c -> c.setStyle(bodyStyle));
         }
 
         return range;

@@ -6,11 +6,14 @@ import lombok.Setter;
 @Getter
 @Setter
 public class SheetCellStyle {
-    private boolean bold;
-    private boolean italic;
+    private Boolean bold;
+    private Boolean italic;
     private RGBAColor textColor;
     private RGBAColor backgroundColor;
     private RGBAColor borderColor;
+    private String verticalAlignment;
+    private String horizontalAlignment;
+    private Integer fontSize;
 
     public SheetCellStyle setBold(boolean bold) {
         this.bold = bold;
@@ -34,6 +37,21 @@ public class SheetCellStyle {
 
     public SheetCellStyle setBorderColor(RGBAColor borderColor) {
         this.borderColor = borderColor;
+        return this;
+    }
+
+    public SheetCellStyle setVerticalAlignment(String alignment) {
+        this.verticalAlignment = alignment;
+        return this;
+    }
+
+    public SheetCellStyle setHorizontalAlignment(String alignment) {
+        this.horizontalAlignment = alignment;
+        return this;
+    }
+
+    public SheetCellStyle setFontSize(int fontSize) {
+        this.fontSize = fontSize;
         return this;
     }
 }

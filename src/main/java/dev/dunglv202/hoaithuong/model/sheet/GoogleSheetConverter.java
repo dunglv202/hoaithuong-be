@@ -26,14 +26,17 @@ public class GoogleSheetConverter {
         if (style == null) return null;
 
         TextFormat textFormat = new TextFormat()
-            .setBold(style.isBold())
-            .setItalic(style.isItalic())
+            .setFontSize(style.getFontSize())
+            .setBold(style.getBold())
+            .setItalic(style.getItalic())
             .setForegroundColor(convertColor(style.getTextColor()));
         Border border = new Border().setColor(convertColor(style.getBorderColor())).setStyle("SOLID");
 
         return new CellFormat()
             .setTextFormat(textFormat)
             .setBackgroundColor(convertColor(style.getBackgroundColor()))
+            .setHorizontalAlignment(style.getHorizontalAlignment())
+            .setVerticalAlignment(style.getVerticalAlignment())
             .setBorders(new Borders().setTop(border).setBottom(border).setLeft(border).setRight(border));
     }
 

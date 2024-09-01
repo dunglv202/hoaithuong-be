@@ -12,9 +12,9 @@ import dev.dunglv202.hoaithuong.exception.ClientVisibleException;
 import dev.dunglv202.hoaithuong.helper.AuthHelper;
 import dev.dunglv202.hoaithuong.helper.DateTimeFmt;
 import dev.dunglv202.hoaithuong.helper.GoogleHelper;
+import dev.dunglv202.hoaithuong.helper.SheetHelper;
 import dev.dunglv202.hoaithuong.model.LectureCriteria;
 import dev.dunglv202.hoaithuong.model.ReportRange;
-import dev.dunglv202.hoaithuong.model.sheet.GoogleSheetConverter;
 import dev.dunglv202.hoaithuong.model.sheet.standard.*;
 import dev.dunglv202.hoaithuong.repository.LectureRepository;
 import dev.dunglv202.hoaithuong.repository.ScheduleRepository;
@@ -109,22 +109,13 @@ public class ReportServiceImpl implements ReportService {
 
             // generate report data
             List<Lecture> lectures = getLecturesForReport(range);
-            SheetRange data = generateGeneralReportData(lectures)
-                .addEmptyRow()
-                .union(generateDetailReportData(lectures));
+            SheetRange data = generateDetailReportData(lectures);
 
             // update sheet
             var gridRange = new GridRange().setSheetId(reportSheetId).setStartRowIndex(0).setStartColumnIndex(0);
-            var converter = new GoogleSheetConverter();
-            var updateRequest = new UpdateCellsRequest()
-                .setFields("*")
-                .setRange(gridRange)
-                .setRows(data.getRows().stream().map(converter::convertRow).toList());
             sheetsService.spreadsheets().batchUpdate(
                 spreadsheet.getSpreadsheetId(),
-                new BatchUpdateSpreadsheetRequest().setRequests(
-                    List.of(new Request().setUpdateCells(updateRequest))
-                )
+                SheetHelper.makeUpdateRequest(data, gridRange)
             ).execute();
 
             String reportUrl = spreadsheet.getSpreadsheetUrl() + "?gid=" + reportSheetId;
@@ -217,6 +208,15 @@ public class ReportServiceImpl implements ReportService {
         header.addCell().setValue("Nhận xét").setStyle(headerStyle);
         header.addCell().setValue("Thời lượng (phút)").setStyle(headerStyle);
         header.addCell().setValue("Số tiền (1000đ)").setStyle(headerStyle);
+
+        SheetCellStyle reportMonthHeaderStyle = new SheetCellStyle().setBold(true)
+            .setFontSize(15)
+            .setBackgroundColor(new RGBAColor(255, 255, 0, 1))
+            .setHorizontalAlignment("CENTER");
+        range.addRow().addCell()
+            .setValue(String.format("THÁNG %d/%d", lectures.get(0).getStartTime().getMonthValue(), lectures.get(0).getStartTime().getYear()))
+            .setAttribute(new SheetCellAttribute().setColspan(10))
+            .setStyle(reportMonthHeaderStyle);
 
         var bodyStyle = new SheetCellStyle()
             .setBorderColor(new RGBAColor(0, 0, 0, 1));

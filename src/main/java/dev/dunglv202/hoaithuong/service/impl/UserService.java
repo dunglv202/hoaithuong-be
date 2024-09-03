@@ -2,6 +2,7 @@ package dev.dunglv202.hoaithuong.service.impl;
 
 import com.google.api.client.googleapis.json.GoogleJsonResponseException;
 import com.google.api.services.sheets.v4.Sheets;
+import com.google.api.services.sheets.v4.model.Spreadsheet;
 import dev.dunglv202.hoaithuong.dto.DetailProfileDTO;
 import dev.dunglv202.hoaithuong.dto.UpdatedDetailProfileDTO;
 import dev.dunglv202.hoaithuong.dto.UserInfoDTO;
@@ -11,6 +12,7 @@ import dev.dunglv202.hoaithuong.exception.ClientVisibleException;
 import dev.dunglv202.hoaithuong.helper.AuthHelper;
 import dev.dunglv202.hoaithuong.helper.GoogleHelper;
 import dev.dunglv202.hoaithuong.model.AppUser;
+import dev.dunglv202.hoaithuong.model.SheetInfo;
 import dev.dunglv202.hoaithuong.repository.UserRepository;
 import dev.dunglv202.hoaithuong.service.ConfigService;
 import lombok.RequiredArgsConstructor;
@@ -53,21 +55,34 @@ public class UserService implements UserDetailsService {
         User signedUser = authHelper.getSignedUser();
         Configuration configs = configService.getConfigsByUser(signedUser);
 
-        // check valid sheet id
-        String sheetId = updateDTO.getConfigs().getReportSheetId();
-        if (sheetId != null && !sheetId.equals(configs.getReportSheetId()) && !isValidSheetId(sheetId)) {
-            throw new ClientVisibleException("{report.google_sheet_id.invalid}");
+        // check valid sheet
+        SheetInfo generalReport = new SheetInfo(
+            updateDTO.getConfigs().getGeneralReportId(),
+            updateDTO.getConfigs().getGeneralReportSheet()
+        );
+        if (!generalReport.equals(configs.getGeneralSheetInfo()) && !isValidSheet(generalReport)) {
+            throw new ClientVisibleException("{report.general.spreadsheet.invalid}");
+        }
+        SheetInfo detailReport = new SheetInfo(
+            updateDTO.getConfigs().getDetailReportId(),
+            updateDTO.getConfigs().getDetailReportSheet()
+        );
+        if (!detailReport.equals(configs.getDetailSheetInfo()) && !isValidSheet(detailReport)) {
+            throw new ClientVisibleException("{report.detail.spreadsheet.invalid}");
         }
 
         configs.mergeWith(updateDTO.getConfigs());
         configService.saveConfigs(configs);
     }
 
-    private boolean isValidSheetId(String sheetId) {
+    private boolean isValidSheet(SheetInfo sheet) {
         try {
+            if (sheet.getSpreadsheetId() == null && (sheet.getSheetName() == null || sheet.getSheetName().isBlank())) {
+                return true;
+            }
             Sheets sheetService = googleHelper.getSheetService(authHelper.getSignedUser());
-            sheetService.spreadsheets().get(sheetId).execute();
-            return true;
+            Spreadsheet spreadsheet = sheetService.spreadsheets().get(sheet.getSpreadsheetId()).execute();
+            return spreadsheet.getSheets().stream().anyMatch(s -> s.getProperties().getTitle().equals(sheet.getSheetName()));
         } catch (ClientVisibleException e) {
             throw new ClientVisibleException("{config.google_sheet_id.could_not_be_updated}");
         } catch (GoogleJsonResponseException e) {

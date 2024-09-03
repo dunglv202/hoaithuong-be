@@ -1,7 +1,9 @@
 package dev.dunglv202.hoaithuong.service.impl;
 
 import com.google.api.services.sheets.v4.Sheets;
-import com.google.api.services.sheets.v4.model.*;
+import com.google.api.services.sheets.v4.model.ClearValuesRequest;
+import com.google.api.services.sheets.v4.model.GridRange;
+import com.google.api.services.sheets.v4.model.Spreadsheet;
 import dev.dunglv202.hoaithuong.dto.ReportDTO;
 import dev.dunglv202.hoaithuong.dto.SheetExportResultDTO;
 import dev.dunglv202.hoaithuong.entity.Configuration;
@@ -84,26 +86,20 @@ public class ReportServiceImpl implements ReportService {
             User signedUser = authHelper.getSignedUser();
             Configuration config = configService.getConfigsByUser(signedUser);
             Sheets sheetsService = googleHelper.getSheetService(signedUser);
-            if (config.getReportSheetId() == null) {
+            if (config.getGeneralReportId() == null) {
                 throw new ClientVisibleException("{export.google_sheet_id.required}");
             }
-            Spreadsheet spreadsheet = sheetsService.spreadsheets().get(config.getReportSheetId()).execute();
-            String reportSheetName = getReportSheetName(range);
+            Spreadsheet spreadsheet = sheetsService.spreadsheets().get(config.getGeneralReportId()).execute();
+            String reportSheetName = config.getDetailReportSheet();
             var reportSheet = spreadsheet.getSheets().stream()
                 .filter(sheet -> reportSheetName.equals(sheet.getProperties().getTitle()))
                 .findFirst();
-            Integer reportSheetId;
-            if (reportSheet.isEmpty()) {
-                // not exist => add new sheet
-                reportSheetId = addSheetToSpreadSheet(sheetsService, config.getReportSheetId(), reportSheetName);
-            } else {
-                reportSheetId = reportSheet.get().getProperties().getSheetId();
-            }
+            Integer reportSheetId = reportSheet.orElseThrow().getProperties().getSheetId();
 
             // clear report sheet
             sheetsService.spreadsheets().values().clear(
-                config.getReportSheetId(),
-                getReportSheetName(range),
+                config.getGeneralReportId(),
+                reportSheetName,
                 new ClearValuesRequest()
             ).execute();
 
@@ -126,28 +122,6 @@ public class ReportServiceImpl implements ReportService {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-    }
-
-    private Integer addSheetToSpreadSheet(Sheets sheetService, String reportSheetId, String newSheetName) {
-        try {
-            // add new sheet request
-            AddSheetRequest addSheetRequest = new AddSheetRequest();
-            addSheetRequest.setProperties(new SheetProperties().setTitle(newSheetName));
-
-            // execute update
-            var batchUpdateSpreadsheetRequest = new BatchUpdateSpreadsheetRequest()
-                .setRequests(List.of(new Request().setAddSheet(addSheetRequest)));
-            var response = sheetService.spreadsheets()
-                .batchUpdate(reportSheetId, batchUpdateSpreadsheetRequest)
-                .execute();
-            return response.getReplies().get(0).getAddSheet().getProperties().getSheetId();
-        } catch (IOException e) {
-            throw new RuntimeException("Could not add new sheet", e);
-        }
-    }
-
-    private String getReportSheetName(ReportRange range) {
-        return String.format("THÁNG %d - %d", range.getMonth(), range.getYear());
     }
 
     private List<Lecture> getLecturesForReport(ReportRange range) {

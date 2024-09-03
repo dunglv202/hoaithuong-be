@@ -3,12 +3,21 @@ package dev.dunglv202.hoaithuong.helper;
 import com.google.api.services.sheets.v4.model.*;
 import dev.dunglv202.hoaithuong.model.sheet.GoogleSheetConverter;
 import dev.dunglv202.hoaithuong.model.sheet.standard.SheetRange;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+@Slf4j
 public class SheetHelper {
+    public static final String SPREADSHEET_URL_FORM = "https://docs.google.com/spreadsheets/d/%s";
+    public static final Pattern SPREADSHEET_URL_PATTERN = Pattern.compile(
+        "https://docs\\.google\\.com/spreadsheets/d/([a-zA-Z0-9-_]+).*"
+    );
+
     /**
      * Write data from {@code src} to {@code dest} of sheet
      */
@@ -48,5 +57,21 @@ public class SheetHelper {
         reqs.add(new Request().setUpdateCells(updateRequest));
 
         return new BatchUpdateSpreadsheetRequest().setRequests(reqs);
+    }
+
+    /**
+     * Extract spreadsheet id, if {@code spreadsheetUrl} is null or blank string then return {@code null}
+     */
+    public static String extractSpreadsheetId(String spreadsheetUrl) {
+        if (spreadsheetUrl == null || spreadsheetUrl.isBlank()) return null;
+        Matcher matcher = SPREADSHEET_URL_PATTERN.matcher(spreadsheetUrl);
+        if (!matcher.matches()) {
+            throw new RuntimeException("{spreadsheet.url.bad_malformed}: " + spreadsheetUrl);
+        };
+        return matcher.group(1);
+    }
+
+    public static String bindToSpreadsheetURL(String spreadsheetId) {
+        return spreadsheetId == null ? null : String.format(SPREADSHEET_URL_FORM, spreadsheetId);
     }
 }

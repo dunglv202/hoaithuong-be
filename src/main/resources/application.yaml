@@ -35,3 +35,7 @@ auth:
 cron:
   schedule:
     export-report: 0 0 16 * * *
+server:
+  compression:
+    enabled: true
+    mime-types: application/json

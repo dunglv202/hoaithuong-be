@@ -1,9 +1,7 @@
 package dev.dunglv202.hoaithuong.service.impl;
 
 import com.google.api.services.sheets.v4.Sheets;
-import com.google.api.services.sheets.v4.model.ClearValuesRequest;
-import com.google.api.services.sheets.v4.model.GridRange;
-import com.google.api.services.sheets.v4.model.Spreadsheet;
+import com.google.api.services.sheets.v4.model.*;
 import dev.dunglv202.hoaithuong.dto.ReportDTO;
 import dev.dunglv202.hoaithuong.dto.SheetExportResultDTO;
 import dev.dunglv202.hoaithuong.entity.Configuration;
@@ -37,10 +35,8 @@ import org.springframework.stereotype.Service;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static dev.dunglv202.hoaithuong.model.LectureCriteria.*;
 
@@ -82,46 +78,119 @@ public class ReportServiceImpl implements ReportService {
     @Override
     public SheetExportResultDTO exportGoogleSheet(ReportRange range) {
         try {
-            // get sheet instance (create if not exist)
             User signedUser = authHelper.getSignedUser();
             Configuration config = configService.getConfigsByUser(signedUser);
             Sheets sheetsService = googleHelper.getSheetService(signedUser);
-            if (config.getGeneralReportId() == null) {
-                throw new ClientVisibleException("{export.google_sheet_id.required}");
-            }
-            Spreadsheet spreadsheet = sheetsService.spreadsheets().get(config.getGeneralReportId()).execute();
-            String reportSheetName = config.getDetailReportSheet();
-            var reportSheet = spreadsheet.getSheets().stream()
-                .filter(sheet -> reportSheetName.equals(sheet.getProperties().getTitle()))
-                .findFirst();
-            Integer reportSheetId = reportSheet.orElseThrow().getProperties().getSheetId();
-
-            // clear report sheet
-            sheetsService.spreadsheets().values().clear(
-                config.getGeneralReportId(),
-                reportSheetName,
-                new ClearValuesRequest()
-            ).execute();
-
-            // generate report data
             List<Lecture> lectures = getLecturesForReport(range);
-            SheetRange data = generateDetailReportData(lectures);
 
-            // update sheet
-            var gridRange = new GridRange().setSheetId(reportSheetId).setStartRowIndex(0).setStartColumnIndex(0);
-            sheetsService.spreadsheets().batchUpdate(
-                spreadsheet.getSpreadsheetId(),
-                SheetHelper.makeUpdateRequest(data, gridRange)
-            ).execute();
+            exportDetailToGgSheet(sheetsService, range, lectures, config);
+            exportGeneralToGgSheet(sheetsService, lectures, config);
 
-            String reportUrl = spreadsheet.getSpreadsheetUrl() + "?gid=" + reportSheetId;
-
-            return new SheetExportResultDTO(reportUrl);
+            return new SheetExportResultDTO("");
         } catch (ClientVisibleException e) {
             throw e;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private void exportDetailToGgSheet(Sheets sheetsService, ReportRange range, List<Lecture> lectures, Configuration config) throws IOException {
+        if (config.getDetailReportId() == null) {
+            throw new ClientVisibleException("{export.google_sheet_id.required}");
+        }
+        Spreadsheet spreadsheet = sheetsService.spreadsheets().get(config.getDetailReportId()).execute();
+        String reportSheetName = config.getDetailReportSheet();
+        var reportSheet = spreadsheet.getSheets().stream()
+            .filter(sheet -> reportSheetName.equals(sheet.getProperties().getTitle()))
+            .findFirst();
+        Integer reportSheetId = reportSheet.orElseThrow().getProperties().getSheetId();
+
+        // calculate report position
+        int reportOffset = 0;
+        List<List<Object>> values = sheetsService.spreadsheets().values().get(
+            config.getDetailReportId(),
+            String.format("%s!A:A", reportSheetName)
+        ).execute().getValues();
+        if (values != null) {
+            String detailReportTitle = getDetailReportTitle(range.getMonth(), range.getYear());
+            reportOffset = values.stream().map(row -> row.isEmpty() ? null : row.get(0))
+                .toList()
+                .indexOf(detailReportTitle) - 1;
+            if (reportOffset < 0) reportOffset = values.size() + 3;
+        }
+
+        // generate report data
+        SheetRange data = generateDetailReportData(lectures);
+
+        // update sheet
+        var gridRange = new GridRange().setSheetId(reportSheetId)
+            .setStartRowIndex(reportOffset)
+            .setStartColumnIndex(0);
+        sheetsService.spreadsheets().batchUpdate(
+            spreadsheet.getSpreadsheetId(),
+            SheetHelper.makeUpdateRequest(data, gridRange)
+        ).execute();
+    }
+
+    private void exportGeneralToGgSheet(Sheets sheetsService, List<Lecture> lectures, Configuration config) throws IOException {
+        String spreadsheetId = config.getGeneralReportId();
+        String sheetName = config.getGeneralReportSheet();
+        Integer sheetId = sheetsService.spreadsheets().get(spreadsheetId).execute().getSheets().stream()
+            .filter(s -> sheetName.equals(s.getProperties().getTitle()))
+            .findFirst().orElseThrow(() -> new ClientVisibleException("{report.general.sheet_not_exist}"))
+            .getProperties().getSheetId();
+
+        // get row indexes of each classes
+        List<List<Object>> codeValues = sheetsService.spreadsheets().values()
+            .get(spreadsheetId, sheetName + "!A:A").execute().getValues();
+        Set<String> classCodes = lectures.stream().map(lec -> lec.getTutorClass().getCode()).collect(Collectors.toSet());
+        Map<String, Integer> classRowIndex = new HashMap<>();
+        for (int i=0; i < codeValues.size(); i++) {
+            List<Object> row = codeValues.get(i);
+            if (!row.isEmpty() && classCodes.contains((String) row.get(0))) {
+                classRowIndex.put((String) row.get(0), i);
+            }
+            if (classRowIndex.size() == classCodes.size()) {
+                // enough, no need finding more
+                break;
+            }
+        }
+
+        // get lecture number column index
+        List<Integer> lectureNoColumnIndexes = new ArrayList<>();
+        List<List<Object>> headerValues = sheetsService.spreadsheets().values()
+            .get(spreadsheetId, sheetName + "!1:1").execute().getValues();
+        if (headerValues.isEmpty()) throw new ClientVisibleException("{report.general.sheet.no_header}");
+        for (int i=0; i < headerValues.get(0).size(); i++) {
+            String headerValue = (String) headerValues.get(0).get(i);
+            if (headerValue != null && headerValue.matches("^Buổi\\s*\\d+$")) {
+                lectureNoColumnIndexes.add(i);
+            }
+        }
+
+        // generate report data & write to sheet
+        var batchUpdateRequest = new BatchUpdateSpreadsheetRequest().setRequests(new ArrayList<>());
+        groupByClass(lectures).forEach((tutorClass, classLectures) -> {
+            String classCode = tutorClass.getCode();
+            int rowIndex = Optional.ofNullable(classRowIndex.get(classCode)).orElseThrow(
+                () -> new ClientVisibleException("{report.general.class_code_not_found} : " + classCode)
+            );
+            classLectures.forEach(lec -> {
+                int colIndex = lectureNoColumnIndexes.get(lec.getLectureNo() - 1);
+                GridRange range = new GridRange().setSheetId(sheetId)
+                    .setStartRowIndex(rowIndex)
+                    .setEndRowIndex(rowIndex + 1)
+                    .setStartColumnIndex(colIndex)
+                    .setEndColumnIndex(colIndex + 1);
+                CellData cellData = new CellData().setUserEnteredValue(
+                    new ExtendedValue().setStringValue(DateTimeFmt.D_M_YYYY.format(lec.getStartTime()) + "\n" + lec.getGeneratedCode())
+                );
+                batchUpdateRequest.getRequests().add(new Request().setUpdateCells(
+                    new UpdateCellsRequest().setFields("*").setRange(range).setRows(List.of(new RowData().setValues(List.of(cellData))))
+                ));
+            });
+        });
+        sheetsService.spreadsheets().batchUpdate(spreadsheetId, batchUpdateRequest).execute();
     }
 
     private List<Lecture> getLecturesForReport(ReportRange range) {
@@ -187,8 +256,12 @@ public class ReportServiceImpl implements ReportService {
             .setFontSize(15)
             .setBackgroundColor(new RGBAColor(255, 255, 0, 1))
             .setHorizontalAlignment("CENTER");
+        Lecture firstLecture = lectures.isEmpty() ? null : lectures.get(0);
+        String title = firstLecture != null
+            ? getDetailReportTitle(firstLecture.getStartTime().getMonthValue(), firstLecture.getStartTime().getYear())
+            : null;
         range.addRow().addCell()
-            .setValue(String.format("THÁNG %d/%d", lectures.get(0).getStartTime().getMonthValue(), lectures.get(0).getStartTime().getYear()))
+            .setValue(title)
             .setAttribute(new SheetCellAttribute().setColspan(10))
             .setStyle(reportMonthHeaderStyle);
 
@@ -292,5 +365,9 @@ public class ReportServiceImpl implements ReportService {
                 cell.setCellValue(value == null ? null : value.toString());
             }
         }
+    }
+
+    private String getDetailReportTitle(int month, int year) {
+        return String.format("THÁNG %s/%s", month, year);
     }
 }

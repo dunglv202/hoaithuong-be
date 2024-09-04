@@ -10,6 +10,7 @@ import org.springframework.context.support.ReloadableResourceBundleMessageSource
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 import java.util.Locale;
 
@@ -17,6 +18,7 @@ import java.util.Locale;
 @EnableAspectJAutoProxy
 @EnableAsync
 @EnableJpaAuditing
+@EnableScheduling
 public class AppConfig {
     @Bean
     public MessageSource messageSource() {

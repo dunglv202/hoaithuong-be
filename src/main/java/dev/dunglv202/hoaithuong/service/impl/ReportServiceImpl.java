@@ -76,10 +76,15 @@ public class ReportServiceImpl implements ReportService {
 
     @Override
     public void exportGoogleSheet(ReportRange range) {
+        User signedUser = authHelper.getSignedUser();
+        exportGoogleSheet(signedUser, range);
+    }
+
+    @Override
+    public void exportGoogleSheet(User user, ReportRange range) {
         try {
-            User signedUser = authHelper.getSignedUser();
-            Configuration config = configService.getConfigsByUser(signedUser);
-            Sheets sheetsService = googleHelper.getSheetService(signedUser);
+            Configuration config = configService.getConfigsByUser(user);
+            Sheets sheetsService = googleHelper.getSheetService(user);
             List<Lecture> lectures = getLecturesForReport(range);
 
             exportDetailToGgSheet(sheetsService, range, lectures, config);

@@ -32,3 +32,6 @@ spring:
 auth:
   jwt:
     secret: ${JWT_SECRET}
+cron:
+  schedule:
+    export-report: 0 0 16 * * *

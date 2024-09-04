@@ -9,19 +9,11 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 public class LectureInReportDTO {
-    @JsonFormat(pattern = "yyyy-M-d H:m")
     private LocalDateTime startTime;
-
-    @JsonFormat(pattern = "yyyy-M-d H:m")
     private LocalDateTime endTime;
-
     private String classCode;
-
     private StudentInReportDTO student;
-
     private String topic;
-
     private Integer lectureNo;
-
     private int totalLecture;
 }

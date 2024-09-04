@@ -1,7 +1,6 @@
 package dev.dunglv202.hoaithuong.service;
 
 import dev.dunglv202.hoaithuong.dto.ReportDTO;
-import dev.dunglv202.hoaithuong.dto.SheetExportResultDTO;
 import dev.dunglv202.hoaithuong.model.ReportRange;
 import org.springframework.core.io.Resource;
 
@@ -10,5 +9,5 @@ public interface ReportService {
 
     ReportDTO getReport(ReportRange range);
 
-    SheetExportResultDTO exportGoogleSheet(ReportRange range);
+    void exportGoogleSheet(ReportRange range);
 }

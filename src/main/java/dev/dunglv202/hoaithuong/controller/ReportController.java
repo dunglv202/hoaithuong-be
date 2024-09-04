@@ -1,7 +1,6 @@
 package dev.dunglv202.hoaithuong.controller;
 
 import dev.dunglv202.hoaithuong.dto.ReportDTO;
-import dev.dunglv202.hoaithuong.dto.SheetExportResultDTO;
 import dev.dunglv202.hoaithuong.model.ReportRange;
 import dev.dunglv202.hoaithuong.service.impl.ReportServiceImpl;
 import jakarta.validation.Valid;
@@ -42,7 +41,7 @@ public class ReportController {
 
     @PostMapping("/export")
     @PreAuthorize("isAuthenticated()")
-    public SheetExportResultDTO exportReport(@Valid ReportRange range) {
-        return this.reportService.exportGoogleSheet(range);
+    public void exportReport(@Valid ReportRange range) {
+        this.reportService.exportGoogleSheet(range);
     }
 }

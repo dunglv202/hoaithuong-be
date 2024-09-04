@@ -3,7 +3,6 @@ package dev.dunglv202.hoaithuong.service.impl;
 import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.model.*;
 import dev.dunglv202.hoaithuong.dto.ReportDTO;
-import dev.dunglv202.hoaithuong.dto.SheetExportResultDTO;
 import dev.dunglv202.hoaithuong.entity.Configuration;
 import dev.dunglv202.hoaithuong.entity.Lecture;
 import dev.dunglv202.hoaithuong.entity.TutorClass;
@@ -76,7 +75,7 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
-    public SheetExportResultDTO exportGoogleSheet(ReportRange range) {
+    public void exportGoogleSheet(ReportRange range) {
         try {
             User signedUser = authHelper.getSignedUser();
             Configuration config = configService.getConfigsByUser(signedUser);
@@ -85,8 +84,6 @@ public class ReportServiceImpl implements ReportService {
 
             exportDetailToGgSheet(sheetsService, range, lectures, config);
             exportGeneralToGgSheet(sheetsService, lectures, config);
-
-            return new SheetExportResultDTO("");
         } catch (ClientVisibleException e) {
             throw e;
         } catch (Exception e) {

@@ -7,9 +7,11 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
 
-@Setter
 @Getter
-public class NewStudentDTO {
+@Setter
+public class UpdatedStudentDTO {
+    private Long id;
+
     @NotBlank(message = "{student.name.not_blank}")
     private String name;
 

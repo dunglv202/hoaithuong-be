@@ -2,8 +2,10 @@ package dev.dunglv202.hoaithuong.service.impl;
 
 import dev.dunglv202.hoaithuong.dto.NewStudentDTO;
 import dev.dunglv202.hoaithuong.dto.StudentDTO;
+import dev.dunglv202.hoaithuong.dto.UpdatedStudentDTO;
 import dev.dunglv202.hoaithuong.entity.Student;
 import dev.dunglv202.hoaithuong.entity.Student_;
+import dev.dunglv202.hoaithuong.exception.ClientVisibleException;
 import dev.dunglv202.hoaithuong.mapper.StudentMapper;
 import dev.dunglv202.hoaithuong.model.Page;
 import dev.dunglv202.hoaithuong.model.Pagination;
@@ -29,5 +31,11 @@ public class StudentService {
             studentRepository.findAll(criteria.toSpecification(), pagination.withSort(activeFirst).pageable())
                 .map(StudentMapper.INSTANCE::toStudentDTO)
         );
+    }
+
+    public void updateStudent(UpdatedStudentDTO updated) {
+        Student student = studentRepository.findById(updated.getId())
+            .orElseThrow(() -> new ClientVisibleException("{student.not_found}"));
+        studentRepository.save(student.merge(updated));
     }
 }

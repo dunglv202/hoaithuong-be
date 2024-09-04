@@ -1,9 +1,8 @@
 package dev.dunglv202.hoaithuong.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import dev.dunglv202.hoaithuong.dto.UpdatedStudentDTO;
+import dev.dunglv202.hoaithuong.mapper.StudentMapper;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.Formula;
@@ -22,4 +21,14 @@ public class Student extends Auditable {
     private boolean active;
 
     private String notes;
+
+    @Embedded
+    @AttributeOverride(name = "salutation", column = @Column(name = "report_to_salutation"))
+    @AttributeOverride(name = "name", column = @Column(name = "report_to_name"))
+    private Person reportTo;
+
+    public Student merge(UpdatedStudentDTO updated) {
+        StudentMapper.INSTANCE.mergeStudent(this, updated);
+        return this;
+    }
 }

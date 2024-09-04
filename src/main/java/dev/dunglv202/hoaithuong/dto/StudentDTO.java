@@ -8,6 +8,7 @@ import lombok.Setter;
 public class StudentDTO {
     private Long id;
     private String name;
+    private PersonDTO reportTo;
     private String notes;
     private boolean active;
 }

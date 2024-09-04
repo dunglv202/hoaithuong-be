@@ -2,6 +2,7 @@ package dev.dunglv202.hoaithuong.controller;
 
 import dev.dunglv202.hoaithuong.dto.NewStudentDTO;
 import dev.dunglv202.hoaithuong.dto.StudentDTO;
+import dev.dunglv202.hoaithuong.dto.UpdatedStudentDTO;
 import dev.dunglv202.hoaithuong.model.Page;
 import dev.dunglv202.hoaithuong.model.Pagination;
 import dev.dunglv202.hoaithuong.model.StudentCriteria;
@@ -27,5 +28,12 @@ public class StudentController {
     @PreAuthorize("isAuthenticated()")
     public Page<StudentDTO> getAllStudents(StudentCriteria criteria, Pagination pagination) {
         return studentService.getAllStudents(criteria, pagination.limit(20));
+    }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("isAuthenticated()")
+    public void updateStudent(@Valid @RequestBody UpdatedStudentDTO updated, @PathVariable Long id) {
+        updated.setId(id);
+        studentService.updateStudent(updated);
     }
 }

@@ -1,15 +1,18 @@
 package dev.dunglv202.hoaithuong.service.impl;
 
+import com.google.api.client.googleapis.json.GoogleJsonResponseException;
 import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.model.BatchUpdateValuesRequest;
 import com.google.api.services.sheets.v4.model.GridRange;
 import com.google.api.services.sheets.v4.model.Spreadsheet;
 import com.google.api.services.sheets.v4.model.ValueRange;
+import dev.dunglv202.hoaithuong.constant.ApiErrorCode;
 import dev.dunglv202.hoaithuong.dto.ReportDTO;
 import dev.dunglv202.hoaithuong.entity.Configuration;
 import dev.dunglv202.hoaithuong.entity.Lecture;
 import dev.dunglv202.hoaithuong.entity.TutorClass;
 import dev.dunglv202.hoaithuong.entity.User;
+import dev.dunglv202.hoaithuong.exception.AuthenticationException;
 import dev.dunglv202.hoaithuong.exception.ClientVisibleException;
 import dev.dunglv202.hoaithuong.helper.AuthHelper;
 import dev.dunglv202.hoaithuong.helper.DateTimeFmt;
@@ -32,6 +35,7 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
@@ -93,6 +97,11 @@ public class ReportServiceImpl implements ReportService {
 
             exportDetailToGgSheet(sheetsService, range, lectures, config);
             exportGeneralToGgSheet(sheetsService, lectures, config);
+        } catch (GoogleJsonResponseException e) {
+            if (e.getStatusCode() == HttpStatus.UNAUTHORIZED.value()) {
+                throw new AuthenticationException(ApiErrorCode.REQUIRE_GOOGLE_AUTH);
+            }
+            throw new RuntimeException(e);
         } catch (ClientVisibleException e) {
             throw e;
         } catch (Exception e) {

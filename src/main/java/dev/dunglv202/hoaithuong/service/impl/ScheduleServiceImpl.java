@@ -1,6 +1,7 @@
 package dev.dunglv202.hoaithuong.service.impl;
 
 import dev.dunglv202.hoaithuong.dto.MinimalScheduleDTO;
+import dev.dunglv202.hoaithuong.dto.NewScheduleDTO;
 import dev.dunglv202.hoaithuong.entity.Schedule;
 import dev.dunglv202.hoaithuong.entity.TutorClass;
 import dev.dunglv202.hoaithuong.exception.ClientVisibleException;
@@ -11,6 +12,7 @@ import dev.dunglv202.hoaithuong.model.ScheduleCriteria;
 import dev.dunglv202.hoaithuong.model.SimpleRange;
 import dev.dunglv202.hoaithuong.model.TimeSlot;
 import dev.dunglv202.hoaithuong.repository.ScheduleRepository;
+import dev.dunglv202.hoaithuong.repository.TutorClassRepository;
 import dev.dunglv202.hoaithuong.service.ScheduleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -28,6 +30,7 @@ import static dev.dunglv202.hoaithuong.model.ScheduleCriteria.inRange;
 @RequiredArgsConstructor
 public class ScheduleServiceImpl implements ScheduleService {
     private final ScheduleRepository scheduleRepository;
+    private final TutorClassRepository tutorClassRepository;
 
     @Override
     public List<MinimalScheduleDTO> getSchedule(Range<LocalDate> range) {
@@ -93,12 +96,11 @@ public class ScheduleServiceImpl implements ScheduleService {
             }
         }
 
-        // replace last schedule if needed
+        // check if able to add more
         int totalScheduled = scheduleRepository.countByTutorClass(tutorClass);
         int totalScheduleShouldHave = tutorClass.getTotalLecture() - tutorClass.getInitialLearned();
         if (totalScheduled == totalScheduleShouldHave) {
-            Schedule lastSchedule = scheduleRepository.findLastByTutorClass(tutorClass);
-            scheduleRepository.delete(lastSchedule);
+            throw new ClientVisibleException("{tutor_class.schedule.exceed}");
         }
 
         scheduleRepository.save(schedule);
@@ -114,6 +116,13 @@ public class ScheduleServiceImpl implements ScheduleService {
         scheduleRepository.deleteAllFromDateByClass(tutorClass, startDate);
         tutorClass.setTimeSlots(new ArrayList<>(timeSlots));
         addClassToMySchedule(tutorClass, startDate);
+    }
+
+    @Override
+    public void addNewSchedule(NewScheduleDTO newSchedule) {
+        TutorClass tutorClass = tutorClassRepository.findById(newSchedule.getClassId())
+            .orElseThrow(() -> new ClientVisibleException("{tutor_class.not_found}"));
+        addSingleScheduleForClass(tutorClass, newSchedule.getStartTime());
     }
 
     /**

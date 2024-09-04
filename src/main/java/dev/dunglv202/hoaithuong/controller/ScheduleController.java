@@ -1,6 +1,7 @@
 package dev.dunglv202.hoaithuong.controller;
 
 import dev.dunglv202.hoaithuong.dto.MinimalScheduleDTO;
+import dev.dunglv202.hoaithuong.dto.NewScheduleDTO;
 import dev.dunglv202.hoaithuong.model.ScheduleRange;
 import dev.dunglv202.hoaithuong.service.impl.ScheduleServiceImpl;
 import jakarta.validation.Valid;
@@ -20,6 +21,12 @@ public class ScheduleController {
     @PreAuthorize("isAuthenticated()")
     public List<MinimalScheduleDTO> getSchedule(@Valid ScheduleRange range) {
         return scheduleService.getSchedule(range);
+    }
+
+    @PostMapping
+    @PreAuthorize("isAuthenticated()")
+    public void addSchedule(@Valid @RequestBody NewScheduleDTO newSchedule) {
+        scheduleService.addNewSchedule(newSchedule);
     }
 
     @DeleteMapping("/{id}")

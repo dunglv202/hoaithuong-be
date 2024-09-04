@@ -1,6 +1,7 @@
 package dev.dunglv202.hoaithuong.service;
 
 import dev.dunglv202.hoaithuong.dto.MinimalScheduleDTO;
+import dev.dunglv202.hoaithuong.dto.NewScheduleDTO;
 import dev.dunglv202.hoaithuong.entity.Schedule;
 import dev.dunglv202.hoaithuong.entity.TutorClass;
 import dev.dunglv202.hoaithuong.model.Range;
@@ -30,4 +31,6 @@ public interface ScheduleService {
      * Update schedule since {@code startDate}, remove old schedule and replace with new time slots
      */
     void updateScheduleForClass(TutorClass tutorClass, LocalDate startDate, Set<TimeSlot> timeSlots);
+
+    void addNewSchedule(NewScheduleDTO newSchedule);
 }

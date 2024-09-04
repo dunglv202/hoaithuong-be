@@ -98,7 +98,7 @@ public class ReportServiceImpl implements ReportService {
 
     private void exportDetailToGgSheet(Sheets sheetsService, ReportRange range, List<Lecture> lectures, Configuration config) throws IOException {
         if (config.getDetailReportId() == null) {
-            throw new ClientVisibleException("{export.google_sheet_id.required}");
+            throw new ClientVisibleException("{export.detail.google_sheet_id.required}");
         }
         Spreadsheet spreadsheet = sheetsService.spreadsheets().get(config.getDetailReportId()).execute();
         String reportSheetName = config.getDetailReportSheet();
@@ -135,6 +135,9 @@ public class ReportServiceImpl implements ReportService {
     }
 
     private void exportGeneralToGgSheet(Sheets sheetsService, List<Lecture> lectures, Configuration config) throws IOException {
+        if (config.getDetailReportId() == null) {
+            throw new ClientVisibleException("{export.general.google_sheet_id.required}");
+        }
         String spreadsheetId = config.getGeneralReportId();
         String sheetName = config.getGeneralReportSheet();
         Integer sheetId = sheetsService.spreadsheets().get(spreadsheetId).execute().getSheets().stream()

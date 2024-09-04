@@ -1,9 +1,6 @@
 package dev.dunglv202.hoaithuong.mapper;
 
-import dev.dunglv202.hoaithuong.dto.LectureDTO;
-import dev.dunglv202.hoaithuong.dto.NewLectureDTO;
-import dev.dunglv202.hoaithuong.dto.ScheduleLectureDTO;
-import dev.dunglv202.hoaithuong.dto.UpdatedLecture;
+import dev.dunglv202.hoaithuong.dto.*;
 import dev.dunglv202.hoaithuong.entity.Lecture;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -25,4 +22,9 @@ public interface LectureMapper {
 
     @Mapping(target = "id", ignore = true)
     void mergeLecture(@MappingTarget Lecture old, UpdatedLecture updated);
+
+    @Mapping(target = "classCode", source = "tutorClass.code")
+    @Mapping(target = "totalLecture", source = "tutorClass.totalLecture")
+    @Mapping(target = "student", source = "tutorClass.student")
+    LectureInReportDTO toLectureInReportDTO(Lecture lecture);
 }

@@ -16,7 +16,7 @@ public class ReportDTO {
     private int estimatedTotal;
     private int totalLectures;
     private int totalStudents;
-    private List<LectureDTO> lectures;
+    private List<LectureInReportDTO> lectures;
 
     public ReportDTO(List<Lecture> lectures) {
         this.totalEarned = lectures.stream()
@@ -30,6 +30,6 @@ public class ReportDTO {
             .map(TutorClass::getStudent)
             .collect(Collectors.toSet())
             .size();
-        this.lectures = lectures.stream().map(LectureMapper.INSTANCE::toLectureDTO).toList();
+        this.lectures = lectures.stream().map(LectureMapper.INSTANCE::toLectureInReportDTO).toList();
     }
 }

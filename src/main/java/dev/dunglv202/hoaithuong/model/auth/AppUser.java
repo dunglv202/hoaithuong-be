@@ -1,4 +1,4 @@
-package dev.dunglv202.hoaithuong.model;
+package dev.dunglv202.hoaithuong.model.auth;
 
 import dev.dunglv202.hoaithuong.entity.User;
 import lombok.Getter;
@@ -42,7 +42,7 @@ public class AppUser implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return true;
+        return !user.isLocked();
     }
 
     @Override
@@ -52,6 +52,6 @@ public class AppUser implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return !user.isLocked();
     }
 }

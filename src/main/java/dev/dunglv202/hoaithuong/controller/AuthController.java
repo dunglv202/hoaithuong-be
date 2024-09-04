@@ -2,7 +2,7 @@ package dev.dunglv202.hoaithuong.controller;
 
 import dev.dunglv202.hoaithuong.dto.CredentialDTO;
 import dev.dunglv202.hoaithuong.helper.AuthHelper;
-import dev.dunglv202.hoaithuong.model.AuthResult;
+import dev.dunglv202.hoaithuong.model.auth.AuthResult;
 import dev.dunglv202.hoaithuong.service.impl.AuthService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;

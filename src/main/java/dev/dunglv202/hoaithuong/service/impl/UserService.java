@@ -1,8 +1,5 @@
 package dev.dunglv202.hoaithuong.service.impl;
 
-import com.google.api.client.googleapis.json.GoogleJsonResponseException;
-import com.google.api.services.sheets.v4.Sheets;
-import com.google.api.services.sheets.v4.model.Spreadsheet;
 import dev.dunglv202.hoaithuong.dto.DetailProfileDTO;
 import dev.dunglv202.hoaithuong.dto.UpdatedDetailProfileDTO;
 import dev.dunglv202.hoaithuong.dto.UserInfoDTO;
@@ -11,13 +8,12 @@ import dev.dunglv202.hoaithuong.entity.User;
 import dev.dunglv202.hoaithuong.exception.ClientVisibleException;
 import dev.dunglv202.hoaithuong.helper.AuthHelper;
 import dev.dunglv202.hoaithuong.helper.GoogleHelper;
-import dev.dunglv202.hoaithuong.model.AppUser;
+import dev.dunglv202.hoaithuong.model.auth.AppUser;
 import dev.dunglv202.hoaithuong.model.SheetInfo;
 import dev.dunglv202.hoaithuong.repository.UserRepository;
 import dev.dunglv202.hoaithuong.service.ConfigService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -60,37 +56,18 @@ public class UserService implements UserDetailsService {
             updateDTO.getConfigs().getGeneralReportId(),
             updateDTO.getConfigs().getGeneralReportSheet()
         );
-        if (!generalReport.equals(configs.getGeneralSheetInfo()) && !isValidSheet(generalReport)) {
+        if (!generalReport.equals(configs.getGeneralSheetInfo()) && !googleHelper.isValidSheet(signedUser, generalReport)) {
             throw new ClientVisibleException("{report.general.spreadsheet.invalid}");
         }
         SheetInfo detailReport = new SheetInfo(
             updateDTO.getConfigs().getDetailReportId(),
             updateDTO.getConfigs().getDetailReportSheet()
         );
-        if (!detailReport.equals(configs.getDetailSheetInfo()) && !isValidSheet(detailReport)) {
+        if (!detailReport.equals(configs.getDetailSheetInfo()) && !googleHelper.isValidSheet(signedUser, detailReport)) {
             throw new ClientVisibleException("{report.detail.spreadsheet.invalid}");
         }
 
         configs.mergeWith(updateDTO.getConfigs());
         configService.saveConfigs(configs);
-    }
-
-    private boolean isValidSheet(SheetInfo sheet) {
-        try {
-            if (sheet.getSpreadsheetId() == null && (sheet.getSheetName() == null || sheet.getSheetName().isBlank())) {
-                return true;
-            }
-            Sheets sheetService = googleHelper.getSheetService(authHelper.getSignedUser());
-            Spreadsheet spreadsheet = sheetService.spreadsheets().get(sheet.getSpreadsheetId()).execute();
-            return spreadsheet.getSheets().stream().anyMatch(s -> s.getProperties().getTitle().equals(sheet.getSheetName()));
-        } catch (ClientVisibleException e) {
-            throw new ClientVisibleException("{config.google_sheet_id.could_not_be_updated}");
-        } catch (GoogleJsonResponseException e) {
-            if (e.getStatusCode() == HttpStatus.NOT_FOUND.value()) return false;
-            log.error("Could not validate sheet id", e);
-        } catch (Exception e) {
-            log.error("Could not validate sheet id", e);
-        }
-        return false;
     }
 }

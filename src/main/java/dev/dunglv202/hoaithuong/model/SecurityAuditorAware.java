@@ -1,6 +1,7 @@
 package dev.dunglv202.hoaithuong.model;
 
 import dev.dunglv202.hoaithuong.entity.User;
+import dev.dunglv202.hoaithuong.model.auth.AppUser;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.lang.NonNull;
 import org.springframework.security.core.Authentication;

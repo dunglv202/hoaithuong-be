@@ -24,4 +24,8 @@ public class User extends Auditable {
     private String avatar;
 
     private String email;
+
+    private int loginTry;
+
+    private boolean locked;
 }

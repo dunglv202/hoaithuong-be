@@ -1,7 +1,7 @@
 package dev.dunglv202.hoaithuong.config;
 
 import dev.dunglv202.hoaithuong.filter.JwtFilter;
-import dev.dunglv202.hoaithuong.model.Oauth2AuthHandler;
+import dev.dunglv202.hoaithuong.model.auth.Oauth2AuthHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -33,6 +33,7 @@ public class SecurityConfig {
     public static final Duration ACCESS_TOKEN_LIFETIME = Duration.ofMinutes(240);
     public static final String REFRESH_TOKEN_COOKIE = "refreshToken";
     public static final Duration REFRESH_TOKEN_LIFETIME = Duration.ofDays(30);
+    public static final int MAX_LOGIN_TRY = 5;
 
     private final JwtFilter jwtFilter;
     private final Oauth2AuthHandler oauth2AuthHandler;

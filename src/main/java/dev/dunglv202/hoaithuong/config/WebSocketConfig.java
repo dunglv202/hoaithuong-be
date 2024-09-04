@@ -1,7 +1,7 @@
 package dev.dunglv202.hoaithuong.config;
 
 import dev.dunglv202.hoaithuong.helper.JwtProvider;
-import dev.dunglv202.hoaithuong.model.AuthHandshakeInterceptor;
+import dev.dunglv202.hoaithuong.model.auth.AuthHandshakeInterceptor;
 import jakarta.annotation.Nonnull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;

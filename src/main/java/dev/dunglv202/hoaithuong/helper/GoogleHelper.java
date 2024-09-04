@@ -3,16 +3,22 @@ package dev.dunglv202.hoaithuong.helper;
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
+import com.google.api.client.googleapis.json.GoogleJsonResponseException;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.services.sheets.v4.Sheets;
+import com.google.api.services.sheets.v4.model.Spreadsheet;
 import dev.dunglv202.hoaithuong.entity.Configuration;
 import dev.dunglv202.hoaithuong.entity.User;
 import dev.dunglv202.hoaithuong.exception.AuthenticationException;
+import dev.dunglv202.hoaithuong.exception.ClientVisibleException;
+import dev.dunglv202.hoaithuong.model.SheetInfo;
 import dev.dunglv202.hoaithuong.service.ConfigService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -22,6 +28,7 @@ import static dev.dunglv202.hoaithuong.constant.ApiErrorCode.REQUIRE_GOOGLE_AUTH
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class GoogleHelper {
     public static HttpTransport HTTP_TRANSPORT;
     public static JsonFactory JSON_FACTORY;
@@ -68,5 +75,24 @@ public class GoogleHelper {
             .build()
             .setAccessToken(config.getGoogleAccessToken())
             .setRefreshToken(config.getGoogleRefreshToken());
+    }
+
+    public boolean isValidSheet(User user, SheetInfo sheet) {
+        try {
+            if (sheet.getSpreadsheetId() == null && (sheet.getSheetName() == null || sheet.getSheetName().isBlank())) {
+                return true;
+            }
+            Sheets sheetService = getSheetService(user);
+            Spreadsheet spreadsheet = sheetService.spreadsheets().get(sheet.getSpreadsheetId()).execute();
+            return spreadsheet.getSheets().stream().anyMatch(s -> s.getProperties().getTitle().equals(sheet.getSheetName()));
+        } catch (ClientVisibleException e) {
+            throw new ClientVisibleException("{config.google_sheet_id.could_not_be_updated}");
+        } catch (GoogleJsonResponseException e) {
+            if (e.getStatusCode() == HttpStatus.NOT_FOUND.value()) return false;
+            log.error("Could not validate sheet id", e);
+        } catch (Exception e) {
+            log.error("Could not validate sheet id", e);
+        }
+        return false;
     }
 }

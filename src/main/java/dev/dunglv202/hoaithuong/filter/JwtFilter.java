@@ -5,7 +5,7 @@ import dev.dunglv202.hoaithuong.config.SecurityConfig;
 import dev.dunglv202.hoaithuong.dto.ApiError;
 import dev.dunglv202.hoaithuong.helper.AuthHelper;
 import dev.dunglv202.hoaithuong.helper.JwtProvider;
-import dev.dunglv202.hoaithuong.model.AppUser;
+import dev.dunglv202.hoaithuong.model.auth.AppUser;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;

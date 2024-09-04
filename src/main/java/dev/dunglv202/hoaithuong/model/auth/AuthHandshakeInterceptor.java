@@ -1,4 +1,4 @@
-package dev.dunglv202.hoaithuong.model;
+package dev.dunglv202.hoaithuong.model.auth;
 
 import jakarta.annotation.Nonnull;
 import jakarta.servlet.http.HttpServletRequest;

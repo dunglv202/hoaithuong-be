@@ -14,11 +14,11 @@ import dev.dunglv202.hoaithuong.repository.ScheduleRepository;
 import dev.dunglv202.hoaithuong.service.ScheduleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -38,29 +38,9 @@ public class ScheduleServiceImpl implements ScheduleService {
     }
 
     @Override
-    @Transactional
     public void deleteSchedule(Long id) {
         Schedule schedule = scheduleRepository.findById(id)
             .orElseThrow();
-
-        // make new one
-        List<TimeSlot> classTimeSlots = schedule.getTutorClass().getTimeSlots();
-        if (classTimeSlots == null || classTimeSlots.isEmpty()) return;
-        Schedule lastSchedule = scheduleRepository.findLastByTutorClass(schedule.getTutorClass());
-        TimeSlot nextTimeSlot = classTimeSlots.stream().filter(slot -> slot.isAfter(lastSchedule.getStartTime()))
-            .findFirst().orElse(classTimeSlots.get(0));
-        int dayDiff = nextTimeSlot.getWeekday().getValue() - schedule.getStartTime().getDayOfWeek().getValue();
-        if (!nextTimeSlot.isAfter(lastSchedule.getStartTime())) {
-            // time slot is in next week => plus more 7 day
-            dayDiff += 7;
-        }
-        Schedule newSchedule = makeSchedule(
-            schedule.getTutorClass(),
-            lastSchedule.getStartTime().toLocalDate().plusDays(dayDiff).atTime(nextTimeSlot.getStartTime())
-        );
-        scheduleRepository.save(newSchedule);
-
-        // delete schedule
         if (schedule.getLecture() != null) throw new ClientVisibleException("{schedule.attached_to_lecture}");
         scheduleRepository.delete(schedule);
     }
@@ -147,6 +127,9 @@ public class ScheduleServiceImpl implements ScheduleService {
         List<Schedule> schedules = new ArrayList<>();
         LocalDate date = startDate;
         int numOfLecture = tutorClass.getTotalLecture() - tutorClass.getLearned();
+
+        // sort time slots by ascending order
+        Collections.sort(tutorClass.getTimeSlots());
 
         while (numOfLecture > 0) {
             LocalDate today = date;

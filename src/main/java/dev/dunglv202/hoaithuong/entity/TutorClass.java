@@ -10,7 +10,6 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -63,13 +62,6 @@ public class TutorClass extends Auditable {
 
     public Duration getDuration() {
         return Duration.ofMinutes(durationInMinute);
-    }
-
-    /**
-     * @return Time slots in ascending order
-     */
-    public List<TimeSlot> getTimeSlots() {
-        return timeSlots != null ? new ArrayList<>(timeSlots.stream().sorted().toList()) : null;
     }
 
     public TutorClass merge(UpdatedTutorClassDTO updated) {

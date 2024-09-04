@@ -71,6 +71,22 @@ public class SheetHelper {
         return matcher.group(1);
     }
 
+    /**
+     * Converts a zero-based column index to an Excel column letter.
+     *
+     * @param columnIndex Zero-based index of the column (0 for A, 1 for B, etc.).
+     * @return Excel column letter(s) corresponding to the given index.
+     */
+    public static String columnIndexToLetter(int columnIndex) {
+        StringBuilder columnName = new StringBuilder();
+        while (columnIndex >= 0) {
+            int mod = columnIndex % 26;
+            columnName.insert(0, (char) (mod + 'A'));
+            columnIndex = (columnIndex / 26) - 1;
+        }
+        return columnName.toString();
+    }
+
     public static String bindToSpreadsheetURL(String spreadsheetId) {
         return spreadsheetId == null ? null : String.format(SPREADSHEET_URL_FORM, spreadsheetId);
     }

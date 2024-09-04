@@ -1,7 +1,10 @@
 package dev.dunglv202.hoaithuong.service.impl;
 
 import com.google.api.services.sheets.v4.Sheets;
-import com.google.api.services.sheets.v4.model.*;
+import com.google.api.services.sheets.v4.model.BatchUpdateValuesRequest;
+import com.google.api.services.sheets.v4.model.GridRange;
+import com.google.api.services.sheets.v4.model.Spreadsheet;
+import com.google.api.services.sheets.v4.model.ValueRange;
 import dev.dunglv202.hoaithuong.dto.ReportDTO;
 import dev.dunglv202.hoaithuong.entity.Configuration;
 import dev.dunglv202.hoaithuong.entity.Lecture;
@@ -37,6 +40,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static dev.dunglv202.hoaithuong.helper.SheetHelper.columnIndexToLetter;
 import static dev.dunglv202.hoaithuong.model.LectureCriteria.*;
 
 @Service
@@ -140,10 +144,6 @@ public class ReportServiceImpl implements ReportService {
         }
         String spreadsheetId = config.getGeneralReportId();
         String sheetName = config.getGeneralReportSheet();
-        Integer sheetId = sheetsService.spreadsheets().get(spreadsheetId).execute().getSheets().stream()
-            .filter(s -> sheetName.equals(s.getProperties().getTitle()))
-            .findFirst().orElseThrow(() -> new ClientVisibleException("{report.general.sheet_not_exist}"))
-            .getProperties().getSheetId();
 
         // get row indexes of each classes
         List<List<Object>> codeValues = sheetsService.spreadsheets().values()
@@ -174,7 +174,7 @@ public class ReportServiceImpl implements ReportService {
         }
 
         // generate report data & write to sheet
-        var batchUpdateRequest = new BatchUpdateSpreadsheetRequest().setRequests(new ArrayList<>());
+        var batchUpdateRequest = new BatchUpdateValuesRequest().setValueInputOption("RAW").setData(new ArrayList<>());
         groupByClass(lectures).forEach((tutorClass, classLectures) -> {
             String classCode = tutorClass.getCode();
             int rowIndex = Optional.ofNullable(classRowIndex.get(classCode)).orElseThrow(
@@ -182,20 +182,13 @@ public class ReportServiceImpl implements ReportService {
             );
             classLectures.forEach(lec -> {
                 int colIndex = lectureNoColumnIndexes.get(lec.getLectureNo() - 1);
-                GridRange range = new GridRange().setSheetId(sheetId)
-                    .setStartRowIndex(rowIndex)
-                    .setEndRowIndex(rowIndex + 1)
-                    .setStartColumnIndex(colIndex)
-                    .setEndColumnIndex(colIndex + 1);
-                CellData cellData = new CellData().setUserEnteredValue(
-                    new ExtendedValue().setStringValue(DateTimeFmt.D_M_YYYY.format(lec.getStartTime()) + "\n" + lec.getGeneratedCode())
-                );
-                batchUpdateRequest.getRequests().add(new Request().setUpdateCells(
-                    new UpdateCellsRequest().setFields("*").setRange(range).setRows(List.of(new RowData().setValues(List.of(cellData))))
-                ));
+                var value = new ValueRange()
+                    .setRange(String.format("%s!%s%s", sheetName, columnIndexToLetter(colIndex), rowIndex + 1))
+                    .setValues(List.of(List.of(DateTimeFmt.D_M_YYYY.format(lec.getStartTime()) + "\n" + lec.getGeneratedCode())));
+                batchUpdateRequest.getData().add(value);
             });
         });
-        sheetsService.spreadsheets().batchUpdate(spreadsheetId, batchUpdateRequest).execute();
+        sheetsService.spreadsheets().values().batchUpdate(spreadsheetId, batchUpdateRequest).execute();
     }
 
     private List<Lecture> getLecturesForReport(ReportRange range) {

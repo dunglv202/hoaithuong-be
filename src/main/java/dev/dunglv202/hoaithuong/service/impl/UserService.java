@@ -54,7 +54,7 @@ public class UserService implements UserDetailsService {
     }
 
     public void updateDetailProfile(UpdatedDetailProfileDTO updateDTO) {
-        User signedUser = authHelper.getSignedUser();
+        User signedUser = userRepository.findById(authHelper.getSignedUser().getId()).orElseThrow();
         Configuration configs = configService.getConfigsByUser(signedUser);
 
         // check valid sheet
@@ -73,6 +73,8 @@ public class UserService implements UserDetailsService {
             throw new ClientVisibleException("{report.detail.spreadsheet.invalid}");
         }
 
+        signedUser.setDisplayName(updateDTO.getDisplayName());
+        userRepository.save(signedUser);
         configs.mergeWith(updateDTO.getConfigs());
         configService.saveConfigs(configs);
     }

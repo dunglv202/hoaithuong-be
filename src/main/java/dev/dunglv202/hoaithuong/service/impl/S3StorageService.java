@@ -34,13 +34,13 @@ public class S3StorageService implements StorageService {
             do { fileName = generateFileName(); } while (isExisted(fileName));
 
             // convert & upload
-            Path dest = tmpFilePath.resolve(fileName);
-            avatar.transferTo(dest);
+            Path tempFile = Files.createTempFile("image-", "-tmp");
+            avatar.transferTo(tempFile);
             String mediaType = FileUtil.detectFileType(avatar);
             var putObjReq = PutObjectRequest.builder().bucket(awsProperties.getBucket()).key(fileName)
                 .metadata(Map.of(Metadata.CONTENT_TYPE, mediaType)).build();
-            s3Client.putObject(putObjReq, dest);
-            Files.delete(dest);
+            s3Client.putObject(putObjReq, tempFile);
+            Files.delete(tempFile);
 
             // get url info then return
             var getObjReq = GetUrlRequest.builder().bucket(awsProperties.getBucket()).key(fileName).build();
@@ -52,7 +52,6 @@ public class S3StorageService implements StorageService {
 
     private boolean isExisted(String fileName) {
         try {
-            if (Files.exists(tmpFilePath.resolve(fileName))) return true;
             s3Client.headObject(HeadObjectRequest.builder().bucket(awsProperties.getBucket()).key(fileName).build());
             return true;
         } catch (NoSuchKeyException e) {

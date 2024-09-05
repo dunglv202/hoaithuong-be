@@ -82,7 +82,7 @@ public class UserService implements UserDetailsService {
         if (file.isEmpty()) throw new ClientVisibleException("{file.invalid}");
         if (!FileUtil.isSupportedImage(file)) throw new ClientVisibleException("{file.format.unsupported}");
 
-        User signedUser = authHelper.getSignedUser();
+        User signedUser = userRepository.findById(authHelper.getSignedUser().getId()).orElseThrow();
         String url = storageService.storeFile(file);
         signedUser.setAvatar(url);
         userRepository.save(signedUser);

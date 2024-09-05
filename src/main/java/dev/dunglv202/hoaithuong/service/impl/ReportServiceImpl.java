@@ -14,6 +14,7 @@ import dev.dunglv202.hoaithuong.entity.TutorClass;
 import dev.dunglv202.hoaithuong.entity.User;
 import dev.dunglv202.hoaithuong.exception.AuthenticationException;
 import dev.dunglv202.hoaithuong.exception.ClientVisibleException;
+import dev.dunglv202.hoaithuong.exception.InvalidConfigException;
 import dev.dunglv202.hoaithuong.helper.AuthHelper;
 import dev.dunglv202.hoaithuong.helper.DateTimeFmt;
 import dev.dunglv202.hoaithuong.helper.GoogleHelper;
@@ -91,10 +92,18 @@ public class ReportServiceImpl implements ReportService {
     @Override
     public void exportGoogleSheet(User user, ReportRange range) {
         try {
+            // check config
             Configuration config = configService.getConfigsByUser(user);
+            if (config.getGeneralReportId() == null || config.getGeneralReportSheet() == null) {
+                throw new InvalidConfigException("{general_report.sheet.required}");
+            }
+            if (config.getDetailReportId() == null || config.getDetailReportSheet() == null) {
+                throw new InvalidConfigException("{detail_report.sheet.required}");
+            }
+
+            // do export
             Sheets sheetsService = googleHelper.getSheetService(user);
             List<Lecture> lectures = getLecturesForReport(range);
-
             exportDetailToGgSheet(sheetsService, range, lectures, config);
             exportGeneralToGgSheet(sheetsService, lectures, config);
         } catch (GoogleJsonResponseException e) {
@@ -110,9 +119,6 @@ public class ReportServiceImpl implements ReportService {
     }
 
     private void exportDetailToGgSheet(Sheets sheetsService, ReportRange range, List<Lecture> lectures, Configuration config) throws IOException {
-        if (config.getDetailReportId() == null) {
-            throw new ClientVisibleException("{export.detail.google_sheet_id.required}");
-        }
         Spreadsheet spreadsheet = sheetsService.spreadsheets().get(config.getDetailReportId()).execute();
         String reportSheetName = config.getDetailReportSheet();
         var reportSheet = spreadsheet.getSheets().stream()
@@ -148,9 +154,6 @@ public class ReportServiceImpl implements ReportService {
     }
 
     private void exportGeneralToGgSheet(Sheets sheetsService, List<Lecture> lectures, Configuration config) throws IOException {
-        if (config.getDetailReportId() == null) {
-            throw new ClientVisibleException("{export.general.google_sheet_id.required}");
-        }
         String spreadsheetId = config.getGeneralReportId();
         String sheetName = config.getGeneralReportSheet();
 

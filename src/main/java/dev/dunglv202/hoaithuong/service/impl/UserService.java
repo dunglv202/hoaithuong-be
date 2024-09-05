@@ -84,11 +84,18 @@ public class UserService implements UserDetailsService {
         if (file.isEmpty()) throw new ClientVisibleException("{file.invalid}");
         if (!FileUtil.isSupportedImage(file)) throw new ClientVisibleException("{file.format.unsupported}");
 
+        // update avatar & delete old file
         User signedUser = userRepository.findById(authHelper.getSignedUser().getId()).orElseThrow();
         String url = storageService.storeFile(file);
+        String old = signedUser.getAvatar();
         signedUser.setAvatar(url);
         userRepository.save(signedUser);
+        storageService.deleteFile(extractFileName(old));
 
         return new UpdateAvatarRespDTO(url);
+    }
+
+    private String extractFileName(String avatarUrl) {
+        return avatarUrl.substring(avatarUrl.lastIndexOf("/") + 1);
     }
 }

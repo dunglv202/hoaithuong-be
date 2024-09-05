@@ -8,10 +8,7 @@ import org.apache.tika.metadata.Metadata;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.GetUrlRequest;
-import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
-import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
-import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.*;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -48,6 +45,12 @@ public class S3StorageService implements StorageService {
         } catch (Exception e) {
             throw new RuntimeException("Could not store file", e);
         }
+    }
+
+    @Override
+    public void deleteFile(String key) {
+        var delReq = DeleteObjectRequest.builder().bucket(awsProperties.getBucket()).key(key).build();
+        s3Client.deleteObject(delReq);
     }
 
     private boolean isExisted(String fileName) {

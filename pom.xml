@@ -20,7 +20,21 @@
 		<jjwt.version>0.12.3</jjwt.version>
 		<apache.poi.version>5.3.0</apache.poi.version>
 		<org.mapstruct.version>1.5.5.Final</org.mapstruct.version>
+		<apache.tika.version>2.9.2</apache.tika.version>
+		<amazon.sdk.version>2.27.19</amazon.sdk.version>
 	</properties>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>software.amazon.awssdk</groupId>
+				<artifactId>bom</artifactId>
+				<version>${amazon.sdk.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 
 	<dependencies>
 		<dependency>
@@ -129,6 +143,19 @@
 			<groupId>com.google.apis</groupId>
 			<artifactId>google-api-services-sheets</artifactId>
 			<version>v4-rev20220927-2.0.0</version>
+		</dependency>
+
+		<!-- AMAZON S3 -->
+		<dependency>
+			<groupId>software.amazon.awssdk</groupId>
+			<artifactId>s3</artifactId>
+		</dependency>
+
+		<!-- APACHE TIKA: DETECT FILE TYPE -->
+		<dependency>
+			<groupId>org.apache.tika</groupId>
+			<artifactId>tika-core</artifactId>
+			<version>${apache.tika.version}</version>
 		</dependency>
 	</dependencies>
 

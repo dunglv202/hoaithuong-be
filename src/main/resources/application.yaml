@@ -39,3 +39,7 @@ server:
   compression:
     enabled: true
     mime-types: application/json
+aws:
+  access-key: ${AWS_ACCESS_KEY}
+  secret-key: ${AWS_SECRET_KEY}
+  bucket: ${AWS_BUCKET}

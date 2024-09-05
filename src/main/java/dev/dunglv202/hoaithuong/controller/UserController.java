@@ -1,6 +1,7 @@
 package dev.dunglv202.hoaithuong.controller;
 
 import dev.dunglv202.hoaithuong.dto.DetailProfileDTO;
+import dev.dunglv202.hoaithuong.dto.UpdateAvatarRespDTO;
 import dev.dunglv202.hoaithuong.dto.UpdatedDetailProfileDTO;
 import dev.dunglv202.hoaithuong.dto.UserInfoDTO;
 import dev.dunglv202.hoaithuong.service.impl.UserService;
@@ -8,6 +9,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/me")
@@ -31,5 +33,11 @@ public class UserController {
     @PreAuthorize("isAuthenticated()")
     public void updateDetailProfile(@Valid @RequestBody UpdatedDetailProfileDTO updateDTO) {
         userService.updateDetailProfile(updateDTO);
+    }
+
+    @PostMapping("/upload_avatar")
+    @PreAuthorize("isAuthenticated()")
+    public UpdateAvatarRespDTO uploadAvatar(@RequestPart MultipartFile file) {
+        return userService.updateAvatar(file);
     }
 }

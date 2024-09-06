@@ -13,6 +13,7 @@ import dev.dunglv202.hoaithuong.entity.Configuration;
 import dev.dunglv202.hoaithuong.entity.User;
 import dev.dunglv202.hoaithuong.exception.AuthenticationException;
 import dev.dunglv202.hoaithuong.exception.ClientVisibleException;
+import dev.dunglv202.hoaithuong.model.GoogleCredentialListener;
 import dev.dunglv202.hoaithuong.model.SheetInfo;
 import dev.dunglv202.hoaithuong.service.ConfigService;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.util.List;
 
 import static dev.dunglv202.hoaithuong.constant.ApiErrorCode.REQUIRE_GOOGLE_AUTH;
 
@@ -43,6 +45,7 @@ public class GoogleHelper {
     private String applicationName;
 
     private final ConfigService configService;
+    private final GoogleCredentialListener googleCredentialListener;
 
     static {
         try {
@@ -72,6 +75,7 @@ public class GoogleHelper {
             .setTransport(HTTP_TRANSPORT)
             .setJsonFactory(JSON_FACTORY)
             .setClientSecrets(clientId, clientSecret)
+            .setRefreshListeners(List.of(googleCredentialListener.setUser(user)))
             .build()
             .setAccessToken(config.getGoogleAccessToken())
             .setRefreshToken(config.getGoogleRefreshToken());

@@ -5,12 +5,14 @@ import dev.dunglv202.hoaithuong.helper.SheetHelper;
 import dev.dunglv202.hoaithuong.model.SheetInfo;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.Accessors;
 
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor
 @RequiredArgsConstructor
+@Accessors(chain = true)
 public class Configuration extends Auditable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -249,6 +249,7 @@ public class ReportServiceImpl implements ReportService {
         SheetRange range = new SheetRange();
         SheetRow header = range.addRow();
         var headerStyle = new SheetCellStyle()
+            .setWrapText(true)
             .setBold(true)
             .setBackgroundColor(new RGBAColor(213, 166, 189, 1f));
         header.addCell().setValue("STT").setStyle(headerStyle);
@@ -261,6 +262,8 @@ public class ReportServiceImpl implements ReportService {
         header.addCell().setValue("Nhận xét").setStyle(headerStyle);
         header.addCell().setValue("Thời lượng (phút)").setStyle(headerStyle);
         header.addCell().setValue("Số tiền (1000đ)").setStyle(headerStyle);
+        header.addCell().setValue("Video buổi học").setStyle(headerStyle);
+        header.addCell().setValue("Trung tâm tính lương").setStyle(headerStyle);
 
         SheetCellStyle reportMonthHeaderStyle = new SheetCellStyle().setBold(true)
             .setFontSize(15)
@@ -272,7 +275,7 @@ public class ReportServiceImpl implements ReportService {
             : null;
         range.addRow().addCell()
             .setValue(title)
-            .setAttribute(new SheetCellAttribute().setColspan(10))
+            .setAttribute(new SheetCellAttribute().setColspan(12))
             .setStyle(reportMonthHeaderStyle);
 
         var bodyStyle = new SheetCellStyle()
@@ -318,6 +321,10 @@ public class ReportServiceImpl implements ReportService {
 
             SheetCell paid = row.addCell();
             paid.setValue((double) lecture.getTutorClass().getPayForLecture() / 1000);
+
+            // add video link & approved earning column
+            row.addCell();
+            row.addCell();
 
             // set border
             row.getCells().forEach(c -> c.setStyle(bodyStyle));

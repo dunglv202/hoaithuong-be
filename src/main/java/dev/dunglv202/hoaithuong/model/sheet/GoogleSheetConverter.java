@@ -37,6 +37,7 @@ public class GoogleSheetConverter {
             .setBackgroundColor(convertColor(style.getBackgroundColor()))
             .setHorizontalAlignment(style.getHorizontalAlignment())
             .setVerticalAlignment(style.getVerticalAlignment())
+            .setWrapStrategy(style.getWrapText() != null && style.getWrapText() ? "WRAP" : "CLIP")
             .setBorders(new Borders().setTop(border).setBottom(border).setLeft(border).setRight(border));
     }
 

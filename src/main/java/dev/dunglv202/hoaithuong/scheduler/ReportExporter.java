@@ -33,18 +33,18 @@ public class ReportExporter {
         range.setYear(now.getYear());
         userRepository.findAll().forEach(user -> {
             try {
-                log.info("Start exporting report for {} month: {}, year: {}", user.getUsername(), range.getMonth(), range.getYear());
+                log.info("Start exporting report for {} month: {}, year: {}", user, range.getMonth(), range.getYear());
                 reportService.exportGoogleSheet(user, range);
-                log.info("Finished exporting report for {}", user.getUsername());
+                log.info("Finished exporting report for {}", user);
             } catch (ClientVisibleException e) {
-                log.error("Could not export report for {} to google sheet", user.getUsername(), e);
+                log.error("Could not export report for {} to google sheet", user, e);
                 String noti = String.format(
                     "We were not able to help you push your report to Google Sheet. %s",
                     messageProvider.getLocalizedMessage(e.getMessage())
                 );
                 notiService.addNotification(Notification.forUser(user).content(noti));
             } catch (Exception e) {
-                log.error("Could not export report for {} to google sheet", user.getUsername(), e);
+                log.error("Could not export report for {} to google sheet", user, e);
                 String noti = """
                     Something went wrong when we tried to export your report.
                     You might want to do it manually

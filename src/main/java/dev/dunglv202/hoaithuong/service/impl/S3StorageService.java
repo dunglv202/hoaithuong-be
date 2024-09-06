@@ -11,13 +11,11 @@ import software.amazon.awssdk.services.s3.model.*;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class S3StorageService implements StorageService {
-    private final Path tmpFilePath = Paths.get("src/main/resources/");
     private final S3Client s3Client;
     private final AWSProperties awsProperties;
 

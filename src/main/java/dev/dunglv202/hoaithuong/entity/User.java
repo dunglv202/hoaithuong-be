@@ -28,4 +28,9 @@ public class User extends Auditable {
     private int loginTry;
 
     private boolean locked;
+
+    @Override
+    public String toString() {
+        return String.format("[User: %s]", username);
+    }
 }

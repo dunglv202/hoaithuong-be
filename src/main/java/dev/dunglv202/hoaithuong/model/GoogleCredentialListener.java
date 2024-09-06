@@ -27,12 +27,12 @@ public class GoogleCredentialListener implements CredentialRefreshListener {
 
     @Override
     public void onTokenResponse(Credential credential, TokenResponse tokenResponse) throws IOException {
-        log.info("Refreshed google credential for {}. Storing new credential...", user.getUsername());
+        log.info("Refreshed google credential for {}. Storing new credential...", user);
         Configuration updatedConfig = configService.getConfigsByUser(user)
             .setGoogleAccessToken(credential.getAccessToken())
             .setGoogleRefreshToken(credential.getRefreshToken());
         configService.saveConfigs(updatedConfig);
-        log.info("Stored new google credential for for {}", user.getUsername());
+        log.info("Stored new google credential for for {}", user);
         this.user = null;
     }
 
@@ -40,7 +40,7 @@ public class GoogleCredentialListener implements CredentialRefreshListener {
     public void onTokenErrorResponse(Credential credential, TokenErrorResponse tokenErrorResponse) throws IOException {
         log.info(
             "Refresh google credential failed for {}: {} - {}",
-            user.getUsername(),
+            user,
             tokenErrorResponse.getErrorDescription(),
             tokenErrorResponse.getError()
         );

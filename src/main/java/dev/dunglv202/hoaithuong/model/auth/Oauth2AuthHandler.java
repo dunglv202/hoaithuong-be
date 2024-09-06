@@ -4,8 +4,8 @@ import dev.dunglv202.hoaithuong.entity.Configuration;
 import dev.dunglv202.hoaithuong.entity.User;
 import dev.dunglv202.hoaithuong.exception.ClientVisibleException;
 import dev.dunglv202.hoaithuong.helper.AuthHelper;
-import dev.dunglv202.hoaithuong.repository.ConfigurationRepository;
 import dev.dunglv202.hoaithuong.repository.UserRepository;
+import dev.dunglv202.hoaithuong.service.ConfigService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +29,7 @@ import static dev.dunglv202.hoaithuong.constant.ApiErrorCode.INVALID_USER;
 public class Oauth2AuthHandler implements AuthenticationSuccessHandler {
     private final AuthHelper authHelper;
     private final UserRepository userRepository;
-    private final ConfigurationRepository configurationRepository;
+    private final ConfigService configService;
     private final OAuth2AuthorizedClientService authorizedClientService;
 
     @Override
@@ -43,15 +43,14 @@ public class Oauth2AuthHandler implements AuthenticationSuccessHandler {
             if (user.isLocked()) throw new ClientVisibleException(HttpStatus.UNAUTHORIZED, ACCOUNT_LOCKED, "{account.locked}");
 
             // store token
-            Configuration configuration = configurationRepository.findByUser(user)
-                .orElseGet(() -> new Configuration(user));
+            Configuration configuration = configService.getConfigsByUser(user);
             OAuth2AuthorizedClient authorizedClient = authorizedClientService.loadAuthorizedClient(
                 "google",
                 oidcUser.getName()
             );
             configuration.setGoogleAccessToken(authorizedClient.getAccessToken().getTokenValue());
             configuration.setGoogleRefreshToken(Objects.requireNonNull(authorizedClient.getRefreshToken()).getTokenValue());
-            configurationRepository.save(configuration);
+            configService.saveConfigs(configuration);
 
             // set auth token for client
             authHelper.addAuthCookies(resp, authHelper.buildAuthResult(user));

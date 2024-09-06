@@ -1,9 +1,8 @@
 package dev.dunglv202.hoaithuong.controller;
 
-import dev.dunglv202.hoaithuong.dto.DetailProfileDTO;
-import dev.dunglv202.hoaithuong.dto.UpdateAvatarRespDTO;
-import dev.dunglv202.hoaithuong.dto.UpdatedDetailProfileDTO;
-import dev.dunglv202.hoaithuong.dto.UserInfoDTO;
+import dev.dunglv202.hoaithuong.dto.*;
+import dev.dunglv202.hoaithuong.helper.SheetHelper;
+import dev.dunglv202.hoaithuong.service.SpreadsheetService;
 import dev.dunglv202.hoaithuong.service.impl.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -14,8 +13,9 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequestMapping("/api/me")
 @RequiredArgsConstructor
-public class UserController {
+public class ProfileController {
     private final UserService userService;
+    private final SpreadsheetService spreadsheetService;
 
     @GetMapping
     @PreAuthorize("isAuthenticated()")
@@ -39,5 +39,11 @@ public class UserController {
     @PreAuthorize("isAuthenticated()")
     public UpdateAvatarRespDTO uploadAvatar(@RequestPart MultipartFile file) {
         return userService.updateAvatar(file);
+    }
+
+    @GetMapping("/spreadsheets/info")
+    @PreAuthorize("isAuthenticated()")
+    public SpreadsheetInfoDTO getSpreadsheetInfo(@RequestParam String url) {
+        return spreadsheetService.getSpreadsheetInfo(SheetHelper.extractSpreadsheetId(url));
     }
 }

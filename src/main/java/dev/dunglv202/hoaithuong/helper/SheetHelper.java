@@ -1,6 +1,7 @@
 package dev.dunglv202.hoaithuong.helper;
 
 import com.google.api.services.sheets.v4.model.*;
+import dev.dunglv202.hoaithuong.exception.ClientVisibleException;
 import dev.dunglv202.hoaithuong.model.sheet.GoogleSheetConverter;
 import dev.dunglv202.hoaithuong.model.sheet.standard.SheetRange;
 import lombok.extern.slf4j.Slf4j;
@@ -66,7 +67,7 @@ public class SheetHelper {
         if (spreadsheetUrl == null || spreadsheetUrl.isBlank()) return null;
         Matcher matcher = SPREADSHEET_URL_PATTERN.matcher(spreadsheetUrl);
         if (!matcher.matches()) {
-            throw new RuntimeException("{spreadsheet.url.bad_malformed}: " + spreadsheetUrl);
+            throw new ClientVisibleException("{spreadsheet.url.bad_malformed}");
         };
         return matcher.group(1);
     }

@@ -9,11 +9,11 @@ import dev.dunglv202.hoaithuong.entity.User;
 import dev.dunglv202.hoaithuong.exception.ClientVisibleException;
 import dev.dunglv202.hoaithuong.helper.AuthHelper;
 import dev.dunglv202.hoaithuong.helper.FileUtil;
-import dev.dunglv202.hoaithuong.helper.GoogleHelper;
 import dev.dunglv202.hoaithuong.model.SheetInfo;
 import dev.dunglv202.hoaithuong.model.auth.AppUser;
 import dev.dunglv202.hoaithuong.repository.UserRepository;
 import dev.dunglv202.hoaithuong.service.ConfigService;
+import dev.dunglv202.hoaithuong.service.SpreadsheetService;
 import dev.dunglv202.hoaithuong.service.StorageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,8 +31,8 @@ public class UserService implements UserDetailsService {
     private final AuthHelper authHelper;
     private final UserRepository userRepository;
     private final ConfigService configService;
-    private final GoogleHelper googleHelper;
     private final StorageService storageService;
+    private final SpreadsheetService spreadsheetService;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -62,14 +62,14 @@ public class UserService implements UserDetailsService {
             updateDTO.getConfigs().getGeneralReportId(),
             updateDTO.getConfigs().getGeneralReportSheet()
         );
-        if (!generalReport.equals(configs.getGeneralSheetInfo()) && !googleHelper.isValidSheet(signedUser, generalReport)) {
+        if (!generalReport.equals(configs.getGeneralSheetInfo()) && !spreadsheetService.isValidSheet(signedUser, generalReport)) {
             throw new ClientVisibleException("{report.general.spreadsheet.invalid}");
         }
         SheetInfo detailReport = new SheetInfo(
             updateDTO.getConfigs().getDetailReportId(),
             updateDTO.getConfigs().getDetailReportSheet()
         );
-        if (!detailReport.equals(configs.getDetailSheetInfo()) && !googleHelper.isValidSheet(signedUser, detailReport)) {
+        if (!detailReport.equals(configs.getDetailSheetInfo()) && !spreadsheetService.isValidSheet(signedUser, detailReport)) {
             throw new ClientVisibleException("{report.detail.spreadsheet.invalid}");
         }
 

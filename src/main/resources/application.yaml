@@ -29,6 +29,9 @@ spring:
         provider:
           google:
             authorization-uri: https://accounts.google.com/o/oauth2/v2/auth?prompt=consent&access_type=offline
+  cache:
+    caffeine:
+      spec: expireAfterAccess=60s
 auth:
   jwt:
     secret: ${JWT_SECRET}

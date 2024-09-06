@@ -1,4 +1,4 @@
-package dev.dunglv202.hoaithuong.model;
+package dev.dunglv202.hoaithuong.model.auth;
 
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.auth.oauth2.CredentialRefreshListener;
@@ -38,12 +38,7 @@ public class GoogleCredentialListener implements CredentialRefreshListener {
 
     @Override
     public void onTokenErrorResponse(Credential credential, TokenErrorResponse tokenErrorResponse) throws IOException {
-        log.info(
-            "Refresh google credential failed for {}: {} - {}",
-            user,
-            tokenErrorResponse.getErrorDescription(),
-            tokenErrorResponse.getError()
-        );
+        log.info("Refresh google credential failed for {}: {}", user, tokenErrorResponse);
         this.user = null;
     }
 

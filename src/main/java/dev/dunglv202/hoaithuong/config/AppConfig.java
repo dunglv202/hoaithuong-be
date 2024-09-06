@@ -2,6 +2,7 @@ package dev.dunglv202.hoaithuong.config;
 
 import dev.dunglv202.hoaithuong.entity.User;
 import dev.dunglv202.hoaithuong.model.SecurityAuditorAware;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,6 +20,7 @@ import java.util.Locale;
 @EnableAsync
 @EnableJpaAuditing
 @EnableScheduling
+@EnableCaching
 public class AppConfig {
     @Bean
     public MessageSource messageSource() {

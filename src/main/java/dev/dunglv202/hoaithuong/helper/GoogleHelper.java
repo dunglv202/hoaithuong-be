@@ -40,7 +40,6 @@ public class GoogleHelper {
     private String applicationName;
 
     private final ConfigService configService;
-    private final GoogleCredentialListener googleCredentialListener;
 
     static {
         try {
@@ -70,7 +69,7 @@ public class GoogleHelper {
             .setTransport(HTTP_TRANSPORT)
             .setJsonFactory(JSON_FACTORY)
             .setClientSecrets(clientId, clientSecret)
-            .setRefreshListeners(List.of(googleCredentialListener.setUser(user)))
+            .setRefreshListeners(List.of(new GoogleCredentialListener(configService, user)))
             .build()
             .setAccessToken(config.getGoogleAccessToken())
             .setRefreshToken(config.getGoogleRefreshToken());

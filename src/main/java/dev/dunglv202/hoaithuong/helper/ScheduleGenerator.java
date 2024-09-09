@@ -27,6 +27,10 @@ public class ScheduleGenerator {
         return this;
     }
 
+    /**
+     * Generate schedule in ascending order for tutor class,
+     * number of schedule generated equals to {@code tutorClass.getTotalLecture()} - {@code tutorClass.getLearned()}
+     */
     public List<Schedule> generate(int limit) {
         List<Schedule> schedules = new ArrayList<>();
         LocalDateTime current = startTime;

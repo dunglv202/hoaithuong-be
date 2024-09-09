@@ -6,21 +6,21 @@ import dev.dunglv202.hoaithuong.entity.Schedule;
 import dev.dunglv202.hoaithuong.entity.TutorClass;
 import dev.dunglv202.hoaithuong.exception.ClientVisibleException;
 import dev.dunglv202.hoaithuong.exception.ConflictScheduleException;
+import dev.dunglv202.hoaithuong.helper.ScheduleGenerator;
 import dev.dunglv202.hoaithuong.mapper.ScheduleMapper;
 import dev.dunglv202.hoaithuong.model.Range;
 import dev.dunglv202.hoaithuong.model.ScheduleCriteria;
-import dev.dunglv202.hoaithuong.model.SimpleRange;
 import dev.dunglv202.hoaithuong.model.TimeSlot;
 import dev.dunglv202.hoaithuong.repository.ScheduleRepository;
 import dev.dunglv202.hoaithuong.repository.TutorClassRepository;
 import dev.dunglv202.hoaithuong.service.ScheduleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -41,11 +41,23 @@ public class ScheduleServiceImpl implements ScheduleService {
     }
 
     @Override
+    @Transactional
     public void deleteSchedule(Long id) {
-        Schedule schedule = scheduleRepository.findById(id)
+        Schedule scheduleToDelete = scheduleRepository.findById(id)
             .orElseThrow();
-        if (schedule.getLecture() != null) throw new ClientVisibleException("{schedule.attached_to_lecture}");
-        scheduleRepository.delete(schedule);
+        if (scheduleToDelete.getLecture() != null) throw new ClientVisibleException("{schedule.attached_to_lecture}");
+
+        // delete
+        TutorClass tutorClass = scheduleToDelete.getTutorClass();
+        Schedule lastSchedule = scheduleRepository.findLastByTutorClass(tutorClass);
+        scheduleRepository.delete(scheduleToDelete);
+
+        // add new schedule after last schedule
+        List<Schedule> replacement = new ScheduleGenerator()
+            .setClass(tutorClass)
+            .setStartTime(lastSchedule.getEndTime())
+            .generate(1);
+        addSchedules(replacement);
     }
 
     /**
@@ -53,57 +65,26 @@ public class ScheduleServiceImpl implements ScheduleService {
      */
     @Override
     public void addClassToMySchedule(TutorClass newClass, LocalDate startDate) {
-        List<Schedule> schedules = makeScheduleForClass(newClass, startDate);
-
-        if (schedules.isEmpty()) return;
-
-        // check for conflicts with other schedules
-        Schedule firstSchedule = schedules.get(0);
-        Schedule lastSchedule = schedules.get(schedules.size() - 1);
-        Range<LocalDate> range = SimpleRange
-            .from(firstSchedule.getStartTime().toLocalDate())
-            .to(lastSchedule.getEndTime().toLocalDate());
-        scheduleRepository.findAll(ScheduleCriteria.joinFetch().and(inRange(range)));
-        List<Schedule> activeSchedules = scheduleRepository.findAllInRange(
-            firstSchedule.getStartTime().toLocalDate(),
-            lastSchedule.getEndTime().toLocalDate()
-        );
-        for (Schedule schedule : schedules) {
-            for (Schedule scheduled : activeSchedules) {
-                if (scheduled.isAfter(schedule)) break;
-                if (schedule.overlaps(scheduled)) {
-                    throw new ConflictScheduleException();
-                }
-            }
-        }
-
-        // no conflicts => save schedule
-        scheduleRepository.saveAll(schedules);
+        List<Schedule> schedules = new ScheduleGenerator()
+            .setClass(newClass)
+            .setStartTime(startDate.atStartOfDay())
+            .generate(newClass.getTotalLecture() - newClass.getLearned());
+        addSchedules(schedules);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
+    @Transactional
     public Schedule addSingleScheduleForClass(TutorClass tutorClass, LocalDateTime startTime) {
+        // remove last lecture
+        Schedule lastLecture = scheduleRepository.findLastByTutorClass(tutorClass);
+        scheduleRepository.delete(lastLecture);
+
+        // make schedule & try to add
         Schedule schedule = makeSchedule(tutorClass, startTime);
-
-        // check if conflict TODO: same sub-logic with #addClassToMySchedule() => might separate to another method
-        List<Schedule> schedulesInSameDay = scheduleRepository.findAllInDate(schedule.getStartTime().toLocalDate());
-        for (Schedule scheduled : schedulesInSameDay) {
-            if (schedule.overlaps(scheduled)) {
-                throw new ConflictScheduleException();
-            }
-        }
-
-        // check if able to add more
-        int totalScheduled = scheduleRepository.countByTutorClass(tutorClass);
-        int totalScheduleShouldHave = tutorClass.getTotalLecture() - tutorClass.getInitialLearned();
-        if (totalScheduled == totalScheduleShouldHave) {
-            throw new ClientVisibleException("{tutor_class.schedule.exceed}");
-        }
-
-        scheduleRepository.save(schedule);
+        addSchedules(List.of(schedule));
 
         return schedule;
     }
@@ -119,6 +100,7 @@ public class ScheduleServiceImpl implements ScheduleService {
     }
 
     @Override
+    @Transactional
     public void addNewSchedule(NewScheduleDTO newSchedule) {
         TutorClass tutorClass = tutorClassRepository.findById(newSchedule.getClassId())
             .orElseThrow(() -> new ClientVisibleException("{tutor_class.not_found}"));
@@ -126,37 +108,31 @@ public class ScheduleServiceImpl implements ScheduleService {
     }
 
     /**
-     * Make schedule list in ascending order by date and time for tutor class
+     * Add schedule to timetable
+     *
+     * @param schedules List of schedule to add, sorted in ascending order by date time
      */
-    private List<Schedule> makeScheduleForClass(TutorClass tutorClass, LocalDate startDate) {
-        if (tutorClass.getTimeSlots() == null || tutorClass.getTimeSlots().isEmpty()) {
-            return List.of();
-        }
+    private void addSchedules(List<Schedule> schedules) {
+        if (schedules.isEmpty()) return;
 
-        List<Schedule> schedules = new ArrayList<>();
-        LocalDate date = startDate;
-        int numOfLecture = tutorClass.getTotalLecture() - tutorClass.getLearned();
-
-        // sort time slots by ascending order
-        Collections.sort(tutorClass.getTimeSlots());
-
-        while (numOfLecture > 0) {
-            LocalDate today = date;
-            List<TimeSlot> todayTimeSlots = tutorClass.getTimeSlots().stream()
-                .filter(t -> t.getWeekday() == today.getDayOfWeek())
-                .toList();
-
-            // add schedule for each time slot of day if there is still lecture left
-            for (TimeSlot timeSlot : todayTimeSlots) {
-                if (numOfLecture <= 0) break;
-                schedules.add(makeSchedule(tutorClass, date.atTime(timeSlot.getStartTime())));
-                numOfLecture--;
+        // check for conflicts with other schedules
+        Schedule firstSchedule = schedules.get(0);
+        Schedule lastSchedule = schedules.get(schedules.size() - 1);
+        List<Schedule> activeSchedules = scheduleRepository.findAllInRange(
+            firstSchedule.getStartTime().toLocalDate(),
+            lastSchedule.getEndTime().toLocalDate()
+        );
+        for (Schedule schedule : schedules) {
+            for (Schedule scheduled : activeSchedules) {
+                if (scheduled.isAfter(schedule)) break;
+                if (schedule.overlaps(scheduled)) {
+                    throw new ConflictScheduleException(scheduled);
+                }
             }
-
-            date = date.plusDays(1);
         }
 
-        return schedules;
+        // no conflicts => save schedule
+        scheduleRepository.saveAll(schedules);
     }
 
     private Schedule makeSchedule(TutorClass tutorClass, LocalDateTime startTime) {

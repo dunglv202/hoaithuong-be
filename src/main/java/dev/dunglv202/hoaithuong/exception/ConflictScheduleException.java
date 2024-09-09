@@ -3,10 +3,10 @@ package dev.dunglv202.hoaithuong.exception;
 import dev.dunglv202.hoaithuong.entity.Schedule;
 import org.springframework.http.HttpStatus;
 
-import static dev.dunglv202.hoaithuong.helper.DateTimeFmt.D_M_YYYY;
+import static dev.dunglv202.hoaithuong.helper.DateTimeFmt.FULL;
 
 public class ConflictScheduleException extends ClientVisibleException {
     public ConflictScheduleException(Schedule scheduled) {
-        super(HttpStatus.CONFLICT, null, "{tutor_class.timeslots.invalid}: " + scheduled.getStartTime().format(D_M_YYYY));
+        super(HttpStatus.CONFLICT, null, "{tutor_class.timeslots.invalid}: " + scheduled.getStartTime().format(FULL));
     }
 }

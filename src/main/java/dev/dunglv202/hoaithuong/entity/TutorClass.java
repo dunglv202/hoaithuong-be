@@ -68,4 +68,8 @@ public class TutorClass extends Auditable {
         TutorClassMapper.INSTANCE.mergeTutorClass(this, updated);
         return this;
     }
+
+    public String getName() {
+        return code + " - " + student.getName();
+    }
 }

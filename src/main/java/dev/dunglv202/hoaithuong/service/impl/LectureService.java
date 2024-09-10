@@ -82,9 +82,8 @@ public class LectureService {
         // send alert notification
         if (tutorClass.getLearned() == 18) {
             String noti = String.format(
-                "Your class: %s - %s has reached lecture of %d/%d",
-                tutorClass.getCode(),
-                tutorClass.getStudent().getName(),
+                "Your class: %s has reached lecture of %d/%d",
+                tutorClass.getName(),
                 tutorClass.getLearned(),
                 tutorClass.getTotalLecture()
             );
@@ -94,9 +93,8 @@ public class LectureService {
         }
         if (tutorClass.getLearned() == tutorClass.getTotalLecture()) {
             String noti = String.format(
-                "%s - %s has just reached its last lecture. Do you want to renew this class?",
-                tutorClass.getCode(),
-                tutorClass.getStudent().getName()
+                "%s has just reached its last lecture. Do you want to renew this class?",
+                tutorClass.getName()
             );
             notificationService.addNotification(
                 Notification.forUser(tutorClass.getCreatedBy()).content(noti)

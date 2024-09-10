@@ -4,13 +4,15 @@ import dev.dunglv202.hoaithuong.dto.MinimalScheduleDTO;
 import dev.dunglv202.hoaithuong.dto.NewScheduleDTO;
 import dev.dunglv202.hoaithuong.entity.Schedule;
 import dev.dunglv202.hoaithuong.entity.TutorClass;
+import dev.dunglv202.hoaithuong.entity.User;
 import dev.dunglv202.hoaithuong.exception.ClientVisibleException;
 import dev.dunglv202.hoaithuong.exception.ConflictScheduleException;
+import dev.dunglv202.hoaithuong.helper.AuthHelper;
 import dev.dunglv202.hoaithuong.helper.ScheduleGenerator;
 import dev.dunglv202.hoaithuong.mapper.ScheduleMapper;
 import dev.dunglv202.hoaithuong.model.Range;
-import dev.dunglv202.hoaithuong.model.ScheduleCriteria;
 import dev.dunglv202.hoaithuong.model.TimeSlot;
+import dev.dunglv202.hoaithuong.model.criteria.ScheduleCriteria;
 import dev.dunglv202.hoaithuong.repository.ScheduleRepository;
 import dev.dunglv202.hoaithuong.repository.TutorClassRepository;
 import dev.dunglv202.hoaithuong.service.ScheduleService;
@@ -24,17 +26,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import static dev.dunglv202.hoaithuong.model.ScheduleCriteria.inRange;
+import static dev.dunglv202.hoaithuong.model.criteria.ScheduleCriteria.inRange;
+import static dev.dunglv202.hoaithuong.model.criteria.ScheduleCriteria.joinFetch;
 
 @Service
 @RequiredArgsConstructor
 public class ScheduleServiceImpl implements ScheduleService {
     private final ScheduleRepository scheduleRepository;
     private final TutorClassRepository tutorClassRepository;
+    private final AuthHelper authHelper;
 
     @Override
-    public List<MinimalScheduleDTO> getSchedule(Range<LocalDate> range) {
-        return scheduleRepository.findAll(ScheduleCriteria.joinFetch().and(inRange(range)))
+    public List<MinimalScheduleDTO> getSchedules(Range<LocalDate> range) {
+        User signedUser = authHelper.getSignedUser();
+        return scheduleRepository.findAll(ScheduleCriteria.ofTeacher(signedUser).and(joinFetch()).and(inRange(range)))
             .stream()
             .map(ScheduleMapper.INSTANCE::toMinimalScheduleDTO)
             .toList();
@@ -43,7 +48,7 @@ public class ScheduleServiceImpl implements ScheduleService {
     @Override
     @Transactional
     public void deleteSchedule(Long id) {
-        Schedule scheduleToDelete = scheduleRepository.findById(id)
+        Schedule scheduleToDelete = scheduleRepository.findByIdAndTeacher(id, authHelper.getSignedUser())
             .orElseThrow();
         if (scheduleToDelete.getLecture() != null) throw new ClientVisibleException("{schedule.attached_to_lecture}");
 
@@ -64,7 +69,7 @@ public class ScheduleServiceImpl implements ScheduleService {
      * Add new class to schedule if that class have timeslots
      */
     @Override
-    public void addClassToMySchedule(TutorClass newClass, LocalDate startDate) {
+    public void addSchedulesForClass(TutorClass newClass, LocalDate startDate) {
         List<Schedule> schedules = new ScheduleGenerator()
             .setClass(newClass)
             .setStartTime(startDate.atStartOfDay())
@@ -96,13 +101,13 @@ public class ScheduleServiceImpl implements ScheduleService {
     public void updateScheduleForClass(TutorClass tutorClass, LocalDate startDate, Set<TimeSlot> timeSlots) {
         scheduleRepository.deleteAllFromDateByClass(tutorClass, startDate);
         tutorClass.setTimeSlots(new ArrayList<>(timeSlots));
-        addClassToMySchedule(tutorClass, startDate);
+        addSchedulesForClass(tutorClass, startDate);
     }
 
     @Override
     @Transactional
     public void addNewSchedule(NewScheduleDTO newSchedule) {
-        TutorClass tutorClass = tutorClassRepository.findById(newSchedule.getClassId())
+        TutorClass tutorClass = tutorClassRepository.findByIdAndTeacher(newSchedule.getClassId(), authHelper.getSignedUser())
             .orElseThrow(() -> new ClientVisibleException("{tutor_class.not_found}"));
         addSingleScheduleForClass(tutorClass, newSchedule.getStartTime());
     }
@@ -118,7 +123,8 @@ public class ScheduleServiceImpl implements ScheduleService {
         // check for conflicts with other schedules
         Schedule firstSchedule = schedules.get(0);
         Schedule lastSchedule = schedules.get(schedules.size() - 1);
-        List<Schedule> activeSchedules = scheduleRepository.findAllInRange(
+        List<Schedule> activeSchedules = scheduleRepository.findAllInRangeByTeacher(
+            firstSchedule.getTeacher(),
             firstSchedule.getStartTime().toLocalDate(),
             lastSchedule.getEndTime().toLocalDate()
         );

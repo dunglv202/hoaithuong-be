@@ -19,7 +19,6 @@ import dev.dunglv202.hoaithuong.helper.AuthHelper;
 import dev.dunglv202.hoaithuong.helper.DateTimeFmt;
 import dev.dunglv202.hoaithuong.helper.GoogleHelper;
 import dev.dunglv202.hoaithuong.helper.SheetHelper;
-import dev.dunglv202.hoaithuong.model.LectureCriteria;
 import dev.dunglv202.hoaithuong.model.ReportRange;
 import dev.dunglv202.hoaithuong.model.sheet.standard.*;
 import dev.dunglv202.hoaithuong.repository.LectureRepository;
@@ -46,7 +45,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static dev.dunglv202.hoaithuong.helper.SheetHelper.columnIndexToLetter;
-import static dev.dunglv202.hoaithuong.model.LectureCriteria.*;
+import static dev.dunglv202.hoaithuong.model.criteria.LectureCriteria.*;
 
 @Service
 @RequiredArgsConstructor
@@ -58,6 +57,23 @@ public class ReportServiceImpl implements ReportService {
     private final ConfigService configService;
 
     @Override
+    public ReportDTO getReport(ReportRange range) {
+        User teacher = authHelper.getSignedUser();
+        Specification<Lecture> criteria = Specification.allOf(
+            ofTeacher(teacher),
+            inRange(range),
+            sortByStartTime(Sort.Direction.DESC)
+        );
+
+        List<Lecture> lectures = lectureRepository.findAll(criteria.and(joinFetch()));
+        ReportDTO report = new ReportDTO(lectures);
+        int estimatedTotal = scheduleRepository.getEstimatedTotalInRange(teacher, range.getFrom(), range.getTo());
+        report.setEstimatedTotal(estimatedTotal);
+
+        return report;
+    }
+
+    @Override
     public Resource downloadXlsx(ReportRange range) {
         try (Workbook workbook = generateReportFile(range)) {
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -66,21 +82,6 @@ public class ReportServiceImpl implements ReportService {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    @Override
-    public ReportDTO getReport(ReportRange range) {
-        Specification<Lecture> criteria = Specification.allOf(
-            inRange(range),
-            sortByStartTime(Sort.Direction.DESC)
-        );
-
-        List<Lecture> lectures = lectureRepository.findAll(LectureCriteria.joinFetch().and(criteria));
-        ReportDTO report = new ReportDTO(lectures);
-        int estimatedTotal = scheduleRepository.getEstimatedTotalInRange(range.getFrom(), range.getTo());
-        report.setEstimatedTotal(estimatedTotal);
-
-        return report;
     }
 
     @Override
@@ -203,8 +204,16 @@ public class ReportServiceImpl implements ReportService {
         sheetsService.spreadsheets().values().batchUpdate(spreadsheetId, batchUpdateRequest).execute();
     }
 
+    /**
+     * @return List of lectures for current signed teacher
+     */
     private List<Lecture> getLecturesForReport(ReportRange range) {
-        return lectureRepository.findAll(joinFetch().and(inRange(range)).and(sortByStartTime(Sort.Direction.ASC)));
+        Specification<Lecture> specification = Specification.allOf(
+            ofTeacher(authHelper.getSignedUser()),
+            inRange(range),
+            sortByStartTime(Sort.Direction.ASC)
+        );
+        return lectureRepository.findAll(specification.and(joinFetch()));
     }
 
     private SheetRange generateGeneralReportData(List<Lecture> lectures) {

@@ -20,7 +20,7 @@ public class ScheduleController {
     @GetMapping
     @PreAuthorize("isAuthenticated()")
     public List<MinimalScheduleDTO> getSchedule(@Valid ScheduleRange range) {
-        return scheduleService.getSchedule(range);
+        return scheduleService.getSchedules(range);
     }
 
     @PostMapping

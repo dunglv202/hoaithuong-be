@@ -1,8 +1,10 @@
-package dev.dunglv202.hoaithuong.model;
+package dev.dunglv202.hoaithuong.model.criteria;
 
 import dev.dunglv202.hoaithuong.entity.Schedule;
 import dev.dunglv202.hoaithuong.entity.Schedule_;
 import dev.dunglv202.hoaithuong.entity.TutorClass_;
+import dev.dunglv202.hoaithuong.entity.User;
+import dev.dunglv202.hoaithuong.model.Range;
 import jakarta.persistence.criteria.JoinType;
 import org.springframework.data.jpa.domain.Specification;
 
@@ -15,6 +17,10 @@ public class ScheduleCriteria {
             root.fetch(Schedule_.tutorClass).fetch(TutorClass_.student);
             return cb.conjunction();
         };
+    }
+
+    public static Specification<Schedule> ofTeacher(User teacher) {
+        return (root, query, cb) -> cb.equal(root.get(Schedule_.teacher), teacher);
     }
 
     public static Specification<Schedule> inRange(Range<LocalDate> range) {

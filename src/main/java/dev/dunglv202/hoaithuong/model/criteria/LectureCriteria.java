@@ -1,6 +1,8 @@
-package dev.dunglv202.hoaithuong.model;
+package dev.dunglv202.hoaithuong.model.criteria;
 
 import dev.dunglv202.hoaithuong.entity.*;
+import dev.dunglv202.hoaithuong.model.Range;
+import jakarta.annotation.Nullable;
 import jakarta.persistence.criteria.Order;
 import jakarta.persistence.criteria.Path;
 import org.springframework.data.domain.Sort;
@@ -18,39 +20,38 @@ public class LectureCriteria {
         };
     }
 
-    public static Specification<Lecture> from(LocalDateTime from) {
+    public static Specification<Lecture> from(@Nullable LocalDateTime from) {
         if (from == null) return Specification.where(null);
 
-        return (root, query, cb) -> cb.greaterThanOrEqualTo(root.get(Lecture_.SCHEDULE).get(Schedule_.START_TIME), from);
+        return (root, query, cb) -> cb.greaterThanOrEqualTo(root.get(Lecture_.schedule).get(Schedule_.startTime), from);
     }
 
-    public static Specification<Lecture> fromDate(LocalDate from) {
+    public static Specification<Lecture> fromDate(@Nullable LocalDate from) {
         if (from == null) return Specification.where(null);
-
-        return (root, query, cb) -> cb.greaterThanOrEqualTo(root.get(Lecture_.SCHEDULE).get(Schedule_.START_TIME).as(LocalDate.class), from);
+        return (root, query, cb) -> cb.greaterThanOrEqualTo(root.get(Lecture_.schedule).get(Schedule_.startTime).as(LocalDate.class), from);
     }
 
-    public static Specification<Lecture> toDate(LocalDate to) {
+    public static Specification<Lecture> toDate(@Nullable LocalDate to) {
         if (to == null) return Specification.where(null);
-
-        return (root, query, cb) -> cb.lessThanOrEqualTo(root.get(Lecture_.SCHEDULE).get(Schedule_.START_TIME).as(LocalDate.class), to);
+        return (root, query, cb) -> cb.lessThanOrEqualTo(root.get(Lecture_.schedule).get(Schedule_.startTime).as(LocalDate.class), to);
     }
 
     public static Specification<Lecture> inRange(Range<LocalDate> range) {
         if (range == null) return Specification.where(null);
-
         return fromDate(range.getFrom()).and(toDate(range.getTo()));
     }
 
     public static Specification<Lecture> ofClass(TutorClass tutorClass) {
-        if (tutorClass == null) return Specification.where(null);
+        return (root, query, cb) -> cb.equal(root.get(Lecture_.tutorClass), tutorClass);
+    }
 
-        return (root, query, cb) -> cb.equal(root.get(Lecture_.TUTOR_CLASS), tutorClass);
+    public static Specification<Lecture> ofTeacher(User teacher) {
+        return (root, query, cb) -> cb.equal(root.get(Lecture_.teacher), teacher);
     }
 
     public static Specification<Lecture> sortByStartTime(Sort.Direction direction) {
         return (root, query, cb) -> {
-            Path<Lecture> startTimeAttr = root.get(Lecture_.SCHEDULE).get(Schedule_.START_TIME);
+            Path<LocalDateTime> startTimeAttr = root.get(Lecture_.schedule).get(Schedule_.startTime);
             Order order = direction == Sort.Direction.DESC
                 ? cb.desc(startTimeAttr)
                 : cb.asc(startTimeAttr);

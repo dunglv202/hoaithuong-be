@@ -5,8 +5,8 @@ import dev.dunglv202.hoaithuong.dto.StudentDTO;
 import dev.dunglv202.hoaithuong.dto.UpdatedStudentDTO;
 import dev.dunglv202.hoaithuong.model.Page;
 import dev.dunglv202.hoaithuong.model.Pagination;
-import dev.dunglv202.hoaithuong.model.StudentCriteria;
-import dev.dunglv202.hoaithuong.service.impl.StudentService;
+import dev.dunglv202.hoaithuong.model.criteria.StudentCriteria;
+import dev.dunglv202.hoaithuong.service.impl.StudentServiceImpl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/students")
 @RequiredArgsConstructor
 public class StudentController {
-    private final StudentService studentService;
+    private final StudentServiceImpl studentService;
 
     @PostMapping
     @PreAuthorize("isAuthenticated()")

@@ -2,6 +2,7 @@ package dev.dunglv202.hoaithuong.entity;
 
 import jakarta.annotation.Nonnull;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -24,6 +25,15 @@ public class Schedule extends Auditable {
     private LocalDateTime startTime;
 
     private LocalDateTime endTime;
+
+    @Setter(AccessLevel.PRIVATE)
+    @ManyToOne(fetch = FetchType.LAZY)
+    private User teacher;
+
+    @PrePersist
+    public void prePersist() {
+        this.teacher = this.tutorClass.getTeacher();
+    }
 
     public boolean overlaps(@Nonnull Schedule another) {
         return this.startTime.isBefore(another.startTime)

@@ -5,12 +5,14 @@ import dev.dunglv202.hoaithuong.dto.NewLectureDTO;
 import dev.dunglv202.hoaithuong.dto.UpdatedLecture;
 import dev.dunglv202.hoaithuong.entity.*;
 import dev.dunglv202.hoaithuong.exception.ClientVisibleException;
+import dev.dunglv202.hoaithuong.helper.AuthHelper;
 import dev.dunglv202.hoaithuong.mapper.LectureMapper;
-import dev.dunglv202.hoaithuong.model.LectureCriteria;
 import dev.dunglv202.hoaithuong.model.ReportRange;
+import dev.dunglv202.hoaithuong.model.criteria.LectureCriteria;
 import dev.dunglv202.hoaithuong.repository.LectureRepository;
 import dev.dunglv202.hoaithuong.repository.ScheduleRepository;
 import dev.dunglv202.hoaithuong.repository.TutorClassRepository;
+import dev.dunglv202.hoaithuong.service.LectureService;
 import dev.dunglv202.hoaithuong.service.NotificationService;
 import dev.dunglv202.hoaithuong.service.ScheduleService;
 import lombok.RequiredArgsConstructor;
@@ -21,23 +23,28 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-import static dev.dunglv202.hoaithuong.model.LectureCriteria.*;
+import static dev.dunglv202.hoaithuong.model.criteria.LectureCriteria.*;
 
 @Service
 @RequiredArgsConstructor
-public class LectureService {
+public class LectureServiceImpl implements LectureService {
     private final TutorClassRepository tutorClassRepository;
     private final LectureRepository lectureRepository;
     private final ScheduleRepository scheduleRepository;
     private final ScheduleService scheduleService;
     private final NotificationService notificationService;
+    private final AuthHelper authHelper;
 
+    @Override
     @Transactional
     public void addNewLecture(NewLectureDTO newLectureDTO) {
         Lecture lecture = LectureMapper.INSTANCE.toLecture(newLectureDTO);
 
         // set class
-        TutorClass tutorClass = tutorClassRepository.getReferenceById(newLectureDTO.getClassId());
+        TutorClass tutorClass = tutorClassRepository.findByIdAndTeacher(
+            newLectureDTO.getClassId(),
+            authHelper.getSignedUser()
+        ).orElseThrow();
         lecture.setTutorClass(tutorClass);
 
         // update learned
@@ -88,7 +95,7 @@ public class LectureService {
                 tutorClass.getTotalLecture()
             );
             notificationService.addNotification(
-                Notification.forUser(tutorClass.getCreatedBy()).content(noti)
+                Notification.forUser(tutorClass.getTeacher()).content(noti)
             );
         }
         if (tutorClass.getLearned() == tutorClass.getTotalLecture()) {
@@ -97,7 +104,7 @@ public class LectureService {
                 tutorClass.getName()
             );
             notificationService.addNotification(
-                Notification.forUser(tutorClass.getCreatedBy()).content(noti)
+                Notification.forUser(tutorClass.getTeacher()).content(noti)
             );
         }
 
@@ -105,19 +112,21 @@ public class LectureService {
         tutorClassRepository.save(tutorClass);
     }
 
+    @Override
     public List<LectureDTO> getAllLectures(ReportRange range) {
         Specification<Lecture> criteria = Specification.allOf(
             inRange(range),
             sortByStartTime(Sort.Direction.DESC)
         );
-        return lectureRepository.findAll(LectureCriteria.joinFetch().and(criteria))
+        return lectureRepository.findAll(LectureCriteria.ofTeacher(authHelper.getSignedUser()).and(joinFetch()).and(criteria))
             .stream()
             .map(LectureMapper.INSTANCE::toLectureDTO)
             .toList();
     }
 
+    @Override
     public void updateLecture(UpdatedLecture updatedLecture) {
-        Lecture lecture = lectureRepository.findById(updatedLecture.getId())
+        Lecture lecture = lectureRepository.findByIdAndTeacher(updatedLecture.getId(), authHelper.getSignedUser())
             .orElseThrow();
         lectureRepository.save(lecture.merge(updatedLecture));
     }

@@ -4,7 +4,7 @@ import dev.dunglv202.hoaithuong.dto.LectureDTO;
 import dev.dunglv202.hoaithuong.dto.NewLectureDTO;
 import dev.dunglv202.hoaithuong.dto.UpdatedLecture;
 import dev.dunglv202.hoaithuong.model.ReportRange;
-import dev.dunglv202.hoaithuong.service.impl.LectureService;
+import dev.dunglv202.hoaithuong.service.LectureService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;

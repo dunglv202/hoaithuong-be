@@ -29,6 +29,9 @@ public class TutorClass extends Auditable {
     @ManyToOne
     private Student student;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    private User teacher;
+
     private String level;
 
     private String notes;

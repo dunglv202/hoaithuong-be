@@ -9,6 +9,8 @@ import lombok.Setter;
 @Getter
 @Setter
 public class ConfigsDTO {
+    private String calendarId;
+
     @SpreadsheetURL(message = "{report.general.invalid}")
     private String generalReportUrl;
 

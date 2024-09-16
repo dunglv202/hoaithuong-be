@@ -75,8 +75,7 @@ public class UserService implements UserDetailsService {
 
         signedUser.setDisplayName(updateDTO.getDisplayName());
         userRepository.save(signedUser);
-        configs.mergeWith(updateDTO.getConfigs());
-        configService.saveConfigs(configs);
+        configService.saveConfigs(configs.mergeWith(updateDTO.getConfigs()));
     }
 
     @Transactional

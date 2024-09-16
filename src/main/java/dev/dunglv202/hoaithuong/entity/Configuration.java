@@ -2,6 +2,7 @@ package dev.dunglv202.hoaithuong.entity;
 
 import dev.dunglv202.hoaithuong.dto.ConfigsDTO;
 import dev.dunglv202.hoaithuong.helper.SheetHelper;
+import dev.dunglv202.hoaithuong.mapper.ConfigMapper;
 import dev.dunglv202.hoaithuong.model.SheetInfo;
 import jakarta.persistence.*;
 import lombok.*;
@@ -46,11 +47,14 @@ public class Configuration extends Auditable {
      */
     private String detailReportSheet;
 
-    public void mergeWith(ConfigsDTO configs) {
-        this.generalReportId = configs.getGeneralReportId();
-        this.generalReportSheet = configs.getGeneralReportSheet();
-        this.detailReportId = configs.getDetailReportId();
-        this.detailReportSheet = configs.getDetailReportSheet();
+    /**
+     * Google calendar id
+     */
+    private String calendarId;
+
+    public Configuration mergeWith(ConfigsDTO configs) {
+        ConfigMapper.INSTANCE.merge(this, configs);
+        return this;
     }
 
     public SheetInfo getGeneralSheetInfo() {

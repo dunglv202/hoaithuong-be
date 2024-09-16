@@ -53,6 +53,7 @@ public class GoogleSpreadsheetService implements SpreadsheetService {
             return sheetService.spreadsheets().get(spreadSheetId).execute();
         } catch (GoogleJsonResponseException e) {
             if (e.getStatusCode() == HttpStatus.NOT_FOUND.value()) throw new ClientVisibleException("{spreadsheet.not_found}");
+            if (e.getStatusCode() == HttpStatus.UNAUTHORIZED.value()) throw new ClientVisibleException("{google.auth.unauthenticated}");
             throw new RuntimeException("Could not get spreadsheet info", e);
         } catch (Exception e) {
             throw new RuntimeException("Could not get spreadsheet info", e);

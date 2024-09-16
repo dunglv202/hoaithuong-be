@@ -162,15 +162,14 @@ public class ReportServiceImpl implements ReportService {
         List<List<Object>> codeValues = sheetsService.spreadsheets().values()
             .get(spreadsheetId, sheetName + "!A:A").execute().getValues();
         Set<String> classCodes = lectures.stream().map(lec -> lec.getTutorClass().getCode()).collect(Collectors.toSet());
-        Map<String, Integer> classRowIndex = new HashMap<>();
-        for (int i=0; i < codeValues.size(); i++) {
-            List<Object> row = codeValues.get(i);
-            if (!row.isEmpty() && classCodes.contains((String) row.get(0))) {
-                classRowIndex.put((String) row.get(0), i);
-            }
-            if (classRowIndex.size() == classCodes.size()) {
-                // enough, no need finding more
-                break;
+        Map<String, List<Integer>> classRowIndex = new HashMap<>();
+        for (int rowIdx=0; rowIdx < codeValues.size(); rowIdx++) {
+            List<Object> row = codeValues.get(rowIdx);
+            if (row.isEmpty()) continue;
+            String code = (String) row.get(0);
+            if (classCodes.contains((String) row.get(0))) {
+                classRowIndex.putIfAbsent(code, new ArrayList<>());
+                classRowIndex.get(code).add(rowIdx);
             }
         }
 
@@ -190,11 +189,17 @@ public class ReportServiceImpl implements ReportService {
         var batchUpdateRequest = new BatchUpdateValuesRequest().setValueInputOption("RAW").setData(new ArrayList<>());
         groupByClass(lectures).forEach((tutorClass, classLectures) -> {
             String classCode = tutorClass.getCode();
-            int rowIndex = Optional.ofNullable(classRowIndex.get(classCode)).orElseThrow(
-                () -> new ClientVisibleException("{report.general.class_code_not_found} : " + classCode)
-            );
             classLectures.forEach(lec -> {
-                int colIndex = lectureNoColumnIndexes.get(lec.getLectureNo() - 1);
+                /* why offset -> each class can have multiple row. e.g: class with 22 lectures, but there's only 20
+                   columns to write so 21st and 22nd lecture should be in second row */
+                int offset = (lec.getLectureNo() - 1) / lectureNoColumnIndexes.size();
+                if (offset >= classRowIndex.get(classCode).size()) {
+                    throw new ClientVisibleException("{report.general.no_valid_row} : " + tutorClass.getName() + " - lecture: " + lec.getLectureNo());
+                }
+                int rowIndex = Optional.ofNullable(classRowIndex.get(classCode).get(offset)).orElseThrow(
+                    () -> new ClientVisibleException("{report.general.class_code_not_found} : " + classCode)
+                );
+                int colIndex = lectureNoColumnIndexes.get((lec.getLectureNo() - 1) % lectureNoColumnIndexes.size());
                 var value = new ValueRange()
                     .setRange(String.format("%s!%s%s", sheetName, columnIndexToLetter(colIndex), rowIndex + 1))
                     .setValues(List.of(List.of(DateTimeFmt.D_M_YYYY.format(lec.getStartTime()) + "\n" + lec.getGeneratedCode())));

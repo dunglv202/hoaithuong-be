@@ -30,6 +30,11 @@ public class Schedule extends Auditable {
     @ManyToOne(fetch = FetchType.LAZY)
     private User teacher;
 
+    /**
+     * Google Calendar event id
+     */
+    private String googleEventId;
+
     @PrePersist
     public void prePersist() {
         this.teacher = this.tutorClass.getTeacher();

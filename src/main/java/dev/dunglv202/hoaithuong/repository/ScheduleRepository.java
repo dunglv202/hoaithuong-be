@@ -24,14 +24,6 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long>, JpaSp
     List<Schedule> findAllInRangeByTeacher(@Param("teacher") User teacher, @Param("from") LocalDate from, @Param("to") LocalDate to);
 
     @Query("""
-        FROM Schedule s
-        WHERE CAST(s.startTime AS DATE) = :date
-    """)
-    List<Schedule> findAllInDate(@Param("date") LocalDate date);
-
-    int countByTutorClass(TutorClass tutorClass);
-
-    @Query("""
         FROM Schedule c
         WHERE c.tutorClass = :tutorClass
         ORDER BY c.startTime DESC

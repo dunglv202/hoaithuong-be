@@ -3,8 +3,10 @@ package dev.dunglv202.hoaithuong.model;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
+@Setter
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class SimpleRange<T> implements Range<T> {
     private T from;

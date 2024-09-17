@@ -24,10 +24,20 @@ public class ScheduleCriteria {
     }
 
     public static Specification<Schedule> inRange(Range<LocalDate> range) {
-        return (root, query, cb) -> cb.between(
-            root.get(Schedule_.startTime).as(LocalDate.class),
-            range.getFrom(),
-            range.getTo()
-        );
+        return (root, query, cb) -> {
+            var from = range.getFrom() != null
+                ? cb.greaterThanOrEqualTo(root.get(Schedule_.startTime).as(LocalDate.class), range.getFrom())
+                : cb.conjunction();
+            var to = range.getTo() != null
+                ? cb.lessThanOrEqualTo(root.get(Schedule_.startTime).as(LocalDate.class), range.getTo())
+                : cb.conjunction();
+            return cb.and(from, to);
+        };
+    }
+
+    public static Specification<Schedule> synced(boolean synced) {
+        return (root, query, cb) -> synced
+            ? cb.isNotNull(root.get(Schedule_.googleEventId))
+            : cb.isNull(root.get(Schedule_.googleEventId));
     }
 }

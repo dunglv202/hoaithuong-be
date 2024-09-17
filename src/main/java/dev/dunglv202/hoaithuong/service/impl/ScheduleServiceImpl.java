@@ -11,12 +11,15 @@ import dev.dunglv202.hoaithuong.helper.AuthHelper;
 import dev.dunglv202.hoaithuong.helper.ScheduleGenerator;
 import dev.dunglv202.hoaithuong.mapper.ScheduleMapper;
 import dev.dunglv202.hoaithuong.model.Range;
+import dev.dunglv202.hoaithuong.model.ScheduleEvent;
 import dev.dunglv202.hoaithuong.model.TimeSlot;
 import dev.dunglv202.hoaithuong.model.criteria.ScheduleCriteria;
 import dev.dunglv202.hoaithuong.repository.ScheduleRepository;
 import dev.dunglv202.hoaithuong.repository.TutorClassRepository;
+import dev.dunglv202.hoaithuong.service.CalendarService;
 import dev.dunglv202.hoaithuong.service.ScheduleService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,8 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import static dev.dunglv202.hoaithuong.model.criteria.ScheduleCriteria.inRange;
-import static dev.dunglv202.hoaithuong.model.criteria.ScheduleCriteria.joinFetch;
+import static dev.dunglv202.hoaithuong.model.criteria.ScheduleCriteria.*;
 
 @Service
 @RequiredArgsConstructor
@@ -35,6 +37,7 @@ public class ScheduleServiceImpl implements ScheduleService {
     private final ScheduleRepository scheduleRepository;
     private final TutorClassRepository tutorClassRepository;
     private final AuthHelper authHelper;
+    private final CalendarService calendarService;
 
     @Override
     public List<MinimalScheduleDTO> getSchedules(Range<LocalDate> range) {
@@ -110,6 +113,26 @@ public class ScheduleServiceImpl implements ScheduleService {
         TutorClass tutorClass = tutorClassRepository.findByIdAndTeacher(newSchedule.getClassId(), authHelper.getSignedUser())
             .orElseThrow(() -> new ClientVisibleException("{tutor_class.not_found}"));
         addSingleScheduleForClass(tutorClass, newSchedule.getStartTime());
+    }
+
+    /**
+     * Sync schedule in {@code range} to Google Calendar for current signed user
+     */
+    @Override
+    @Transactional
+    public void syncToCalendar(Range<LocalDate> range) {
+        // sync to Calendar
+        var signedUser = authHelper.getSignedUser();
+        var spec = Specification.allOf(
+            ofTeacher(signedUser),
+            inRange(range),
+            synced(false)
+        );
+        var notSynced = scheduleRepository.findAll(spec);
+        calendarService.addEvents(signedUser, notSynced.stream().map(ScheduleEvent::new).toList());
+
+        // save schedule with Google Calendar event id set
+        scheduleRepository.saveAll(notSynced);
     }
 
     /**

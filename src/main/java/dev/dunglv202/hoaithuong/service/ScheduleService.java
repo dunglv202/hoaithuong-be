@@ -34,4 +34,6 @@ public interface ScheduleService {
     void updateScheduleForClass(TutorClass tutorClass, LocalDate startDate, Set<TimeSlot> timeSlots);
 
     void addNewSchedule(NewScheduleDTO newSchedule);
+
+    void syncToCalendar(Range<LocalDate> range);
 }

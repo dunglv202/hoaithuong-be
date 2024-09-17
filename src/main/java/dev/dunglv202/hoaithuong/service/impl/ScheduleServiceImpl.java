@@ -12,6 +12,7 @@ import dev.dunglv202.hoaithuong.helper.ScheduleGenerator;
 import dev.dunglv202.hoaithuong.mapper.ScheduleMapper;
 import dev.dunglv202.hoaithuong.model.Range;
 import dev.dunglv202.hoaithuong.model.ScheduleEvent;
+import dev.dunglv202.hoaithuong.model.SimpleRange;
 import dev.dunglv202.hoaithuong.model.TimeSlot;
 import dev.dunglv202.hoaithuong.model.criteria.ScheduleCriteria;
 import dev.dunglv202.hoaithuong.repository.ScheduleRepository;
@@ -58,7 +59,7 @@ public class ScheduleServiceImpl implements ScheduleService {
         // delete
         TutorClass tutorClass = scheduleToDelete.getTutorClass();
         Schedule lastSchedule = scheduleRepository.findLastByTutorClass(tutorClass);
-        scheduleRepository.delete(scheduleToDelete);
+        deleteSchedule(scheduleToDelete);
 
         // add new schedule after last schedule
         List<Schedule> replacement = new ScheduleGenerator()
@@ -72,6 +73,7 @@ public class ScheduleServiceImpl implements ScheduleService {
      * Add new class to schedule if that class have timeslots
      */
     @Override
+    @Transactional
     public void addSchedulesForClass(TutorClass newClass, LocalDate startDate) {
         List<Schedule> schedules = new ScheduleGenerator()
             .setClass(newClass)
@@ -87,8 +89,8 @@ public class ScheduleServiceImpl implements ScheduleService {
     @Transactional
     public Schedule addSingleScheduleForClass(TutorClass tutorClass, LocalDateTime startTime) {
         // remove last lecture
-        Schedule lastLecture = scheduleRepository.findLastByTutorClass(tutorClass);
-        scheduleRepository.delete(lastLecture);
+        Schedule lastSchedule = scheduleRepository.findLastByTutorClass(tutorClass);
+        deleteSchedule(lastSchedule);
 
         // make schedule & try to add
         Schedule schedule = makeSchedule(tutorClass, startTime);
@@ -101,8 +103,10 @@ public class ScheduleServiceImpl implements ScheduleService {
      * {@inheritDoc}
      */
     @Override
+    @Transactional
     public void updateScheduleForClass(TutorClass tutorClass, LocalDate startDate, Set<TimeSlot> timeSlots) {
-        scheduleRepository.deleteAllFromDateByClass(tutorClass, startDate);
+        var oldSchedules = scheduleRepository.findAll(ofClass(tutorClass).and(inRange(SimpleRange.from(startDate))));
+        deleteSchedules(oldSchedules);
         tutorClass.setTimeSlots(new ArrayList<>(timeSlots));
         addSchedulesForClass(tutorClass, startDate);
     }
@@ -119,7 +123,6 @@ public class ScheduleServiceImpl implements ScheduleService {
      * Sync schedule in {@code range} to Google Calendar for current signed user
      */
     @Override
-    @Transactional
     public void syncToCalendar(Range<LocalDate> range) {
         // sync to Calendar
         var signedUser = authHelper.getSignedUser();
@@ -128,15 +131,13 @@ public class ScheduleServiceImpl implements ScheduleService {
             inRange(range),
             synced(false)
         );
-        var notSynced = scheduleRepository.findAll(spec);
+        var notSynced = scheduleRepository.findAll(joinFetch().and(spec));
         calendarService.addEvents(signedUser, notSynced.stream().map(ScheduleEvent::new).toList());
-
-        // save schedule with Google Calendar event id set
         scheduleRepository.saveAll(notSynced);
     }
 
     /**
-     * Add schedule to timetable
+     * Add schedule to timetable. Required to be in a transaction. All schedule add action should call this method
      *
      * @param schedules List of schedule to add, sorted in ascending order by date time
      */
@@ -162,6 +163,23 @@ public class ScheduleServiceImpl implements ScheduleService {
 
         // no conflicts => save schedule
         scheduleRepository.saveAll(schedules);
+        calendarService.addEventsAsync(schedules.get(0).getTeacher(), schedules.stream().map(ScheduleEvent::new).toList());
+    }
+
+    private void deleteSchedule(Schedule schedule) {
+        deleteSchedules(List.of(schedule));
+    }
+
+    /**
+     * All schedule delete action should call this method
+     */
+    private void deleteSchedules(List<Schedule> schedules) {
+        if (schedules.isEmpty()) return;
+        calendarService.removeEventsAsync(
+            schedules.get(0).getTeacher(),
+            schedules.stream().filter(s -> s.getGoogleEventId() != null).map(ScheduleEvent::new).toList()
+        );
+        scheduleRepository.deleteAll(schedules);
     }
 
     private Schedule makeSchedule(TutorClass tutorClass, LocalDateTime startTime) {

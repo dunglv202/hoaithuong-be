@@ -9,8 +9,6 @@ import dev.dunglv202.hoaithuong.helper.CalendarHelper;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.IOException;
-
 @Getter
 @Slf4j
 public class ScheduleEvent {
@@ -20,25 +18,30 @@ public class ScheduleEvent {
     public ScheduleEvent(Schedule schedule) {
         this.schedule = schedule;
         var calendarHelper = new CalendarHelper();
-        var title = String.format(
-            "%s",
-            schedule.getTutorClass().getName()
-        );
-        this.event = new Event()
-            .setSummary(title)
-            .setStart(calendarHelper.toEventDateTime(schedule.getStartTime()))
-            .setEnd(calendarHelper.toEventDateTime(schedule.getEndTime()));
+        if (schedule.getGoogleEventId() != null) {
+            this.event = new Event().setId(schedule.getGoogleEventId());
+        } else {
+            var title = String.format(
+                "%s",
+                schedule.getTutorClass().getName()
+            );
+            this.event = new Event()
+                .setSummary(title)
+                .setStart(calendarHelper.toEventDateTime(schedule.getStartTime()))
+                .setEnd(calendarHelper.toEventDateTime(schedule.getEndTime()));
+        }
     }
 
     public JsonBatchCallback<Event> getCallback() {
         return new JsonBatchCallback<>() {
             @Override
-            public void onFailure(GoogleJsonError googleJsonError, HttpHeaders httpHeaders) throws IOException {
+            public void onFailure(GoogleJsonError googleJsonError, HttpHeaders httpHeaders) {
                 log.error("Could not add event {}: {}", event, googleJsonError);
+                throw new RuntimeException("Could not add event");
             }
 
             @Override
-            public void onSuccess(Event event, HttpHeaders httpHeaders) throws IOException {
+            public void onSuccess(Event event, HttpHeaders httpHeaders) {
                 schedule.setGoogleEventId(event.getId());
             }
         };

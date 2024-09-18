@@ -2,12 +2,18 @@ package dev.dunglv202.hoaithuong.service.impl;
 
 import com.google.api.client.googleapis.batch.json.JsonBatchCallback;
 import com.google.api.client.googleapis.json.GoogleJsonError;
+import com.google.api.client.googleapis.json.GoogleJsonResponseException;
 import com.google.api.client.http.HttpHeaders;
+import com.google.api.client.http.HttpStatusCodes;
+import com.google.api.services.calendar.Calendar;
+import dev.dunglv202.hoaithuong.constant.ApiErrorCode;
 import dev.dunglv202.hoaithuong.dto.CalendarDTO;
 import dev.dunglv202.hoaithuong.entity.Configuration;
 import dev.dunglv202.hoaithuong.entity.Notification;
 import dev.dunglv202.hoaithuong.entity.Schedule;
 import dev.dunglv202.hoaithuong.entity.User;
+import dev.dunglv202.hoaithuong.exception.AuthenticationException;
+import dev.dunglv202.hoaithuong.exception.ClientVisibleException;
 import dev.dunglv202.hoaithuong.helper.AuthHelper;
 import dev.dunglv202.hoaithuong.helper.GoogleHelper;
 import dev.dunglv202.hoaithuong.model.ScheduleEvent;
@@ -53,9 +59,12 @@ public class GoogleCalendarService implements CalendarService {
     public void addEvents(User user, List<ScheduleEvent> schedules) {
         if (schedules.isEmpty()) return;
 
-        Configuration configs = configService.getConfigsByUser(user);
         var calendarService = googleHelper.getCalendarService(user);
         var eventService = calendarService.events();
+        Configuration configs = configService.getConfigsByUser(user);
+        if (!isValidCalendar(calendarService, configs.getCalendarId())) {
+            throw new ClientVisibleException("{google.calendar.invalid}");
+        }
 
         // add to batch
         var batch = calendarService.batch();
@@ -98,6 +107,9 @@ public class GoogleCalendarService implements CalendarService {
         Configuration configs = configService.getConfigsByUser(user);
         var calendarService = googleHelper.getCalendarService(user);
         var eventService = calendarService.events();
+        if (!isValidCalendar(calendarService, configs.getCalendarId())) {
+            throw new ClientVisibleException("{google.calendar.invalid}");
+        }
 
         // add to batch
         var batch = calendarService.batch();
@@ -142,5 +154,21 @@ public class GoogleCalendarService implements CalendarService {
                 .content("Failed to sync your calendar! You might want to do that manually");
             notificationService.addNotification(notification);
         }
+    }
+
+    private boolean isValidCalendar(Calendar calendarService, String calendarId) {
+        try {
+            if (calendarId == null) return false;
+            calendarService.calendarList().get(calendarId).execute();
+        } catch (GoogleJsonResponseException e) {
+            if (e.getStatusCode() == HttpStatusCodes.STATUS_CODE_NOT_FOUND) return false;
+            if (e.getStatusCode() == HttpStatusCodes.STATUS_CODE_UNAUTHORIZED) {
+                throw new AuthenticationException(ApiErrorCode.REQUIRE_GOOGLE_AUTH);
+            }
+            throw new RuntimeException(e);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return true;
     }
 }

@@ -1,6 +1,7 @@
 package dev.dunglv202.hoaithuong.service.impl;
 
 import com.google.api.client.googleapis.json.GoogleJsonResponseException;
+import com.google.api.client.http.HttpStatusCodes;
 import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.model.BatchUpdateValuesRequest;
 import com.google.api.services.sheets.v4.model.GridRange;
@@ -35,7 +36,6 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
@@ -108,7 +108,7 @@ public class ReportServiceImpl implements ReportService {
             exportDetailToGgSheet(sheetsService, range, lectures, config);
             exportGeneralToGgSheet(sheetsService, lectures, config);
         } catch (GoogleJsonResponseException e) {
-            if (e.getStatusCode() == HttpStatus.UNAUTHORIZED.value()) {
+            if (e.getStatusCode() == HttpStatusCodes.STATUS_CODE_UNAUTHORIZED) {
                 throw new AuthenticationException(ApiErrorCode.REQUIRE_GOOGLE_AUTH);
             }
             throw new RuntimeException(e);

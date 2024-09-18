@@ -1,6 +1,7 @@
 package dev.dunglv202.hoaithuong.service.impl;
 
 import com.google.api.client.googleapis.json.GoogleJsonResponseException;
+import com.google.api.client.http.HttpStatusCodes;
 import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.model.Spreadsheet;
 import dev.dunglv202.hoaithuong.dto.SpreadsheetInfoDTO;
@@ -12,7 +13,6 @@ import dev.dunglv202.hoaithuong.model.SheetInfo;
 import dev.dunglv202.hoaithuong.service.SpreadsheetService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -52,8 +52,8 @@ public class GoogleSpreadsheetService implements SpreadsheetService {
             Sheets sheetService = googleHelper.getSheetService(user);
             return sheetService.spreadsheets().get(spreadSheetId).execute();
         } catch (GoogleJsonResponseException e) {
-            if (e.getStatusCode() == HttpStatus.NOT_FOUND.value()) throw new ClientVisibleException("{spreadsheet.not_found}");
-            if (e.getStatusCode() == HttpStatus.UNAUTHORIZED.value()) throw new ClientVisibleException("{google.auth.unauthenticated}");
+            if (e.getStatusCode() == HttpStatusCodes.STATUS_CODE_NOT_FOUND) throw new ClientVisibleException("{spreadsheet.not_found}");
+            if (e.getStatusCode() == HttpStatusCodes.STATUS_CODE_UNAUTHORIZED) throw new ClientVisibleException("{google.auth.unauthenticated}");
             throw new RuntimeException("Could not get spreadsheet info", e);
         } catch (Exception e) {
             throw new RuntimeException("Could not get spreadsheet info", e);

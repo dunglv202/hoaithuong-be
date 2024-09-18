@@ -36,4 +36,6 @@ public interface ScheduleService {
     void addNewSchedule(NewScheduleDTO newSchedule);
 
     void syncToCalendar(Range<LocalDate> range);
+
+    void deleteSchedules(List<Schedule> schedules);
 }

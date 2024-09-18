@@ -104,7 +104,7 @@ public class ReportServiceImpl implements ReportService {
 
             // do export
             Sheets sheetsService = googleHelper.getSheetService(user);
-            List<Lecture> lectures = getLecturesForReport(range);
+            List<Lecture> lectures = getLecturesForReport(user, range);
             exportDetailToGgSheet(sheetsService, range, lectures, config);
             exportGeneralToGgSheet(sheetsService, lectures, config);
         } catch (GoogleJsonResponseException e) {
@@ -212,9 +212,9 @@ public class ReportServiceImpl implements ReportService {
     /**
      * @return List of lectures for current signed teacher
      */
-    private List<Lecture> getLecturesForReport(ReportRange range) {
+    private List<Lecture> getLecturesForReport(User teacher, ReportRange range) {
         Specification<Lecture> specification = Specification.allOf(
-            ofTeacher(authHelper.getSignedUser()),
+            ofTeacher(teacher),
             inRange(range),
             sortByStartTime(Sort.Direction.ASC)
         );
@@ -349,7 +349,7 @@ public class ReportServiceImpl implements ReportService {
 
     private Workbook generateReportFile(ReportRange range) {
         Workbook workbook = new XSSFWorkbook();
-        List<Lecture> lectures = getLecturesForReport(range);
+        List<Lecture> lectures = getLecturesForReport(authHelper.getSignedUser(), range);
 
         // write report data
         writeGeneralReportSheet(workbook, lectures);

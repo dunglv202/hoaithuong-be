@@ -13,6 +13,8 @@ import dev.dunglv202.hoaithuong.helper.AuthHelper;
 import dev.dunglv202.hoaithuong.mapper.TutorClassMapper;
 import dev.dunglv202.hoaithuong.model.Page;
 import dev.dunglv202.hoaithuong.model.Pagination;
+import dev.dunglv202.hoaithuong.model.Range;
+import dev.dunglv202.hoaithuong.model.criteria.ScheduleCriteria;
 import dev.dunglv202.hoaithuong.model.criteria.TutorClassCriteria;
 import dev.dunglv202.hoaithuong.repository.ScheduleRepository;
 import dev.dunglv202.hoaithuong.repository.StudentRepository;
@@ -99,6 +101,9 @@ public class TutorClassServiceImpl implements TutorClassService {
         return TutorClassMapper.INSTANCE.toDetailClassDTO(tutorClass);
     }
 
+    /**
+     * TODO: handle case error -> roll back should re-generate events on Google Calendar
+     */
     @Override
     @Transactional
     public void stopClass(long id, LocalDate effectiveDate) {
@@ -107,7 +112,12 @@ public class TutorClassServiceImpl implements TutorClassService {
         if (!tutorClass.isActive()) {
             throw new ClientVisibleException("{class.inactive}");
         }
-        scheduleRepository.deleteAllFromDateByClass(tutorClass, effectiveDate);
+        var spec = Specification.allOf(
+            ScheduleCriteria.ofClass(tutorClass),
+            ScheduleCriteria.inRange(Range.from(effectiveDate))
+        );
+        var schedules = scheduleRepository.findAll(spec);
+        scheduleService.deleteSchedules(schedules);
         tutorClass.setActive(false);
         tutorClassRepository.save(tutorClass);
     }

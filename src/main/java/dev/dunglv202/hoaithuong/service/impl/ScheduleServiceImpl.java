@@ -137,6 +137,19 @@ public class ScheduleServiceImpl implements ScheduleService {
     }
 
     /**
+     * All schedule delete action should call this method
+     */
+    @Override
+    public void deleteSchedules(List<Schedule> schedules) {
+        if (schedules.isEmpty()) return;
+        calendarService.removeEventsAsync(
+            schedules.get(0).getTeacher(),
+            schedules.stream().filter(s -> s.getGoogleEventId() != null).map(ScheduleEvent::new).toList()
+        );
+        scheduleRepository.deleteAll(schedules);
+    }
+
+    /**
      * Add schedule to timetable. Required to be in a transaction. All schedule add action should call this method
      *
      * @param schedules List of schedule to add, sorted in ascending order by date time
@@ -168,18 +181,6 @@ public class ScheduleServiceImpl implements ScheduleService {
 
     private void deleteSchedule(Schedule schedule) {
         deleteSchedules(List.of(schedule));
-    }
-
-    /**
-     * All schedule delete action should call this method
-     */
-    private void deleteSchedules(List<Schedule> schedules) {
-        if (schedules.isEmpty()) return;
-        calendarService.removeEventsAsync(
-            schedules.get(0).getTeacher(),
-            schedules.stream().filter(s -> s.getGoogleEventId() != null).map(ScheduleEvent::new).toList()
-        );
-        scheduleRepository.deleteAll(schedules);
     }
 
     private Schedule makeSchedule(TutorClass tutorClass, LocalDateTime startTime) {

@@ -9,22 +9,17 @@ import com.google.api.services.sheets.v4.model.Spreadsheet;
 import com.google.api.services.sheets.v4.model.ValueRange;
 import dev.dunglv202.hoaithuong.constant.ApiErrorCode;
 import dev.dunglv202.hoaithuong.dto.ReportDTO;
-import dev.dunglv202.hoaithuong.entity.Configuration;
-import dev.dunglv202.hoaithuong.entity.Lecture;
-import dev.dunglv202.hoaithuong.entity.TutorClass;
-import dev.dunglv202.hoaithuong.entity.User;
+import dev.dunglv202.hoaithuong.entity.*;
 import dev.dunglv202.hoaithuong.exception.AuthenticationException;
 import dev.dunglv202.hoaithuong.exception.ClientVisibleException;
 import dev.dunglv202.hoaithuong.exception.InvalidConfigException;
-import dev.dunglv202.hoaithuong.helper.AuthHelper;
-import dev.dunglv202.hoaithuong.helper.DateTimeFmt;
-import dev.dunglv202.hoaithuong.helper.GoogleHelper;
-import dev.dunglv202.hoaithuong.helper.SheetHelper;
+import dev.dunglv202.hoaithuong.helper.*;
 import dev.dunglv202.hoaithuong.model.ReportRange;
 import dev.dunglv202.hoaithuong.model.sheet.standard.*;
 import dev.dunglv202.hoaithuong.repository.LectureRepository;
 import dev.dunglv202.hoaithuong.repository.ScheduleRepository;
 import dev.dunglv202.hoaithuong.service.ConfigService;
+import dev.dunglv202.hoaithuong.service.NotificationService;
 import dev.dunglv202.hoaithuong.service.ReportService;
 import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.Cell;
@@ -55,6 +50,8 @@ public class ReportServiceImpl implements ReportService {
     private final AuthHelper authHelper;
     private final GoogleHelper googleHelper;
     private final ConfigService configService;
+    private final NotificationService notificationService;
+    private final MessageProvider messageProvider;
 
     @Override
     public ReportDTO getReport(ReportRange range) {
@@ -194,7 +191,14 @@ public class ReportServiceImpl implements ReportService {
                    columns to write so 21st and 22nd lecture should be in second row */
                 int offset = (lec.getLectureNo() - 1) / lectureNoColumnIndexes.size();
                 if (offset >= classRowIndex.get(classCode).size()) {
-                    throw new ClientVisibleException("{report.general.no_valid_row} : " + tutorClass.getName() + " - lecture: " + lec.getLectureNo());
+                    String noti = String.format(
+                        "We were not able to help you push your report to Google Sheet. %s : %s - lecture %s",
+                        messageProvider.getLocalizedMessage("{report.general.no_valid_row}"),
+                        tutorClass.getName(),
+                        lec.getLectureNo()
+                    );
+                    notificationService.addNotification(Notification.forUser(tutorClass.getTeacher()).content(noti));
+                    return;
                 }
                 int rowIndex = Optional.ofNullable(classRowIndex.get(classCode).get(offset)).orElseThrow(
                     () -> new ClientVisibleException("{report.general.class_code_not_found} : " + classCode)

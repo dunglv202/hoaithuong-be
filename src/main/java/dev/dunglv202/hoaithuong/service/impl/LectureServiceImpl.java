@@ -87,7 +87,7 @@ public class LectureServiceImpl implements LectureService {
         }
 
         // send alert notification
-        if (tutorClass.getLearned() == 18) {
+        if (tutorClass.getLearned() == 18 || tutorClass.getLearned() == 8) {
             String noti = String.format(
                 "Your class: %s has reached lecture of %d/%d",
                 tutorClass.getName(),

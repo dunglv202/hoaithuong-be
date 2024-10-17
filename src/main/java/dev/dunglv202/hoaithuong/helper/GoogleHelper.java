@@ -17,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
@@ -40,6 +41,7 @@ public class GoogleHelper {
     @Value("${spring.application.name}")
     private String applicationName;
 
+    private final TransactionTemplate transactionTemplate;
     private final ConfigService configService;
 
     static {
@@ -77,7 +79,7 @@ public class GoogleHelper {
             .setTransport(HTTP_TRANSPORT)
             .setJsonFactory(JSON_FACTORY)
             .setClientSecrets(clientId, clientSecret)
-            .setRefreshListeners(List.of(new GoogleCredentialListener(configService, user)))
+            .setRefreshListeners(List.of(new GoogleCredentialListener(transactionTemplate, configService, user)))
             .build()
             .setAccessToken(config.getGoogleAccessToken())
             .setRefreshToken(config.getGoogleRefreshToken());

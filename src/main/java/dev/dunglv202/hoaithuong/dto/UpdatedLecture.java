@@ -14,6 +14,9 @@ public class UpdatedLecture {
     @Length(max = 128, message = "{lecture.topic.length}")
     private String topic;
 
+    @Length(max = 256, message = "{lecture.video.url.length}")
+    private String video;
+
     @Length(max = 256, message = "{lecture.comment.length}")
     private String comment;
 

@@ -10,8 +10,6 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 
-import static dev.dunglv202.hoaithuong.constant.Configuration.TEACHER_CODE;
-
 @Entity
 @Getter
 @Setter
@@ -36,6 +34,9 @@ public class Lecture extends Auditable {
     @OneToOne
     private Schedule schedule;
 
+    /* Teacher can have different code for each lecture ??? :D */
+    private String teacherCode;
+
     @Setter(AccessLevel.PRIVATE)
     @ManyToOne(fetch = FetchType.LAZY)
     private User teacher;
@@ -54,7 +55,7 @@ public class Lecture extends Auditable {
     }
 
     public String getGeneratedCode() {
-        return tutorClass.getCode() + TEACHER_CODE + DateTimeFmt.MMM.format(getStartTime()).toUpperCase() + lectureNo;
+        return tutorClass.getCode() + teacherCode + DateTimeFmt.MMM.format(getStartTime()).toUpperCase() + lectureNo;
     }
 
     public Lecture merge(UpdatedLecture updatedLecture) {

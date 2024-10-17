@@ -12,6 +12,7 @@ import dev.dunglv202.hoaithuong.model.criteria.LectureCriteria;
 import dev.dunglv202.hoaithuong.repository.LectureRepository;
 import dev.dunglv202.hoaithuong.repository.ScheduleRepository;
 import dev.dunglv202.hoaithuong.repository.TutorClassRepository;
+import dev.dunglv202.hoaithuong.service.ConfigService;
 import dev.dunglv202.hoaithuong.service.LectureService;
 import dev.dunglv202.hoaithuong.service.NotificationService;
 import dev.dunglv202.hoaithuong.service.ScheduleService;
@@ -34,18 +35,20 @@ public class LectureServiceImpl implements LectureService {
     private final ScheduleService scheduleService;
     private final NotificationService notificationService;
     private final AuthHelper authHelper;
+    private final ConfigService configService;
 
     @Override
     @Transactional
     public void addNewLecture(NewLectureDTO newLectureDTO) {
         Lecture lecture = LectureMapper.INSTANCE.toLecture(newLectureDTO);
 
-        // set class
+        // set class & teacher code
         TutorClass tutorClass = tutorClassRepository.findByIdAndTeacher(
             newLectureDTO.getClassId(),
             authHelper.getSignedUser()
         ).orElseThrow();
         lecture.setTutorClass(tutorClass);
+        lecture.setTeacherCode(configService.getConfigsByUser(tutorClass.getTeacher()).getTeacherCode());
 
         // update learned
         int learned = tutorClass.getLearned() + 1;

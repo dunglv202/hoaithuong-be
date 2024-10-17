@@ -23,6 +23,8 @@ public class Configuration extends Auditable {
     @OneToOne(fetch = FetchType.LAZY)
     private User user;
 
+    private String teacherCode;
+
     private String googleAccessToken;
 
     private String googleRefreshToken;

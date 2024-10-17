@@ -9,19 +9,25 @@ import com.google.api.services.sheets.v4.model.Spreadsheet;
 import com.google.api.services.sheets.v4.model.ValueRange;
 import dev.dunglv202.hoaithuong.constant.ApiErrorCode;
 import dev.dunglv202.hoaithuong.dto.ReportDTO;
-import dev.dunglv202.hoaithuong.entity.*;
+import dev.dunglv202.hoaithuong.entity.Configuration;
+import dev.dunglv202.hoaithuong.entity.Lecture;
+import dev.dunglv202.hoaithuong.entity.TutorClass;
+import dev.dunglv202.hoaithuong.entity.User;
 import dev.dunglv202.hoaithuong.exception.AuthenticationException;
 import dev.dunglv202.hoaithuong.exception.ClientVisibleException;
 import dev.dunglv202.hoaithuong.exception.InvalidConfigException;
-import dev.dunglv202.hoaithuong.helper.*;
+import dev.dunglv202.hoaithuong.helper.AuthHelper;
+import dev.dunglv202.hoaithuong.helper.DateTimeFmt;
+import dev.dunglv202.hoaithuong.helper.GoogleHelper;
+import dev.dunglv202.hoaithuong.helper.SheetHelper;
 import dev.dunglv202.hoaithuong.model.ReportRange;
 import dev.dunglv202.hoaithuong.model.sheet.standard.*;
 import dev.dunglv202.hoaithuong.repository.LectureRepository;
 import dev.dunglv202.hoaithuong.repository.ScheduleRepository;
 import dev.dunglv202.hoaithuong.service.ConfigService;
-import dev.dunglv202.hoaithuong.service.NotificationService;
 import dev.dunglv202.hoaithuong.service.ReportService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -44,14 +50,13 @@ import static dev.dunglv202.hoaithuong.model.criteria.LectureCriteria.*;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ReportServiceImpl implements ReportService {
     private final LectureRepository lectureRepository;
     private final ScheduleRepository scheduleRepository;
     private final AuthHelper authHelper;
     private final GoogleHelper googleHelper;
     private final ConfigService configService;
-    private final NotificationService notificationService;
-    private final MessageProvider messageProvider;
 
     @Override
     public ReportDTO getReport(ReportRange range) {
@@ -155,7 +160,7 @@ public class ReportServiceImpl implements ReportService {
         String spreadsheetId = config.getGeneralReportId();
         String sheetName = config.getGeneralReportSheet();
 
-        // get row indexes of each classes
+        // get row indexes of each class, each can have multiple rows stored in `classRowIndex` map
         List<List<Object>> codeValues = sheetsService.spreadsheets().values()
             .get(spreadsheetId, sheetName + "!A:A").execute().getValues();
         Set<String> classCodes = lectures.stream().map(lec -> lec.getTutorClass().getCode()).collect(Collectors.toSet());
@@ -186,23 +191,19 @@ public class ReportServiceImpl implements ReportService {
         var batchUpdateRequest = new BatchUpdateValuesRequest().setValueInputOption("RAW").setData(new ArrayList<>());
         groupByClass(lectures).forEach((tutorClass, classLectures) -> {
             String classCode = tutorClass.getCode();
+            if (classRowIndex.get(classCode) == null) {
+                throw new ClientVisibleException("{report.general.class_code_not_found} : " + classCode);
+            }
             classLectures.forEach(lec -> {
                 /* why offset -> each class can have multiple row. e.g: class with 22 lectures, but there's only 20
                    columns to write so 21st and 22nd lecture should be in second row */
                 int offset = (lec.getLectureNo() - 1) / lectureNoColumnIndexes.size();
                 if (offset >= classRowIndex.get(classCode).size()) {
-                    String noti = String.format(
-                        "We were not able to help you push your report to Google Sheet. %s : %s - lecture %s",
-                        messageProvider.getLocalizedMessage("{report.general.no_valid_row}"),
-                        tutorClass.getName(),
-                        lec.getLectureNo()
-                    );
-                    notificationService.addNotification(Notification.forUser(tutorClass.getTeacher()).content(noti));
+                    // no valid row for this lecture => skip with no error
+                    log.info("No valid row for {}, lecture {}", lec.getTutorClass().getName(), lec.getLectureNo());
                     return;
                 }
-                int rowIndex = Optional.ofNullable(classRowIndex.get(classCode).get(offset)).orElseThrow(
-                    () -> new ClientVisibleException("{report.general.class_code_not_found} : " + classCode)
-                );
+                int rowIndex = classRowIndex.get(classCode).get(offset);
                 int colIndex = lectureNoColumnIndexes.get((lec.getLectureNo() - 1) % lectureNoColumnIndexes.size());
                 var value = new ValueRange()
                     .setRange(String.format("%s!%s%s", sheetName, columnIndexToLetter(colIndex), rowIndex + 1))
@@ -340,8 +341,10 @@ public class ReportServiceImpl implements ReportService {
             SheetCell paid = row.addCell();
             paid.setValue((double) lecture.getTutorClass().getPayForLecture() / 1000);
 
-            // add video link & approved earning column
-            row.addCell();
+            SheetCell video = row.addCell();
+            video.setValue(lecture.getVideo()).getAttribute().setLink(true);
+
+            // add approved earning column
             row.addCell();
 
             // set border

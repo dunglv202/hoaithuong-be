@@ -49,7 +49,11 @@ public class GoogleSheetConverter {
         } else if (cell.getValue() instanceof Number) {
             value.setNumberValue(Double.parseDouble(cell.getValue().toString()));
         } else {
-            value.setStringValue(cell.getValue() != null ? cell.getValue().toString() : null);
+            if (cell.getValue() != null && cell.getAttribute().isLink()) {
+                value.setFormulaValue(String.format("=HYPERLINK(\"%s\")", cell.getValue()));
+            } else {
+                value.setStringValue(cell.getValue() != null ? cell.getValue().toString() : null);
+            }
         }
 
         return new CellData()

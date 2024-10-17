@@ -1,25 +1,14 @@
 package dev.dunglv202.hoaithuong.model.sheet.standard;
 
 import lombok.Getter;
+import lombok.Setter;
+import lombok.experimental.Accessors;
 
 @Getter
+@Setter
+@Accessors(chain = true)
 public class SheetCell {
     private Object value;
-    private SheetCellStyle style;
-    private SheetCellAttribute attribute;
-
-    public SheetCell setStyle(SheetCellStyle style) {
-        this.style = style;
-        return this;
-    }
-
-    public SheetCell setAttribute(SheetCellAttribute attribute) {
-        this.attribute = attribute;
-        return this;
-    }
-
-    public SheetCell setValue(Object value) {
-        this.value = value;
-        return this;
-    }
+    private SheetCellStyle style = new SheetCellStyle();
+    private SheetCellAttribute attribute = new SheetCellAttribute();
 }

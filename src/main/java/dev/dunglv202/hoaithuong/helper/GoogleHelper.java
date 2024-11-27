@@ -3,6 +3,8 @@ package dev.dunglv202.hoaithuong.helper;
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
+import com.google.api.client.http.HttpRequest;
+import com.google.api.client.http.HttpRequestInitializer;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.gson.GsonFactory;
@@ -55,7 +57,7 @@ public class GoogleHelper {
 
     public Sheets getSheetService(User user) {
         Credential credential = getCredential(user);
-        return new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, credential)
+        return new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, longerRequestTimeout(credential))
             .setApplicationName(applicationName)
             .build();
     }
@@ -83,5 +85,13 @@ public class GoogleHelper {
             .build()
             .setAccessToken(config.getGoogleAccessToken())
             .setRefreshToken(config.getGoogleRefreshToken());
+    }
+
+    private HttpRequestInitializer longerRequestTimeout(final HttpRequestInitializer requestInitializer) {
+        return httpRequest -> {
+            requestInitializer.initialize(httpRequest);
+            httpRequest.setConnectTimeout(3 * 60_000);  // 3 minutes connect timeout
+            httpRequest.setReadTimeout(3 * 60_000);  // 3 minutes read timeout
+        };
     }
 }

@@ -5,6 +5,9 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+/**
+ * Monthly report
+ */
 @Entity
 @Getter
 @Setter
@@ -21,5 +24,8 @@ public class Report extends Auditable {
     @ManyToOne(fetch = FetchType.LAZY)
     private User teacher;
 
+    /**
+     * Drive folder id that contains all confirmations for month report
+     */
     private String confirmation;
 }

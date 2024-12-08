@@ -22,4 +22,6 @@ public interface CalendarService {
 
     @Async
     void removeEventsAsync(User user, List<ScheduleEvent> schedules);
+
+    boolean isValidCalendar(User user, String calendarId);
 }

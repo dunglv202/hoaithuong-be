@@ -156,6 +156,11 @@ public class GoogleCalendarService implements CalendarService {
         }
     }
 
+    @Override
+    public boolean isValidCalendar(User user, String calendarId) {
+        return isValidCalendar(googleHelper.getCalendarService(user), calendarId);
+    }
+
     private boolean isValidCalendar(Calendar calendarService, String calendarId) {
         try {
             if (calendarId == null) return false;

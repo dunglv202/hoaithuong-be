@@ -12,9 +12,7 @@ import dev.dunglv202.hoaithuong.helper.FileUtil;
 import dev.dunglv202.hoaithuong.model.SheetInfo;
 import dev.dunglv202.hoaithuong.model.auth.AppUser;
 import dev.dunglv202.hoaithuong.repository.UserRepository;
-import dev.dunglv202.hoaithuong.service.ConfigService;
-import dev.dunglv202.hoaithuong.service.SpreadsheetService;
-import dev.dunglv202.hoaithuong.service.StorageService;
+import dev.dunglv202.hoaithuong.service.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -33,6 +31,8 @@ public class UserService implements UserDetailsService {
     private final ConfigService configService;
     private final StorageService storageService;
     private final SpreadsheetService spreadsheetService;
+    private final CalendarService calendarService;
+    private final ScheduleService scheduleService;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -71,6 +71,15 @@ public class UserService implements UserDetailsService {
         );
         if (!detailReport.equals(configs.getDetailSheetInfo()) && !spreadsheetService.isValidSheet(signedUser, detailReport)) {
             throw new ClientVisibleException("{report.detail.spreadsheet.invalid}");
+        }
+
+        // update calendar if needed
+        String newCalendarId = updateDTO.getConfigs().getCalendarId();
+        if (configs.getCalendarId() == null || !configs.getCalendarId().equals(newCalendarId)) {
+            if (!calendarService.isValidCalendar(signedUser, newCalendarId)) {
+                throw new ClientVisibleException("{user.calendar.invalid}");
+            }
+            scheduleService.syncToNewCalendarAsync(signedUser);
         }
 
         signedUser.setDisplayName(updateDTO.getDisplayName());

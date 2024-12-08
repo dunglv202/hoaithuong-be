@@ -11,7 +11,7 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.Optional;
 
-public interface LectureRepository extends JpaRepository<Lecture, Long>, JpaSpecificationExecutor<Lecture> {
+public interface LectureRepository extends LectureCustomRepository, JpaRepository<Lecture, Long>, JpaSpecificationExecutor<Lecture> {
     Optional<Lecture> findByIdAndTeacher(long id, User teacher);
 
     @Query("""

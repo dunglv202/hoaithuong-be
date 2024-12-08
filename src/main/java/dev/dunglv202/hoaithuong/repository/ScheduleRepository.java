@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -40,4 +41,11 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long>, JpaSp
         WHERE s.teacher = :teacher AND CAST(s.startTime AS DATE) BETWEEN :from AND :to
     """)
     int getEstimatedTotalInRange(@Param("teacher") User teacher, @Param("from") LocalDate from, @Param("to") LocalDate to);
+
+    @Query("""
+        FROM Schedule s
+        WHERE s.teacher = :teacher
+        AND s.startTime > :from
+    """)
+    List<Schedule> findAllByTeacherAndAfter(@Param("teacher") User teacher, @Param("from") LocalDateTime from);
 }

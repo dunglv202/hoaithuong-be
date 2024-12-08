@@ -2,9 +2,7 @@ package dev.dunglv202.hoaithuong.service.impl;
 
 import dev.dunglv202.hoaithuong.dto.MinimalScheduleDTO;
 import dev.dunglv202.hoaithuong.dto.NewScheduleDTO;
-import dev.dunglv202.hoaithuong.entity.Schedule;
-import dev.dunglv202.hoaithuong.entity.TutorClass;
-import dev.dunglv202.hoaithuong.entity.User;
+import dev.dunglv202.hoaithuong.entity.*;
 import dev.dunglv202.hoaithuong.exception.ClientVisibleException;
 import dev.dunglv202.hoaithuong.exception.ConflictScheduleException;
 import dev.dunglv202.hoaithuong.helper.AuthHelper;
@@ -15,12 +13,16 @@ import dev.dunglv202.hoaithuong.model.ScheduleEvent;
 import dev.dunglv202.hoaithuong.model.SimpleRange;
 import dev.dunglv202.hoaithuong.model.TimeSlot;
 import dev.dunglv202.hoaithuong.model.criteria.ScheduleCriteria;
+import dev.dunglv202.hoaithuong.repository.LectureRepository;
 import dev.dunglv202.hoaithuong.repository.ScheduleRepository;
 import dev.dunglv202.hoaithuong.repository.TutorClassRepository;
 import dev.dunglv202.hoaithuong.service.CalendarService;
+import dev.dunglv202.hoaithuong.service.NotificationService;
 import dev.dunglv202.hoaithuong.service.ScheduleService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,10 +30,12 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import static dev.dunglv202.hoaithuong.model.criteria.ScheduleCriteria.*;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ScheduleServiceImpl implements ScheduleService {
@@ -39,6 +43,8 @@ public class ScheduleServiceImpl implements ScheduleService {
     private final TutorClassRepository tutorClassRepository;
     private final AuthHelper authHelper;
     private final CalendarService calendarService;
+    private final LectureRepository lectureRepository;
+    private final NotificationService notificationService;
 
     @Override
     public List<MinimalScheduleDTO> getSchedules(Range<LocalDate> range) {
@@ -147,6 +153,30 @@ public class ScheduleServiceImpl implements ScheduleService {
             schedules.stream().filter(s -> s.getGoogleEventId() != null).map(ScheduleEvent::new).toList()
         );
         scheduleRepository.deleteAll(schedules);
+    }
+
+    /**
+     * Sync schedule since last lecture to new calendar
+     */
+    @Async
+    @Override
+    public void syncToNewCalendarAsync(User teacher) {
+        try {
+            Optional<Lecture> lastLecture = lectureRepository.findLatestByTeacher(teacher);
+            if (lastLecture.isEmpty()) return;
+
+            // sync user since last lecture
+            List<Schedule> schedules = scheduleRepository.findAllByTeacherAndAfter(
+                teacher,
+                lastLecture.get().getSchedule().getStartTime()
+            );
+            calendarService.addEvents(teacher, schedules.stream().map(ScheduleEvent::new).toList());
+        } catch (Exception e) {
+            log.error("Could not sync to new calendar for user id {} ", teacher.getId(), e);
+            Notification notification = Notification.forUser(teacher)
+                .content("{sync_to_new_calendar.failed}");
+            notificationService.addNotification(notification);
+        }
     }
 
     /**

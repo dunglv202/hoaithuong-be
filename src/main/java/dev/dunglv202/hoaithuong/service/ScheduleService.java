@@ -4,6 +4,7 @@ import dev.dunglv202.hoaithuong.dto.MinimalScheduleDTO;
 import dev.dunglv202.hoaithuong.dto.NewScheduleDTO;
 import dev.dunglv202.hoaithuong.entity.Schedule;
 import dev.dunglv202.hoaithuong.entity.TutorClass;
+import dev.dunglv202.hoaithuong.entity.User;
 import dev.dunglv202.hoaithuong.exception.ConflictScheduleException;
 import dev.dunglv202.hoaithuong.model.Range;
 import dev.dunglv202.hoaithuong.model.TimeSlot;
@@ -38,4 +39,6 @@ public interface ScheduleService {
     void syncToCalendar(Range<LocalDate> range);
 
     void deleteSchedules(List<Schedule> schedules);
+
+    void syncToNewCalendarAsync(User signedUser);
 }

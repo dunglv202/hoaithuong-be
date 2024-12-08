@@ -1,6 +1,8 @@
 spring:
   application:
     name: Hoai Thuong
+  profiles:
+    active: local
   datasource:
     url: jdbc:mysql://${DB_HOST}/${DB_NAME}?createDatabaseIfNotExist=true
     username: ${DB_USER}

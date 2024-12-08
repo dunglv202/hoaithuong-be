@@ -49,4 +49,9 @@ public class Schedule extends Auditable {
     public boolean isAfter(Schedule another) {
         return this.startTime.isAfter(another.endTime);
     }
+
+    public void setTutorClass(TutorClass tutorClass) {
+        this.tutorClass = tutorClass;
+        this.setTeacher(tutorClass.getTeacher());
+    }
 }

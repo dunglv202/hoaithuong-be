@@ -8,11 +8,9 @@ import com.google.api.services.sheets.v4.model.GridRange;
 import com.google.api.services.sheets.v4.model.Spreadsheet;
 import com.google.api.services.sheets.v4.model.ValueRange;
 import dev.dunglv202.hoaithuong.constant.ApiErrorCode;
+import dev.dunglv202.hoaithuong.dto.ConfirmationDTO;
 import dev.dunglv202.hoaithuong.dto.ReportDTO;
-import dev.dunglv202.hoaithuong.entity.Configuration;
-import dev.dunglv202.hoaithuong.entity.Lecture;
-import dev.dunglv202.hoaithuong.entity.TutorClass;
-import dev.dunglv202.hoaithuong.entity.User;
+import dev.dunglv202.hoaithuong.entity.*;
 import dev.dunglv202.hoaithuong.exception.AuthenticationException;
 import dev.dunglv202.hoaithuong.exception.ClientVisibleException;
 import dev.dunglv202.hoaithuong.exception.InvalidConfigException;
@@ -22,10 +20,10 @@ import dev.dunglv202.hoaithuong.helper.GoogleHelper;
 import dev.dunglv202.hoaithuong.helper.SheetHelper;
 import dev.dunglv202.hoaithuong.model.ReportRange;
 import dev.dunglv202.hoaithuong.model.sheet.standard.*;
-import dev.dunglv202.hoaithuong.repository.LectureRepository;
-import dev.dunglv202.hoaithuong.repository.ScheduleRepository;
+import dev.dunglv202.hoaithuong.repository.*;
 import dev.dunglv202.hoaithuong.service.ConfigService;
 import dev.dunglv202.hoaithuong.service.ReportService;
+import dev.dunglv202.hoaithuong.service.StorageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.Cell;
@@ -38,6 +36,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -57,6 +56,11 @@ public class ReportServiceImpl implements ReportService {
     private final AuthHelper authHelper;
     private final GoogleHelper googleHelper;
     private final ConfigService configService;
+    private final ReportRepository reportRepository;
+    private final DriveService driveService;
+    private final StudentRepository studentRepository;
+    private final ConfirmationRepository confirmationRepository;
+    private final StorageService storageService;
 
     @Override
     public ReportDTO getReport(ReportRange range) {
@@ -68,11 +72,18 @@ public class ReportServiceImpl implements ReportService {
         );
 
         List<Lecture> lectures = lectureRepository.findAll(criteria.and(joinFetch()));
-        ReportDTO report = new ReportDTO(lectures);
-        int estimatedTotal = scheduleRepository.getEstimatedTotalInRange(teacher, range.getFrom(), range.getTo());
-        report.setEstimatedTotal(estimatedTotal);
+        List<Confirmation> confirmations = List.of();
+        Optional<Report> report = reportRepository.findByTimeAndTeacher(range.getYear(), range.getMonth(), teacher);
+        if (report.isPresent()) {
+            confirmations = confirmationRepository.findAllByReport(report.get());
+        }
 
-        return report;
+        ReportDTO reportDTO = new ReportDTO(lectures, confirmations);
+        int estimatedTotal = scheduleRepository.getEstimatedTotalInRange(teacher, range.getFrom(), range.getTo());
+        reportDTO.setEstimatedTotal(estimatedTotal);
+        report.ifPresent(value -> reportDTO.setEvidenceUrl(value.getConfirmationsUrl()));
+
+        return reportDTO;
     }
 
     @Override
@@ -119,6 +130,66 @@ public class ReportServiceImpl implements ReportService {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    @Transactional
+    public void uploadConfirmation(int year, int month, ConfirmationDTO confirmationDTO) {
+        User teacher = authHelper.getSignedUser();
+
+        // Check if student have lecture on that month
+        Student student = studentRepository.findByIdAndCreatedBy(confirmationDTO.getStudentId(), teacher)
+            .orElseThrow(() -> new ClientVisibleException("{student.not_found}"));
+        TutorClass tutorClass = lectureRepository.findByTimeAndStudentForTeacher(year, month, teacher, student)
+            .stream()
+            .map(Lecture::getTutorClass)
+            .findFirst()
+            .orElseThrow(() -> new ClientVisibleException("{student.no_class_in_time}"));
+
+        // Add to report folder
+        Report report = reportRepository.findByTimeAndTeacher(year, month, teacher)
+            .orElseGet(() -> createReport(year, month, teacher));
+        confirmationRepository.findByReportAndStudent(report, student)
+            .ifPresent(confirmation -> {
+                // Delete old one if exist
+                driveService.deleteFile(teacher, confirmation.getFileId());
+                confirmationRepository.delete(confirmation);
+            });
+        String fileId = driveService.uploadToFolder(
+            teacher,
+            report.getConfirmation(),
+            confirmationDTO.getConfirmation(),
+            tutorClass.getName()
+        );
+
+        // Store to storage for preview
+        String url = storageService.storeFile(confirmationDTO.getConfirmation());
+
+        // Save confirmation info
+        Confirmation confirmation = new Confirmation();
+        confirmation.setReport(report);
+        confirmation.setStudent(student);
+        confirmation.setFileId(fileId);
+        confirmation.setUrl(url);
+        confirmationRepository.save(confirmation);
+    }
+
+    @Override
+    public void createIfNotExist(User teacher, int year, int month) {
+        Optional<Report> report = reportRepository.findByTimeAndTeacher(year, month, teacher);
+        if (report.isEmpty()) {
+            createReport(year, month, teacher);
+        }
+    }
+
+    private Report createReport(int year, int month, User teacher) {
+        Report report = new Report();
+        report.setYear(year);
+        report.setMonth(month);
+        report.setTeacher(teacher);
+        String folderId = driveService.createDriveFolder(teacher, "Xác nhận PH tháng " + month + " - " + year);
+        report.setConfirmation(folderId);
+        return reportRepository.save(report);
     }
 
     private void exportDetailToGgSheet(Sheets sheetsService, ReportRange range, List<Lecture> lectures, Configuration config) throws IOException {

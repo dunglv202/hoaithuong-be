@@ -12,10 +12,7 @@ import dev.dunglv202.hoaithuong.model.criteria.LectureCriteria;
 import dev.dunglv202.hoaithuong.repository.LectureRepository;
 import dev.dunglv202.hoaithuong.repository.ScheduleRepository;
 import dev.dunglv202.hoaithuong.repository.TutorClassRepository;
-import dev.dunglv202.hoaithuong.service.ConfigService;
-import dev.dunglv202.hoaithuong.service.LectureService;
-import dev.dunglv202.hoaithuong.service.NotificationService;
-import dev.dunglv202.hoaithuong.service.ScheduleService;
+import dev.dunglv202.hoaithuong.service.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
@@ -36,6 +33,7 @@ public class LectureServiceImpl implements LectureService {
     private final NotificationService notificationService;
     private final AuthHelper authHelper;
     private final ConfigService configService;
+    private final ReportService reportService;
 
     @Override
     @Transactional
@@ -110,6 +108,13 @@ public class LectureServiceImpl implements LectureService {
                 Notification.forUser(tutorClass.getTeacher()).content(noti)
             );
         }
+
+        // trigger create report for first lecture of month
+        reportService.createIfNotExist(
+            authHelper.getSignedUser(),
+            schedule.getStartTime().getYear(),
+            schedule.getStartTime().getMonth().getValue()
+        );
 
         lectureRepository.save(lecture);
         tutorClassRepository.save(tutorClass);

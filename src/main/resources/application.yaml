@@ -25,6 +25,7 @@ spring:
               - https://www.googleapis.com/auth/userinfo.email
               - https://www.googleapis.com/auth/userinfo.profile
               - https://www.googleapis.com/auth/spreadsheets
+              - https://www.googleapis.com/auth/drive
               - https://www.googleapis.com/auth/calendar
               - openid
         provider:
@@ -47,3 +48,8 @@ aws:
   access-key: ${AWS_ACCESS_KEY}
   secret-key: ${AWS_SECRET_KEY}
   bucket: ${AWS_BUCKET}
+minio:
+  url: ${MINIO_URL}
+  access-key: ${MINIO_ACCESS_KEY}
+  access-secret: ${MINIO_ACCESS_SECRET}
+  bucket: ${MINIO_BUCKET}

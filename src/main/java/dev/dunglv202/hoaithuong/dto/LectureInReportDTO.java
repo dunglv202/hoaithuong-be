@@ -11,7 +11,7 @@ public class LectureInReportDTO {
     private LocalDateTime startTime;
     private LocalDateTime endTime;
     private String classCode;
-    private StudentInReportDTO student;
+    private String student;
     private String topic;
     private Integer lectureNo;
     private int totalLecture;

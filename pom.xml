@@ -22,6 +22,7 @@
 		<org.mapstruct.version>1.5.5.Final</org.mapstruct.version>
 		<apache.tika.version>2.9.2</apache.tika.version>
 		<amazon.sdk.version>2.27.19</amazon.sdk.version>
+		<io.minio.version>8.5.10</io.minio.version>
 	</properties>
 
 	<dependencyManagement>
@@ -153,11 +154,21 @@
 			<artifactId>google-api-services-calendar</artifactId>
 			<version>v3-rev20220715-2.0.0</version>
 		</dependency>
+		<dependency>
+			<groupId>com.google.apis</groupId>
+			<artifactId>google-api-services-drive</artifactId>
+			<version>v3-rev20220815-2.0.0</version>
+		</dependency>
 
-		<!-- AMAZON S3 -->
+		<!-- STORAGE -->
 		<dependency>
 			<groupId>software.amazon.awssdk</groupId>
 			<artifactId>s3</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.minio</groupId>
+			<artifactId>minio</artifactId>
+			<version>${io.minio.version}</version>
 		</dependency>
 
 		<!-- APACHE TIKA: DETECT FILE TYPE -->

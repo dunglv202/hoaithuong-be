@@ -1,8 +1,9 @@
 package dev.dunglv202.hoaithuong.controller;
 
+import dev.dunglv202.hoaithuong.dto.ConfirmationDTO;
 import dev.dunglv202.hoaithuong.dto.ReportDTO;
 import dev.dunglv202.hoaithuong.model.ReportRange;
-import dev.dunglv202.hoaithuong.service.impl.ReportServiceImpl;
+import dev.dunglv202.hoaithuong.service.ReportService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
@@ -10,16 +11,13 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/reports")
 @RequiredArgsConstructor
 public class ReportController {
-    private final ReportServiceImpl reportService;
+    private final ReportService reportService;
 
     @GetMapping
     @PreAuthorize("isAuthenticated()")
@@ -43,5 +41,11 @@ public class ReportController {
     @PreAuthorize("isAuthenticated()")
     public void exportReport(@Valid ReportRange range) {
         this.reportService.exportGoogleSheet(range);
+    }
+
+    @PostMapping("/confirmation")
+    @PreAuthorize("isAuthenticated()")
+    public void uploadConfirmation(@RequestParam int month, @RequestParam int year, @Valid ConfirmationDTO confirmationDTO) {
+        this.reportService.uploadConfirmation(year, month, confirmationDTO);
     }
 }

@@ -9,6 +9,7 @@ import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.services.calendar.Calendar;
+import com.google.api.services.drive.Drive;
 import com.google.api.services.sheets.v4.Sheets;
 import dev.dunglv202.hoaithuong.entity.Configuration;
 import dev.dunglv202.hoaithuong.entity.User;
@@ -65,6 +66,13 @@ public class GoogleHelper {
     public Calendar getCalendarService(User user) {
         Credential credential = getCredential(user);
         return new Calendar.Builder(HTTP_TRANSPORT, JSON_FACTORY, credential)
+            .setApplicationName(applicationName)
+            .build();
+    }
+
+    public Drive getDriveService(User user) {
+        Credential credential = getCredential(user);
+        return new Drive.Builder(HTTP_TRANSPORT, JSON_FACTORY, credential)
             .setApplicationName(applicationName)
             .build();
     }

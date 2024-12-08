@@ -28,4 +28,8 @@ public class Report extends Auditable {
      * Drive folder id that contains all confirmations for month report
      */
     private String confirmation;
+
+    public String getConfirmationsUrl() {
+        return "https://drive.google.com/drive/folders/" + confirmation;
+    }
 }

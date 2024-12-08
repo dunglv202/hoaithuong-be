@@ -1,4 +1,4 @@
-package dev.dunglv202.hoaithuong.model;
+package dev.dunglv202.hoaithuong.config.prop;
 
 import lombok.Getter;
 import lombok.Setter;

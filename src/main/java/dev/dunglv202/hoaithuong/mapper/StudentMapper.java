@@ -1,9 +1,6 @@
 package dev.dunglv202.hoaithuong.mapper;
 
-import dev.dunglv202.hoaithuong.dto.MinimalStudentDTO;
-import dev.dunglv202.hoaithuong.dto.NewStudentDTO;
-import dev.dunglv202.hoaithuong.dto.StudentDTO;
-import dev.dunglv202.hoaithuong.dto.UpdatedStudentDTO;
+import dev.dunglv202.hoaithuong.dto.*;
 import dev.dunglv202.hoaithuong.entity.Student;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -22,4 +19,6 @@ public interface StudentMapper {
 
     @Mapping(target = "id", ignore = true)
     void mergeStudent(@MappingTarget Student old, UpdatedStudentDTO updated);
+
+    StudentInReportDTO toStudentInReportDTO(Student student);
 }

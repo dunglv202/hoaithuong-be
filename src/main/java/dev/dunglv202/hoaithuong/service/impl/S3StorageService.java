@@ -1,9 +1,13 @@
 package dev.dunglv202.hoaithuong.service.impl;
 
 import dev.dunglv202.hoaithuong.helper.FileUtil;
-import dev.dunglv202.hoaithuong.model.AWSProperties;
+import dev.dunglv202.hoaithuong.config.prop.AWSProperties;
 import dev.dunglv202.hoaithuong.service.StorageService;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -14,10 +18,18 @@ import java.nio.file.Path;
 import java.util.UUID;
 
 @Service
+@Primary
+@Profile("prod")
 @RequiredArgsConstructor
+@Slf4j
 public class S3StorageService implements StorageService {
     private final S3Client s3Client;
     private final AWSProperties awsProperties;
+
+    @PostConstruct
+    public void postConstruct() {
+        log.info("Amazon S3 starting as primary storage");
+    }
 
     @Override
     public String storeFile(MultipartFile file) {

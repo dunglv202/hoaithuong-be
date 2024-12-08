@@ -16,6 +16,7 @@ public interface LectureRepository extends JpaRepository<Lecture, Long>, JpaSpec
 
     @Query("""
         FROM Lecture l
+        JOIN FETCH l.tutorClass
         WHERE l.teacher = :teacher
         AND l.tutorClass.student = :student
         AND MONTH(l.schedule.startTime) = :month AND YEAR(l.schedule.startTime) = :year

@@ -1,9 +1,10 @@
 package dev.dunglv202.hoaithuong.config;
 
-import dev.dunglv202.hoaithuong.model.AWSProperties;
+import dev.dunglv202.hoaithuong.config.prop.AWSProperties;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.AwsCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
@@ -16,6 +17,7 @@ public class AWSConfig {
     private final AWSProperties awsProperties;
 
     @Bean
+    @Profile("prod")
     public S3Client s3Client() {
         AwsCredentials credentials = AwsBasicCredentials.create(awsProperties.getAccessKey(), awsProperties.getSecretKey());
         return S3Client.builder()

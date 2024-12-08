@@ -23,6 +23,7 @@ import dev.dunglv202.hoaithuong.model.sheet.standard.*;
 import dev.dunglv202.hoaithuong.repository.*;
 import dev.dunglv202.hoaithuong.service.ConfigService;
 import dev.dunglv202.hoaithuong.service.ReportService;
+import dev.dunglv202.hoaithuong.service.StorageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.Cell;
@@ -59,6 +60,7 @@ public class ReportServiceImpl implements ReportService {
     private final DriveService driveService;
     private final StudentRepository studentRepository;
     private final ConfirmationRepository confirmationRepository;
+    private final StorageService storageService;
 
     @Override
     public ReportDTO getReport(ReportRange range) {
@@ -70,11 +72,18 @@ public class ReportServiceImpl implements ReportService {
         );
 
         List<Lecture> lectures = lectureRepository.findAll(criteria.and(joinFetch()));
-        ReportDTO report = new ReportDTO(lectures);
-        int estimatedTotal = scheduleRepository.getEstimatedTotalInRange(teacher, range.getFrom(), range.getTo());
-        report.setEstimatedTotal(estimatedTotal);
+        List<Confirmation> confirmations = List.of();
+        Optional<Report> report = reportRepository.findByTimeAndTeacher(range.getYear(), range.getMonth(), teacher);
+        if (report.isPresent()) {
+            confirmations = confirmationRepository.findAllByReport(report.get());
+        }
 
-        return report;
+        ReportDTO reportDTO = new ReportDTO(lectures, confirmations);
+        int estimatedTotal = scheduleRepository.getEstimatedTotalInRange(teacher, range.getFrom(), range.getTo());
+        reportDTO.setEstimatedTotal(estimatedTotal);
+        report.ifPresent(value -> reportDTO.setEvidenceUrl(value.getConfirmationsUrl()));
+
+        return reportDTO;
     }
 
     @Override
@@ -153,12 +162,24 @@ public class ReportServiceImpl implements ReportService {
             tutorClass.getName()
         );
 
+        // Store to storage for preview
+        String url = storageService.storeFile(confirmationDTO.getConfirmation());
+
         // Save confirmation info
         Confirmation confirmation = new Confirmation();
         confirmation.setReport(report);
         confirmation.setStudent(student);
         confirmation.setFileId(fileId);
+        confirmation.setUrl(url);
         confirmationRepository.save(confirmation);
+    }
+
+    @Override
+    public void createIfNotExist(User teacher, int year, int month) {
+        Optional<Report> report = reportRepository.findByTimeAndTeacher(year, month, teacher);
+        if (report.isEmpty()) {
+            createReport(year, month, teacher);
+        }
     }
 
     private Report createReport(int year, int month, User teacher) {

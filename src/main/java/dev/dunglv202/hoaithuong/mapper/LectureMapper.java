@@ -25,6 +25,6 @@ public interface LectureMapper {
 
     @Mapping(target = "classCode", source = "tutorClass.code")
     @Mapping(target = "totalLecture", source = "tutorClass.totalLecture")
-    @Mapping(target = "student", source = "tutorClass.student")
+    @Mapping(target = "student", source = "tutorClass.student.name")
     LectureInReportDTO toLectureInReportDTO(Lecture lecture);
 }

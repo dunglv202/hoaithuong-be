@@ -14,7 +14,15 @@ public class Confirmation extends Auditable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    /**
+     * File id on Drive
+     */
     private String fileId;
+
+    /**
+     * Image url for preview
+     */
+    private String url;
 
     @ManyToOne(fetch = FetchType.LAZY)
     private Student student;

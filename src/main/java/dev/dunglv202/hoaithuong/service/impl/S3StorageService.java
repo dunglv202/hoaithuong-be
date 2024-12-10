@@ -1,7 +1,7 @@
 package dev.dunglv202.hoaithuong.service.impl;
 
-import dev.dunglv202.hoaithuong.helper.FileUtil;
 import dev.dunglv202.hoaithuong.config.prop.AWSProperties;
+import dev.dunglv202.hoaithuong.helper.FileUtil;
 import dev.dunglv202.hoaithuong.service.StorageService;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -57,9 +57,14 @@ public class S3StorageService implements StorageService {
     }
 
     @Override
-    public void deleteFile(String key) {
+    public void deleteFile(String url) {
+        String key = extractKeyFromUrl(url);
         var delReq = DeleteObjectRequest.builder().bucket(awsProperties.getBucket()).key(key).build();
         s3Client.deleteObject(delReq);
+    }
+
+    private String extractKeyFromUrl(String url) {
+        return url.substring(url.lastIndexOf("/") + 1);
     }
 
     private boolean isPreviewable(String fileType) {

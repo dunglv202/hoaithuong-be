@@ -6,8 +6,6 @@ import dev.dunglv202.hoaithuong.entity.User;
 import dev.dunglv202.hoaithuong.model.ReportRange;
 import org.springframework.core.io.Resource;
 
-import java.time.Month;
-
 public interface ReportService {
     Resource downloadXlsx(ReportRange range);
 
@@ -20,4 +18,6 @@ public interface ReportService {
     void uploadConfirmation(int year, int month, ConfirmationDTO confirmationDTO);
 
     void createIfNotExist(User teacher, int year, int month);
+
+    void deleteConfirmation(int year, int month, long studentId);
 }

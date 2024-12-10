@@ -182,6 +182,28 @@ public class ReportServiceImpl implements ReportService {
         }
     }
 
+    @Override
+    @Transactional
+    public void deleteConfirmation(int year, int month, long studentId) {
+        User teacher = authHelper.getSignedUser();
+
+        // verify existence
+        Report report = reportRepository.findByTimeAndTeacher(year, month, teacher)
+            .orElseThrow(() -> new ClientVisibleException("{report.not_found}"));
+        Confirmation confirmation = confirmationRepository.findByReportAndStudent(
+            report,
+            studentRepository.getReferenceById(studentId)
+        ).orElseThrow(() -> new ClientVisibleException("{confirmation.not_found}"));
+
+        // remove from drive & storage
+        driveService.deleteFile(teacher, confirmation.getFileId());
+        new Thread(() -> {
+            storageService.deleteFile(confirmation.getUrl());
+        }).start();
+
+        confirmationRepository.delete(confirmation);
+    }
+
     private Report createReport(int year, int month, User teacher) {
         Report report = new Report();
         report.setYear(year);

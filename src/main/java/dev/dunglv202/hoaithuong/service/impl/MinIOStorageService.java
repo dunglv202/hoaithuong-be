@@ -52,7 +52,8 @@ public class MinIOStorageService implements StorageService {
     }
 
     @Override
-    public void deleteFile(String name) {
+    public void deleteFile(String url) {
+        String name = extractNameFromUrl(url);
         try {
             String bucket = minIOProperties.getBucket();
             RemoveObjectArgs removeObjectArgs = RemoveObjectArgs.builder()
@@ -64,6 +65,10 @@ public class MinIOStorageService implements StorageService {
             log.error("Error occurred while delete file {}: {}", name, e.getMessage(), e);
             throw new RuntimeException(e);
         }
+    }
+
+    private String extractNameFromUrl(String url) {
+        return url.substring(url.lastIndexOf("/") + 1);
     }
 
     private boolean isObjectExisted(String bucketName, String objectName) {

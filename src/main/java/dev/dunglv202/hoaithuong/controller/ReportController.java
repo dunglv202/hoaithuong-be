@@ -43,9 +43,15 @@ public class ReportController {
         this.reportService.exportGoogleSheet(range);
     }
 
-    @PostMapping("/confirmation")
+    @PostMapping("/confirmations")
     @PreAuthorize("isAuthenticated()")
     public void uploadConfirmation(@RequestParam int month, @RequestParam int year, @Valid ConfirmationDTO confirmationDTO) {
         this.reportService.uploadConfirmation(year, month, confirmationDTO);
+    }
+
+    @DeleteMapping("/confirmations")
+    @PreAuthorize("isAuthenticated()")
+    public void deleteConfirmation(@RequestParam int year, @RequestParam int month, @RequestParam long studentId) {
+        this.reportService.deleteConfirmation(year, month, studentId);
     }
 }

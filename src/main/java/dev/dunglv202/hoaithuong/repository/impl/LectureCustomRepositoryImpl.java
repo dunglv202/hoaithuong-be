@@ -5,7 +5,6 @@ import dev.dunglv202.hoaithuong.entity.User;
 import dev.dunglv202.hoaithuong.repository.LectureCustomRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.Query;
 import jakarta.persistence.TypedQuery;
 
 import java.util.Optional;

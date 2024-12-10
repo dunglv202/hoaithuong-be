@@ -98,12 +98,8 @@ public class UserService implements UserDetailsService {
         String old = signedUser.getAvatar();
         signedUser.setAvatar(url);
         userRepository.save(signedUser);
-        storageService.deleteFile(extractFileName(old));
+        storageService.deleteFile(old);
 
         return new UpdateAvatarRespDTO(url);
-    }
-
-    private String extractFileName(String avatarUrl) {
-        return avatarUrl.substring(avatarUrl.lastIndexOf("/") + 1);
     }
 }

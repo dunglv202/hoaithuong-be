@@ -23,6 +23,8 @@
 		<apache.tika.version>2.9.2</apache.tika.version>
 		<amazon.sdk.version>2.27.19</amazon.sdk.version>
 		<io.minio.version>8.5.10</io.minio.version>
+		<com.microsoft.graph.version>6.23.0</com.microsoft.graph.version>
+		<com.azure.version>1.11.0</com.azure.version>
 	</properties>
 
 	<dependencyManagement>
@@ -182,6 +184,18 @@
 		<dependency>
 			<groupId>com.github.ben-manes.caffeine</groupId>
 			<artifactId>caffeine</artifactId>
+		</dependency>
+
+		<!-- MICROSOFT GRAPH API -->
+		<dependency>
+			<groupId>com.microsoft.graph</groupId>
+			<artifactId>microsoft-graph</artifactId>
+			<version>${com.microsoft.graph.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.azure</groupId>
+			<artifactId>azure-identity</artifactId>
+			<version>${com.azure.version}</version>
 		</dependency>
 	</dependencies>
 

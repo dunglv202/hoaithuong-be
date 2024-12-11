@@ -28,6 +28,11 @@ spring:
               - https://www.googleapis.com/auth/drive
               - https://www.googleapis.com/auth/calendar
               - openid
+          microsoft:
+            client-id: ${MS_CLIENT_ID}
+            client-secret: ${MS_CLIENT_SECRET}
+            scope:
+              - Sites.Read.All
         provider:
           google:
             authorization-uri: https://accounts.google.com/o/oauth2/v2/auth?prompt=consent&access_type=offline

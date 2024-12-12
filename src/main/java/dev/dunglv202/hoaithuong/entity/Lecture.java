@@ -7,18 +7,22 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Getter
 @Setter
+@ToString(onlyExplicitlyIncluded = true)
 public class Lecture extends Auditable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @ToString.Include
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
+    @ToString.Include
     private TutorClass tutorClass;
 
     private String topic;
@@ -31,7 +35,8 @@ public class Lecture extends Auditable {
 
     private Integer lectureNo;
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
+    @ToString.Include
     private Schedule schedule;
 
     /* Teacher can have different code for each lecture ??? :D */

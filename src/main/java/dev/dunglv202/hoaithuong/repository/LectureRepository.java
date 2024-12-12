@@ -3,11 +3,13 @@ package dev.dunglv202.hoaithuong.repository;
 import dev.dunglv202.hoaithuong.entity.Lecture;
 import dev.dunglv202.hoaithuong.entity.Student;
 import dev.dunglv202.hoaithuong.entity.User;
+import dev.dunglv202.hoaithuong.model.Range;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -27,4 +29,13 @@ public interface LectureRepository extends LectureCustomRepository, JpaRepositor
         @Param("teacher") User teacher,
         @Param("student") Student student
     );
+
+    @Query("""
+        FROM Lecture l
+        JOIN FETCH l.schedule
+        WHERE l.teacher = :teacher
+        AND (:#{#range.from} IS NULL OR l.schedule.startTime >= :#{#range.from})
+        AND (:#{#range.to} IS NULL OR l.schedule.startTime <= :#{#range.to})
+    """)
+    List<Lecture> findAllInRangeByTeacher(@Param("teacher") User teacher, @Param("range") Range<LocalDate> range);
 }

@@ -6,6 +6,7 @@ import dev.dunglv202.hoaithuong.model.TimeSlot;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
@@ -19,11 +20,14 @@ import java.util.List;
     name = "TutorClass.student",
     attributeNodes = @NamedAttributeNode(TutorClass_.STUDENT)
 )
+@ToString(onlyExplicitlyIncluded = true)
 public class TutorClass extends Auditable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @ToString.Include
     private Long id;
 
+    @ToString.Include
     private String code;
 
     @ManyToOne

@@ -57,7 +57,7 @@ public class ReportServiceImpl implements ReportService {
     private final GoogleHelper googleHelper;
     private final ConfigService configService;
     private final ReportRepository reportRepository;
-    private final DriveService driveService;
+    private final GoogleDriveService driveService;
     private final StudentRepository studentRepository;
     private final ConfirmationRepository confirmationRepository;
     private final StorageService storageService;

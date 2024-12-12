@@ -18,7 +18,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class DriveService {
+public class GoogleDriveService {
     private final GoogleHelper googleHelper;
 
     /**

@@ -34,8 +34,9 @@ public interface LectureRepository extends LectureCustomRepository, JpaRepositor
         FROM Lecture l
         JOIN FETCH l.schedule
         WHERE l.teacher = :teacher
-        AND (:#{#range.from} IS NULL OR l.schedule.startTime >= :#{#range.from})
-        AND (:#{#range.to} IS NULL OR l.schedule.startTime <= :#{#range.to})
+        AND (:#{#range.from} IS NULL OR DATE(l.schedule.startTime) >= :#{#range.from})
+        AND (:#{#range.to} IS NULL OR DATE(l.schedule.startTime) <= :#{#range.to})
+        AND (l.video IS NULL OR l.video = '')
     """)
-    List<Lecture> findAllInRangeByTeacher(@Param("teacher") User teacher, @Param("range") Range<LocalDate> range);
+    List<Lecture> findAllNoVideoInRangeByTeacher(@Param("teacher") User teacher, @Param("range") Range<LocalDate> range);
 }

@@ -16,9 +16,9 @@ import dev.dunglv202.hoaithuong.repository.TutorClassRepository;
 import dev.dunglv202.hoaithuong.service.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,6 +41,7 @@ public class LectureServiceImpl implements LectureService {
     private final ConfigService configService;
     private final ReportService reportService;
     private final VideoStorageService videoStorageService;
+    private final TaskExecutor taskExecutor;
 
     @Override
     @Transactional
@@ -147,18 +148,19 @@ public class LectureServiceImpl implements LectureService {
     }
 
     @Override
-    @Async
     public void syncMyLectureVideos(ReportRange range) {
         User teacher = authHelper.getSignedUser();
-        syncLectureVideos(teacher, range);
-        Notification notification = Notification.forUser(teacher)
-            .content("{lecture.video_synchronization.done}");
-        notificationService.addNotification(notification);
+        taskExecutor.execute(() -> {
+            syncLectureVideos(teacher, range);
+            Notification notification = Notification.forUser(teacher)
+                .content("{lecture.video_synchronization.done}");
+            notificationService.addNotification(notification);
+        });
     }
 
     @Override
     public void syncLectureVideos(User teacher, Range<LocalDate> range) {
-        List<Lecture> lectures = lectureRepository.findAllInRangeByTeacher(teacher, range);
+        List<Lecture> lectures = lectureRepository.findAllNoVideoInRangeByTeacher(teacher, range);
         lectures.forEach(lecture -> {
             try {
                 Optional<String> videoUrl = videoStorageService.getLectureVideo(lecture);

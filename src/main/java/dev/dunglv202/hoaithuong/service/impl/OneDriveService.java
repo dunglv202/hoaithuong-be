@@ -2,6 +2,7 @@ package dev.dunglv202.hoaithuong.service.impl;
 
 import com.azure.identity.ClientSecretCredential;
 import com.azure.identity.ClientSecretCredentialBuilder;
+import com.azure.identity.TokenCachePersistenceOptions;
 import com.microsoft.graph.drives.item.items.item.createlink.CreateLinkPostRequestBody;
 import com.microsoft.graph.models.DriveItem;
 import com.microsoft.graph.models.DriveItemCollectionResponse;
@@ -29,7 +30,7 @@ import java.util.regex.Pattern;
 @Slf4j
 public class OneDriveService implements VideoStorageService {
     private static final Pattern DATE_TIME_PATTERN = Pattern.compile(
-        "\\b\\d{4}-\\d{2}-\\d{2} \\d{2}\\.\\d{2}\\.\\d{2}\\b"
+        "^(\\d{4}-\\d{2}-\\d{2} \\d{2}\\.\\d{2}\\.\\d{2}).*"
     );
 
     private final MicrosoftProperties microsoftProperties;
@@ -101,7 +102,7 @@ public class OneDriveService implements VideoStorageService {
 
         try {
             LocalDateTime videoStart = LocalDateTime.parse(
-                matcher.group(),
+                matcher.group(1),
                 DateTimeFormatter.ofPattern("yyyy-MM-dd HH.mm.ss")
             );
             Duration diff = Duration.between(videoStart, schedule.getStartTime()).abs();
@@ -120,6 +121,7 @@ public class OneDriveService implements VideoStorageService {
             .clientId(microsoftProperties.getClientId())
             .tenantId(microsoftProperties.getTenantId())
             .clientSecret(microsoftProperties.getClientSecret())
+            .tokenCachePersistenceOptions(new TokenCachePersistenceOptions())
             .build();
         return new GraphServiceClient(credential, scopes);
     }

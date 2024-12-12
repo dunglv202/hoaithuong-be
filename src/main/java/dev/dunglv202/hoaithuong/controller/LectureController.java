@@ -7,6 +7,7 @@ import dev.dunglv202.hoaithuong.model.ReportRange;
 import dev.dunglv202.hoaithuong.service.LectureService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,7 +25,7 @@ public class LectureController {
         lectureService.addNewLecture(newLectureDTO);
     }
 
-    @PostMapping("/sync_videos")
+    @PostMapping(value = "/sync_videos", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("isAuthenticated()")
     public void syncLectureVideos(@Valid ReportRange range) {
         lectureService.syncMyLectureVideos(range);

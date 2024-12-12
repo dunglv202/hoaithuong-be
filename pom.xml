@@ -24,7 +24,8 @@
 		<amazon.sdk.version>2.27.19</amazon.sdk.version>
 		<io.minio.version>8.5.10</io.minio.version>
 		<com.microsoft.graph.version>6.23.0</com.microsoft.graph.version>
-		<com.azure.version>1.11.0</com.azure.version>
+		<com.azure.azure-identity.version>1.11.0</com.azure.azure-identity.version>
+		<com.microsoft.azure.msal4j.version>1.17.3</com.microsoft.azure.msal4j.version>
 	</properties>
 
 	<dependencyManagement>
@@ -195,7 +196,7 @@
 		<dependency>
 			<groupId>com.azure</groupId>
 			<artifactId>azure-identity</artifactId>
-			<version>${com.azure.version}</version>
+			<version>${com.azure.azure-identity.version}</version>
 		</dependency>
 	</dependencies>
 

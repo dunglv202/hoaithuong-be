@@ -24,6 +24,12 @@ public class LectureController {
         lectureService.addNewLecture(newLectureDTO);
     }
 
+    @PostMapping("/sync_videos")
+    @PreAuthorize("isAuthenticated()")
+    public void syncLectureVideos(@Valid ReportRange range) {
+        lectureService.syncMyLectureVideos(range);
+    }
+
     @GetMapping
     @PreAuthorize("isAuthenticated()")
     public List<LectureDTO> getAllLectures(@Valid ReportRange range) {

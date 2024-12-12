@@ -7,6 +7,7 @@ import dev.dunglv202.hoaithuong.entity.*;
 import dev.dunglv202.hoaithuong.exception.ClientVisibleException;
 import dev.dunglv202.hoaithuong.helper.AuthHelper;
 import dev.dunglv202.hoaithuong.mapper.LectureMapper;
+import dev.dunglv202.hoaithuong.model.Range;
 import dev.dunglv202.hoaithuong.model.ReportRange;
 import dev.dunglv202.hoaithuong.model.criteria.LectureCriteria;
 import dev.dunglv202.hoaithuong.repository.LectureRepository;
@@ -14,17 +15,22 @@ import dev.dunglv202.hoaithuong.repository.ScheduleRepository;
 import dev.dunglv202.hoaithuong.repository.TutorClassRepository;
 import dev.dunglv202.hoaithuong.service.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import static dev.dunglv202.hoaithuong.model.criteria.LectureCriteria.*;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class LectureServiceImpl implements LectureService {
     private final TutorClassRepository tutorClassRepository;
     private final LectureRepository lectureRepository;
@@ -34,6 +40,7 @@ public class LectureServiceImpl implements LectureService {
     private final AuthHelper authHelper;
     private final ConfigService configService;
     private final ReportService reportService;
+    private final VideoStorageService videoStorageService;
 
     @Override
     @Transactional
@@ -137,5 +144,33 @@ public class LectureServiceImpl implements LectureService {
         Lecture lecture = lectureRepository.findByIdAndTeacher(updatedLecture.getId(), authHelper.getSignedUser())
             .orElseThrow();
         lectureRepository.save(lecture.merge(updatedLecture));
+    }
+
+    @Override
+    @Async
+    public void syncMyLectureVideos(ReportRange range) {
+        User teacher = authHelper.getSignedUser();
+        syncLectureVideos(teacher, range);
+        Notification notification = Notification.forUser(teacher)
+            .content("{lecture.video_synchronization.done}");
+        notificationService.addNotification(notification);
+    }
+
+    @Override
+    public void syncLectureVideos(User teacher, Range<LocalDate> range) {
+        List<Lecture> lectures = lectureRepository.findAllInRangeByTeacher(teacher, range);
+        lectures.forEach(lecture -> {
+            try {
+                Optional<String> videoUrl = videoStorageService.getLectureVideo(lecture);
+                if (videoUrl.isPresent()) {
+                    lecture.setVideo(videoUrl.get());
+                    lectureRepository.save(lecture);
+                } else {
+                    log.info("No video found for lecture {}", lecture);
+                }
+            } catch (Exception e) {
+                log.error("Error occurred while syncing lecture video - lecture: {}", lecture, e);
+            }
+        });
     }
 }

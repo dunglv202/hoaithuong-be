@@ -169,9 +169,15 @@ public class LectureServiceImpl implements LectureService {
             try {
                 Optional<DriveItem> video = videoStorageService.findLectureVideo(lecture, config.getVideoSource());
                 if (video.isPresent()) {
+                    // get & set video for lecture
                     lecture.setVideo(videoStorageService.createSharableLink(video.get()));
                     lectureRepository.save(lecture);
-                    videoStorageService.moveToFolder(video.get(), config.getProcessedVideos());
+
+                    // move video folder to processed area
+                    assert video.get().getParentReference() != null;
+                    DriveItem lectureFolder = new DriveItem();
+                    lectureFolder.setId(video.get().getParentReference().getId());
+                    videoStorageService.moveToFolder(lectureFolder, config.getProcessedVideos());
                 } else {
                     log.info("No video found for lecture {}", lecture);
                 }

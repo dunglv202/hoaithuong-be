@@ -36,7 +36,6 @@ public class Lecture extends Auditable {
     private Integer lectureNo;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @ToString.Include
     private Schedule schedule;
 
     /* Teacher can have different code for each lecture ??? :D */
@@ -49,6 +48,10 @@ public class Lecture extends Auditable {
     @PrePersist
     public void prePersist() {
         this.teacher = this.tutorClass.getTeacher();
+    }
+
+    public void setVideo(String video) {
+        this.video = (video == null || video.isBlank()) ? null : video;
     }
 
     public LocalDateTime getStartTime() {

@@ -64,7 +64,7 @@ public class OneDriveService implements VideoStorageService {
         assert item.getId() != null;
 
         ItemReference parentRef = new ItemReference();
-        parentRef.setId(item.getId());
+        parentRef.setId(targetFolder);
         DriveItem modified = new DriveItem();
         modified.setParentReference(parentRef);
 

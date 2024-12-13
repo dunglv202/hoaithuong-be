@@ -1,5 +1,6 @@
 package dev.dunglv202.hoaithuong.service.impl;
 
+import com.microsoft.graph.models.DriveItem;
 import dev.dunglv202.hoaithuong.dto.LectureDTO;
 import dev.dunglv202.hoaithuong.dto.NewLectureDTO;
 import dev.dunglv202.hoaithuong.dto.UpdatedLecture;
@@ -161,12 +162,16 @@ public class LectureServiceImpl implements LectureService {
     @Override
     public void syncLectureVideos(User teacher, Range<LocalDate> range) {
         List<Lecture> lectures = lectureRepository.findAllNoVideoInRangeByTeacher(teacher, range);
+        if (lectures.isEmpty()) return;
+
+        Configuration config = configService.getConfigsByUser(teacher);
         lectures.forEach(lecture -> {
             try {
-                Optional<String> videoUrl = videoStorageService.getLectureVideo(lecture);
-                if (videoUrl.isPresent()) {
-                    lecture.setVideo(videoUrl.get());
+                Optional<DriveItem> video = videoStorageService.findLectureVideo(lecture, config.getVideoSource());
+                if (video.isPresent()) {
+                    lecture.setVideo(videoStorageService.createSharableLink(video.get()));
                     lectureRepository.save(lecture);
+                    videoStorageService.moveToFolder(video.get(), config.getProcessedVideos());
                 } else {
                     log.info("No video found for lecture {}", lecture);
                 }

@@ -14,5 +14,4 @@ public class MicrosoftProperties {
     private String clientId;
     private String clientSecret;
     private String driveId;
-    private String videosFolderId;
 }

@@ -54,6 +54,16 @@ public class Configuration extends Auditable {
      */
     private String calendarId;
 
+    /**
+     * OneDrive item ID where video uploaded
+     */
+    private String videoSource;
+
+    /**
+     * OneDrive item ID where video stored after attached to lectures
+     */
+    private String processedVideos;
+
     public Configuration mergeWith(ConfigsDTO configs) {
         ConfigMapper.INSTANCE.merge(this, configs);
         return this;

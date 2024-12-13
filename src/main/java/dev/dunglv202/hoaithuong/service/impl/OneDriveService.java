@@ -4,10 +4,7 @@ import com.azure.identity.ClientSecretCredential;
 import com.azure.identity.ClientSecretCredentialBuilder;
 import com.azure.identity.TokenCachePersistenceOptions;
 import com.microsoft.graph.drives.item.items.item.createlink.CreateLinkPostRequestBody;
-import com.microsoft.graph.models.DriveItem;
-import com.microsoft.graph.models.DriveItemCollectionResponse;
-import com.microsoft.graph.models.Permission;
-import com.microsoft.graph.models.SharingLink;
+import com.microsoft.graph.models.*;
 import com.microsoft.graph.serviceclient.GraphServiceClient;
 import dev.dunglv202.hoaithuong.config.prop.MicrosoftProperties;
 import dev.dunglv202.hoaithuong.entity.Lecture;
@@ -36,33 +33,50 @@ public class OneDriveService implements VideoStorageService {
     private final MicrosoftProperties microsoftProperties;
 
     /**
+     * @param sourceFolder Folder ID where to find video
      * @return Lecture video url if existed
      */
     @Override
-    public Optional<String> getLectureVideo(Lecture lecture) {
-        Optional<DriveItem> containingFolder = getLectureFolder(lecture);
+    public Optional<DriveItem> findLectureVideo(Lecture lecture, String sourceFolder) {
+        Optional<DriveItem> containingFolder = findLectureFolder(lecture, sourceFolder);
         if (containingFolder.isEmpty()) return Optional.empty();
+        return findVideoInFolder(containingFolder.get());
+    }
 
-        Optional<DriveItem> video = getVideoFromFolder(containingFolder.get());
-        if (video.isEmpty()) return Optional.empty();
+    @Override
+    public String createSharableLink(DriveItem item) {
+        assert item.getId() != null;
 
-        // create sharable link
-        assert video.get().getId() != null;
         CreateLinkPostRequestBody requestBody = new CreateLinkPostRequestBody();
         requestBody.setScope("anonymous");
         requestBody.setType("view");
         requestBody.setExpirationDateTime(OffsetDateTime.now().plusDays(15));
         Permission permission = getGraphClient().drives().byDriveId(microsoftProperties.getDriveId())
-            .items().byDriveItemId(video.get().getId())
+            .items().byDriveItemId(item.getId())
             .createLink().post(requestBody);
 
-        return Optional.ofNullable(permission).map(Permission::getLink).map(SharingLink::getWebUrl);
+        return Optional.ofNullable(permission).map(Permission::getLink).map(SharingLink::getWebUrl)
+            .orElseThrow(() -> new RuntimeException("Could not create sharable link for item: " + item.getId()));
+    }
+
+    @Override
+    public void moveToFolder(DriveItem item, String targetFolder) {
+        assert item.getId() != null;
+
+        ItemReference parentRef = new ItemReference();
+        parentRef.setId(item.getId());
+        DriveItem modified = new DriveItem();
+        modified.setParentReference(parentRef);
+
+        getGraphClient().drives().byDriveId(microsoftProperties.getDriveId())
+            .items().byDriveItemId(item.getId())
+            .patch(modified);
     }
 
     /**
      * @return Video file in folder (first one found)
      */
-    private Optional<DriveItem> getVideoFromFolder(DriveItem containingFolder) {
+    private Optional<DriveItem> findVideoInFolder(DriveItem containingFolder) {
         assert containingFolder.getId() != null;
 
         DriveItemCollectionResponse itemCollection = getGraphClient().drives().byDriveId(microsoftProperties.getDriveId())
@@ -79,11 +93,11 @@ public class OneDriveService implements VideoStorageService {
     /**
      * @return The folder that contains actual video based on its name
      */
-    private Optional<DriveItem> getLectureFolder(Lecture lecture) {
+    private Optional<DriveItem> findLectureFolder(Lecture lecture, String sourceFolder) {
         GraphServiceClient graphClient = getGraphClient();
 
         DriveItemCollectionResponse itemCollection = graphClient.drives().byDriveId(microsoftProperties.getDriveId())
-            .items().byDriveItemId(microsoftProperties.getVideosFolderId())
+            .items().byDriveItemId(sourceFolder)
             .children().get();
         if (itemCollection == null || itemCollection.getValue() == null) return Optional.empty();
 

@@ -74,7 +74,7 @@ public class OneDriveService implements VideoStorageService {
     }
 
     /**
-     * @return Video file in folder (first one found)
+     * @return Video file in folder (largest file)
      */
     private Optional<DriveItem> findVideoInFolder(DriveItem containingFolder) {
         assert containingFolder.getId() != null;
@@ -87,7 +87,13 @@ public class OneDriveService implements VideoStorageService {
         return itemCollection.getValue()
             .stream()
             .filter(this::isVideo)
-            .findFirst();
+            .max(this::compareByFileSize);
+    }
+
+    private int compareByFileSize(DriveItem a, DriveItem b) {
+        if (b.getSize() == null) return 1;
+        if (a.getSize() == null) return b.getSize() != null ? -1 : 1;
+        return a.getSize().compareTo(b.getSize());
     }
 
     /**

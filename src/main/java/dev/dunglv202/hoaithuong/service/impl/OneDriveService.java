@@ -141,7 +141,6 @@ public class OneDriveService implements VideoStorageService {
             .clientId(microsoftProperties.getClientId())
             .tenantId(microsoftProperties.getTenantId())
             .clientSecret(microsoftProperties.getClientSecret())
-            .tokenCachePersistenceOptions(new TokenCachePersistenceOptions())
             .build();
         return new GraphServiceClient(credential, scopes);
     }

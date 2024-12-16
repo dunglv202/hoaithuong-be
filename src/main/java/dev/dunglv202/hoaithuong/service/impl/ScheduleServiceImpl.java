@@ -60,7 +60,6 @@ public class ScheduleServiceImpl implements ScheduleService {
     public void deleteSchedule(Long id) {
         Schedule scheduleToDelete = scheduleRepository.findByIdAndTeacher(id, authHelper.getSignedUser())
             .orElseThrow();
-        if (scheduleToDelete.getLecture() != null) throw new ClientVisibleException("{schedule.attached_to_lecture}");
 
         // delete
         TutorClass tutorClass = scheduleToDelete.getTutorClass();

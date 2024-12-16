@@ -21,4 +21,6 @@ public interface LectureService {
     void syncMyLectureVideos(@Valid ReportRange range);
 
     void syncLectureVideos(User teacher, Range<LocalDate> range);
+
+    void deleteLecture(long id);
 }

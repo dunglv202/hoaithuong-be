@@ -17,6 +17,9 @@ import java.util.Set;
 public interface ScheduleService {
     List<MinimalScheduleDTO> getSchedules(Range<LocalDate> range);
 
+    /**
+     * Delete schedule of signed user then create new one after the last schedule for tutor class
+     */
     void deleteSchedule(Long id);
 
     void addSchedulesForClass(TutorClass newClass, LocalDate startDate);

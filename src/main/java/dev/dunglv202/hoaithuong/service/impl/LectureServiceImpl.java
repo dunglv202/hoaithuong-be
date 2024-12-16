@@ -186,4 +186,22 @@ public class LectureServiceImpl implements LectureService {
             }
         });
     }
+
+    @Override
+    @Transactional
+    public void deleteLecture(long id) {
+        Lecture lecture = lectureRepository.findByIdAndTeacher(id, authHelper.getSignedUser())
+            .orElseThrow(() -> new ClientVisibleException("{lecture.not_found}"));
+
+        // delete lecture info
+        lectureRepository.delete(lecture);
+
+        // update tutor class
+        TutorClass tutorClass = lecture.getTutorClass();
+        tutorClass.setLearned(tutorClass.getLearned() - 1);
+        tutorClassRepository.save(tutorClass);
+
+        // delete attached schedule then create new one for class
+        scheduleService.deleteSchedule(lecture.getSchedule().getId());
+    }
 }

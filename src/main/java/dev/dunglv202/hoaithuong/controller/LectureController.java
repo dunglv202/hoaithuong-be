@@ -43,4 +43,10 @@ public class LectureController {
         updatedLecture.setId(id);
         lectureService.updateLecture(updatedLecture);
     }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("isAuthenticated()")
+    public void deleteLecture(@PathVariable long id) {
+        lectureService.deleteLecture(id);
+    }
 }

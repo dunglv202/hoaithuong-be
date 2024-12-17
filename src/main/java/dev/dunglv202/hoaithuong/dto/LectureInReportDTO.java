@@ -14,6 +14,7 @@ public class LectureInReportDTO {
     private String classCode;
     private String student;
     private String topic;
+    private String video;
     private Integer lectureNo;
     private int totalLecture;
 }

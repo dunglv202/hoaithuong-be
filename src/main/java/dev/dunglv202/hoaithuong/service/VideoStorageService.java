@@ -3,6 +3,7 @@ package dev.dunglv202.hoaithuong.service;
 import com.microsoft.graph.models.DriveItem;
 import dev.dunglv202.hoaithuong.entity.Lecture;
 
+import java.time.OffsetDateTime;
 import java.util.Optional;
 
 /**
@@ -11,7 +12,9 @@ import java.util.Optional;
 public interface VideoStorageService {
     Optional<DriveItem> findLectureVideo(Lecture lecture, String sourceFolder);
 
-    String createSharableLink(DriveItem item);
+    String createSharableLink(DriveItem item, OffsetDateTime expiration);
+
+    String createPreviewLink(String itemId);
 
     void moveToFolder(DriveItem item, String targetFolder);
 }

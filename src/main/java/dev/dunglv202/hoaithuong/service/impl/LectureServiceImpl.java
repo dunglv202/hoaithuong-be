@@ -2,6 +2,7 @@ package dev.dunglv202.hoaithuong.service.impl;
 
 import com.microsoft.graph.models.DriveItem;
 import dev.dunglv202.hoaithuong.dto.LectureDTO;
+import dev.dunglv202.hoaithuong.dto.LectureDetails;
 import dev.dunglv202.hoaithuong.dto.NewLectureDTO;
 import dev.dunglv202.hoaithuong.dto.UpdatedLecture;
 import dev.dunglv202.hoaithuong.entity.*;
@@ -24,6 +25,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 
@@ -170,7 +173,11 @@ public class LectureServiceImpl implements LectureService {
                 Optional<DriveItem> video = videoStorageService.findLectureVideo(lecture, config.getVideoSource());
                 if (video.isPresent()) {
                     // get & set video for lecture
-                    lecture.setVideo(videoStorageService.createSharableLink(video.get()));
+                    lecture.setVideo(videoStorageService.createSharableLink(
+                        video.get(),
+                        OffsetDateTime.of(lecture.getStartTime(), ZoneOffset.UTC)
+                    ));
+                    lecture.setVideoId(video.get().getId());
                     lectureRepository.save(lecture);
 
                     // move video folder to processed area
@@ -203,5 +210,20 @@ public class LectureServiceImpl implements LectureService {
 
         // delete attached schedule then create new one for class
         scheduleService.deleteSchedule(lecture.getSchedule().getId());
+    }
+
+    @Override
+    public LectureDetails getLectureDetails(long id) {
+        Lecture lecture = lectureRepository.findByIdAndTeacher(id, authHelper.getSignedUser())
+            .orElseThrow(() -> new ClientVisibleException("{lecture.not_found}"));
+        return LectureMapper.INSTANCE.toLectureDetails(lecture);
+    }
+
+    @Override
+    public String getVideoPreview(long id) {
+        Lecture lecture = lectureRepository.findByIdAndTeacher(id, authHelper.getSignedUser())
+            .orElseThrow(() -> new ClientVisibleException("{lecture.not_found}"));
+        if (lecture.getVideoId() == null) return null;
+        return videoStorageService.createPreviewLink(lecture.getVideoId());
     }
 }

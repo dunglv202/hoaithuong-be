@@ -1,6 +1,7 @@
 package dev.dunglv202.hoaithuong.service;
 
 import dev.dunglv202.hoaithuong.dto.LectureDTO;
+import dev.dunglv202.hoaithuong.dto.LectureDetails;
 import dev.dunglv202.hoaithuong.dto.NewLectureDTO;
 import dev.dunglv202.hoaithuong.dto.UpdatedLecture;
 import dev.dunglv202.hoaithuong.entity.User;
@@ -23,4 +24,8 @@ public interface LectureService {
     void syncLectureVideos(User teacher, Range<LocalDate> range);
 
     void deleteLecture(long id);
+
+    LectureDetails getLectureDetails(long id);
+
+    String getVideoPreview(long id);
 }

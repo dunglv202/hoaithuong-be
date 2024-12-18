@@ -1,6 +1,7 @@
 package dev.dunglv202.hoaithuong.controller;
 
 import dev.dunglv202.hoaithuong.dto.LectureDTO;
+import dev.dunglv202.hoaithuong.dto.LectureDetails;
 import dev.dunglv202.hoaithuong.dto.NewLectureDTO;
 import dev.dunglv202.hoaithuong.dto.UpdatedLecture;
 import dev.dunglv202.hoaithuong.model.ReportRange;
@@ -35,6 +36,18 @@ public class LectureController {
     @PreAuthorize("isAuthenticated()")
     public List<LectureDTO> getAllLectures(@Valid ReportRange range) {
         return lectureService.getAllLectures(range);
+    }
+
+    @GetMapping("/{id}")
+    @PreAuthorize("isAuthenticated()")
+    public LectureDetails getLectureDetails(@PathVariable long id) {
+        return lectureService.getLectureDetails(id);
+    }
+
+    @GetMapping("/{id}/preview")
+    @PreAuthorize("isAuthenticated()")
+    public String getVideoPreview(@PathVariable long id) {
+        return lectureService.getVideoPreview(id);
     }
 
     @PutMapping("/{id}")

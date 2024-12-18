@@ -2,8 +2,8 @@ package dev.dunglv202.hoaithuong.service.impl;
 
 import com.azure.identity.ClientSecretCredential;
 import com.azure.identity.ClientSecretCredentialBuilder;
-import com.azure.identity.TokenCachePersistenceOptions;
 import com.microsoft.graph.drives.item.items.item.createlink.CreateLinkPostRequestBody;
+import com.microsoft.graph.drives.item.items.item.preview.PreviewPostRequestBody;
 import com.microsoft.graph.models.*;
 import com.microsoft.graph.serviceclient.GraphServiceClient;
 import dev.dunglv202.hoaithuong.config.prop.MicrosoftProperties;
@@ -44,19 +44,32 @@ public class OneDriveService implements VideoStorageService {
     }
 
     @Override
-    public String createSharableLink(DriveItem item) {
+    public String createSharableLink(DriveItem item, OffsetDateTime expiration) {
         assert item.getId() != null;
 
         CreateLinkPostRequestBody requestBody = new CreateLinkPostRequestBody();
         requestBody.setScope("anonymous");
         requestBody.setType("view");
-        requestBody.setExpirationDateTime(OffsetDateTime.now().plusDays(15));
+        requestBody.setExpirationDateTime(expiration);
         Permission permission = getGraphClient().drives().byDriveId(microsoftProperties.getDriveId())
             .items().byDriveItemId(item.getId())
             .createLink().post(requestBody);
 
         return Optional.ofNullable(permission).map(Permission::getLink).map(SharingLink::getWebUrl)
             .orElseThrow(() -> new RuntimeException("Could not create sharable link for item: " + item.getId()));
+    }
+
+    @Override
+    public String createPreviewLink(String itemId) {
+        assert itemId != null;
+
+        ItemPreviewInfo previewInfo = getGraphClient().drives().byDriveId(microsoftProperties.getDriveId())
+            .items().byDriveItemId(itemId)
+            .preview().post(new PreviewPostRequestBody());
+
+        return Optional.ofNullable(previewInfo)
+            .map(ItemPreviewInfo::getGetUrl)
+            .orElseThrow(() -> new RuntimeException("Could not create preview url for item: " + itemId));
     }
 
     @Override

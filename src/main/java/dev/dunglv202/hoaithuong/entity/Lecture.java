@@ -29,6 +29,8 @@ public class Lecture extends Auditable {
 
     private String video;
 
+    private String videoId;
+
     private String comment;
 
     private String notes;

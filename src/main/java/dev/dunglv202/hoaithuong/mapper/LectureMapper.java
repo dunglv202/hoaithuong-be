@@ -7,7 +7,7 @@ import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.factory.Mappers;
 
-@Mapper(uses = StudentMapper.class)
+@Mapper(uses = { StudentMapper.class, TutorClassMapper.class })
 public interface LectureMapper {
     LectureMapper INSTANCE = Mappers.getMapper(LectureMapper.class);
 
@@ -27,4 +27,8 @@ public interface LectureMapper {
     @Mapping(target = "totalLecture", source = "tutorClass.totalLecture")
     @Mapping(target = "student", source = "tutorClass.student.name")
     LectureInReportDTO toLectureInReportDTO(Lecture lecture);
+
+    @Mapping(target = "startTime", source = "schedule.startTime")
+    @Mapping(target = "hasPreview", expression = "java(lecture.getVideoId() != null)")
+    LectureDetails toLectureDetails(Lecture lecture);
 }

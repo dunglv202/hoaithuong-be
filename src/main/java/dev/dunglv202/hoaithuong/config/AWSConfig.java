@@ -17,7 +17,7 @@ public class AWSConfig {
     private final AWSProperties awsProperties;
 
     @Bean
-    @Profile("prod")
+    @Profile("!local")
     public S3Client s3Client() {
         AwsCredentials credentials = AwsBasicCredentials.create(awsProperties.getAccessKey(), awsProperties.getSecretKey());
         return S3Client.builder()

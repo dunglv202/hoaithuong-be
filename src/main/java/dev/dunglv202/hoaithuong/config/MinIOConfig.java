@@ -13,7 +13,7 @@ public class MinIOConfig {
     private final MinIOProperties minIOProperties;
 
     @Bean
-    @Profile("!prod")
+    @Profile("local")
     public MinioClient minioClient() {
         return MinioClient.builder()
             .endpoint(minIOProperties.getUrl())

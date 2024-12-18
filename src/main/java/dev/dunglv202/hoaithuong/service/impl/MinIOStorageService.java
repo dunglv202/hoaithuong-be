@@ -16,7 +16,7 @@ import java.util.UUID;
 
 @Slf4j
 @Service
-@Profile("!prod")
+@Profile("local")
 @RequiredArgsConstructor
 public class MinIOStorageService implements StorageService {
     private final MinIOProperties minIOProperties;

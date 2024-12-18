@@ -19,7 +19,7 @@ import java.util.UUID;
 
 @Service
 @Primary
-@Profile("prod")
+@Profile("!local")
 @RequiredArgsConstructor
 @Slf4j
 public class S3StorageService implements StorageService {

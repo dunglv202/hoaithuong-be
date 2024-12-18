@@ -88,6 +88,7 @@ public class ScheduleServiceImpl implements ScheduleService {
     }
 
     /**
+     * TODO: need review for google calendar in transaction.
      * {@inheritDoc}
      */
     @Override

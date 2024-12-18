@@ -10,7 +10,7 @@ public class ConflictScheduleException extends ClientVisibleException {
         super(
             HttpStatus.CONFLICT,
             null,
-            "{tutor_class.timeslots.invalid}: " + scheduled.getTutorClass().getName() + " on " + scheduled.getStartTime().format(FULL)
+            "{schedule.overlapping}: " + scheduled.getTutorClass().getName() + " on " + scheduled.getStartTime().format(FULL)
         );
     }
 }

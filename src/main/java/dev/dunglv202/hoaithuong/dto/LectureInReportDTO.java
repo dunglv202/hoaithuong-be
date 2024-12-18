@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 public class LectureInReportDTO {
+    private long id;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
     private String classCode;

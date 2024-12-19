@@ -7,8 +7,4 @@ import lombok.Setter;
 @Setter
 public class ScheduleLectureDTO {
     private long id;
-    private String topic;
-    private String video;
-    private String comment;
-    private String notes;
 }

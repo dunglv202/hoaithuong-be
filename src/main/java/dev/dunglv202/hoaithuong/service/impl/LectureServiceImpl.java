@@ -149,6 +149,12 @@ public class LectureServiceImpl implements LectureService {
     public void updateLecture(UpdatedLecture updatedLecture) {
         Lecture lecture = lectureRepository.findByIdAndTeacher(updatedLecture.getId(), authHelper.getSignedUser())
             .orElseThrow();
+
+        if (updatedLecture.getVideo() != null && !updatedLecture.getVideo().equals(lecture.getVideo())) {
+            // preview become unavailable after video modification
+            lecture.setVideoId(null);
+        }
+
         lectureRepository.save(lecture.merge(updatedLecture));
     }
 

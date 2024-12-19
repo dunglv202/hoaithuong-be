@@ -28,13 +28,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import static dev.dunglv202.hoaithuong.model.criteria.ScheduleCriteria.*;
 
+/**
+ * TODO: handle exception add/remove google calendar event in transaction, add method to rollback/retry/err log
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -88,18 +88,23 @@ public class ScheduleServiceImpl implements ScheduleService {
     }
 
     /**
-     * TODO: need review for google calendar in transaction.
      * {@inheritDoc}
      */
     @Override
     @Transactional
     public Schedule addSingleScheduleForClass(TutorClass tutorClass, LocalDateTime startTime) {
+        // check conflict
+        Schedule schedule = makeSchedule(tutorClass, startTime);
+        Optional<Schedule> conflict = findScheduleConflict(List.of(schedule));
+        if (conflict.isPresent()) {
+            throw new ConflictScheduleException(conflict.get());
+        }
+
         // remove last lecture
         Schedule lastSchedule = scheduleRepository.findLastByTutorClass(tutorClass);
         deleteSchedule(lastSchedule);
 
         // make schedule & try to add
-        Schedule schedule = makeSchedule(tutorClass, startTime);
         addSchedules(List.of(schedule));
 
         return schedule;
@@ -148,11 +153,11 @@ public class ScheduleServiceImpl implements ScheduleService {
     @Override
     public void deleteSchedules(List<Schedule> schedules) {
         if (schedules.isEmpty()) return;
+        scheduleRepository.deleteAll(schedules);
         calendarService.removeEventsAsync(
             schedules.get(0).getTeacher(),
             schedules.stream().filter(s -> s.getGoogleEventId() != null).map(ScheduleEvent::new).toList()
         );
-        scheduleRepository.deleteAll(schedules);
     }
 
     /**
@@ -180,14 +185,12 @@ public class ScheduleServiceImpl implements ScheduleService {
     }
 
     /**
-     * Add schedule to timetable. Required to be in a transaction. All schedule add action should call this method
-     *
-     * @param schedules List of schedule to add, sorted in ascending order by date time
+     * @param schedules List of schedules to check if any existed schedule conflict with
      */
-    private void addSchedules(List<Schedule> schedules) {
-        if (schedules.isEmpty()) return;
+    private Optional<Schedule> findScheduleConflict(List<Schedule> schedules) {
+        if (schedules.isEmpty()) return Optional.empty();
 
-        // check for conflicts with other schedules
+        schedules = schedules.stream().sorted(Comparator.comparing(Schedule::getStartTime)).toList();
         Schedule firstSchedule = schedules.get(0);
         Schedule lastSchedule = schedules.get(schedules.size() - 1);
         List<Schedule> activeSchedules = scheduleRepository.findAllInRangeByTeacher(
@@ -195,13 +198,29 @@ public class ScheduleServiceImpl implements ScheduleService {
             firstSchedule.getStartTime().toLocalDate(),
             lastSchedule.getEndTime().toLocalDate()
         );
+
         for (Schedule schedule : schedules) {
-            for (Schedule scheduled : activeSchedules) {
-                if (scheduled.isAfter(schedule)) break;
-                if (schedule.overlaps(scheduled)) {
-                    throw new ConflictScheduleException(scheduled);
-                }
-            }
+            Optional<Schedule> overlapping = activeSchedules.stream()
+                .filter(scheduled -> scheduled.overlaps(schedule))
+                .findFirst();
+            if (overlapping.isPresent()) return overlapping;
+        }
+
+        return Optional.empty();
+    }
+
+    /**
+     * Add schedule to timetable. Required to be in a transaction. All schedule add action should call this method
+     *
+     * @param schedules List of schedule to add
+     */
+    private void addSchedules(List<Schedule> schedules) {
+        if (schedules.isEmpty()) return;
+
+        // check conflict
+        Optional<Schedule> conflict = findScheduleConflict(schedules);
+        if (conflict.isPresent()) {
+            throw new ConflictScheduleException(conflict.get());
         }
 
         // no conflicts => save schedule

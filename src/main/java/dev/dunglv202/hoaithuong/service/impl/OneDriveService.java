@@ -140,7 +140,7 @@ public class OneDriveService implements VideoStorageService {
             );
             Duration diff = Duration.between(videoStart, schedule.getStartTime()).abs();
 
-            return (videoStart.isBefore(schedule.getStartTime()) && diff.toMinutes() <= 5)
+            return (videoStart.isBefore(schedule.getStartTime()) && diff.toMinutes() <= 10)
                 || (videoStart.isAfter(schedule.getStartTime()) && diff.toMinutes() <= 30);
         } catch (Exception e) {
             log.error("Could not parse date time from '{}'", driveItem.getName(), e);

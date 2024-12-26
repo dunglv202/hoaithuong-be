@@ -31,6 +31,6 @@ public class User extends Auditable {
 
     @Override
     public String toString() {
-        return String.format("[User: %s]", username);
+        return String.format("[User: %s]", getId());
     }
 }

@@ -56,9 +56,15 @@ public class TutorClass extends Auditable {
     private List<TimeSlot> timeSlots;
 
     @PrePersist
-    @PreUpdate
-    public void updateStatus() {
+    public void prePersist() {
         active = learned < totalLecture;
+    }
+
+    @PreUpdate
+    public void preUpdate() {
+        if (learned >= totalLecture) {
+            active = false;
+        }
     }
 
     public Duration getDuration() {

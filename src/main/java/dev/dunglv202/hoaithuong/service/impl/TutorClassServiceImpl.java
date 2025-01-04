@@ -56,7 +56,9 @@ public class TutorClassServiceImpl implements TutorClassService {
         }
 
         tutorClassRepository.save(tutorClass);
-        scheduleService.addSchedulesForClass(tutorClass, newTutorClassDTO.getStartDate());
+        if (!tutorClass.isManuallyScheduled()) {
+            scheduleService.addSchedulesForClass(tutorClass, newTutorClassDTO.getStartDate());
+        }
     }
 
     @Override
@@ -126,7 +128,9 @@ public class TutorClassServiceImpl implements TutorClassService {
         if (tutorClass.isActive()) {
             throw new ClientVisibleException("{class.still_active}");
         }
-        scheduleService.addSchedulesForClass(tutorClass, effectiveDate);
+        if (!tutorClass.isManuallyScheduled()) {
+            scheduleService.addSchedulesForClass(tutorClass, effectiveDate);
+        }
         tutorClass.setActive(true);
         tutorClassRepository.save(tutorClass);
     }

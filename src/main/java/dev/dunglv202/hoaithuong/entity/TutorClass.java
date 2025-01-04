@@ -79,4 +79,8 @@ public class TutorClass extends Auditable {
     public String getName() {
         return code + " - " + student.getName();
     }
+
+    public boolean isManuallyScheduled() {
+        return this.timeSlots.isEmpty();
+    }
 }

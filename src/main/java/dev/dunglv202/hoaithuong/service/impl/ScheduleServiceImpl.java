@@ -67,6 +67,7 @@ public class ScheduleServiceImpl implements ScheduleService {
         deleteSchedule(scheduleToDelete);
 
         // add new schedule after last schedule
+        if (tutorClass.isManuallyScheduled()) return;
         List<Schedule> replacement = new ScheduleGenerator()
             .setClass(tutorClass)
             .setStartTime(lastSchedule.getEndTime())
@@ -94,6 +95,10 @@ public class ScheduleServiceImpl implements ScheduleService {
     @Override
     @Transactional
     public Schedule addSingleScheduleForClass(TutorClass tutorClass, LocalDateTime startTime) {
+        if (tutorClass.getLearned() >= tutorClass.getTotalLecture()) {
+            throw new RuntimeException("{tutor_class.exceeded_schedule}");
+        }
+
         // check conflict
         Schedule schedule = makeSchedule(tutorClass, startTime);
         Optional<Schedule> conflict = findScheduleConflict(List.of(schedule));
@@ -101,9 +106,11 @@ public class ScheduleServiceImpl implements ScheduleService {
             throw new ConflictScheduleException(conflict.get());
         }
 
-        // remove last lecture
-        Schedule lastSchedule = scheduleRepository.findLastByTutorClass(tutorClass);
-        deleteSchedule(lastSchedule);
+        if (!tutorClass.isManuallyScheduled()) {
+            // remove last lecture
+            Schedule lastSchedule = scheduleRepository.findLastByTutorClass(tutorClass);
+            deleteSchedule(lastSchedule);
+        }
 
         // make schedule & try to add
         addSchedules(List.of(schedule));
@@ -120,7 +127,9 @@ public class ScheduleServiceImpl implements ScheduleService {
         var oldSchedules = scheduleRepository.findAll(ofClass(tutorClass).and(inRange(SimpleRange.from(startDate))));
         deleteSchedules(oldSchedules);
         tutorClass.setTimeSlots(new ArrayList<>(timeSlots));
-        addSchedulesForClass(tutorClass, startDate);
+        if (!timeSlots.isEmpty()) {
+            addSchedulesForClass(tutorClass, startDate);
+        }
     }
 
     @Override

@@ -2,7 +2,10 @@ package dev.dunglv202.hoaithuong.dto;
 
 import dev.dunglv202.hoaithuong.model.TimeSlot;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
@@ -40,9 +43,7 @@ public class NewTutorClassDTO {
     @PositiveOrZero(message = "{tutor_class.pay.positive}")
     private Integer payForLecture = DEFAULT_PAY_FOR_LECTURE;
 
-    @NotNull(message = "{class.timeslots.required}")
-    @Size(min = 1, message = "{class.timeslots.required}")
-    private Set<@Valid TimeSlot> timeSlots;
+    private Set<@Valid TimeSlot> timeSlots = Set.of();
 
     private LocalDate startDate = LocalDate.now();
 }

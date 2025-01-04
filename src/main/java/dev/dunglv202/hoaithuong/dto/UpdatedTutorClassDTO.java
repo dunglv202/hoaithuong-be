@@ -5,7 +5,6 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
-import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
@@ -27,10 +26,11 @@ public class UpdatedTutorClassDTO {
     @Length(max = 256, message = "{tutor_class.notes.length}")
     private String notes;
 
-    @NotNull(message = "{class.timeslots.required}")
-    @Size(min = 1, message = "{class.timeslots.required}")
-    private Set<@Valid TimeSlot> timeSlots;
+    private Set<@Valid TimeSlot> timeSlots = Set.of();
 
+    /**
+     * Date that changes will be applied
+     */
     private LocalDate startDate = LocalDate.now();
 
     @NotNull

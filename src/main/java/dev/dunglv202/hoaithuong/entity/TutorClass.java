@@ -53,7 +53,7 @@ public class TutorClass extends Auditable {
     private boolean active;
 
     @JdbcTypeCode(SqlTypes.JSON)
-    private List<TimeSlot> timeSlots;
+    private List<TimeSlot> timeSlots = List.of();
 
     @PrePersist
     public void prePersist() {

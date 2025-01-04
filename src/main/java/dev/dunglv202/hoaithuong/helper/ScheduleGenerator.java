@@ -14,9 +14,6 @@ public class ScheduleGenerator {
     private List<TimeSlot> timeSlots;
 
     public ScheduleGenerator setClass(TutorClass tutorClass) {
-        if (tutorClass.getTimeSlots() == null || tutorClass.getTimeSlots().isEmpty()) {
-            throw new RuntimeException("Timeslots are required to generate schedule");
-        }
         this.tutorClass = tutorClass;
         this.timeSlots = tutorClass.getTimeSlots().stream().distinct().sorted().toList();
         return this;
@@ -28,10 +25,13 @@ public class ScheduleGenerator {
     }
 
     /**
-     * Generate schedule in ascending order for tutor class,
-     * number of schedule generated equals to {@code tutorClass.getTotalLecture()} - {@code tutorClass.getLearned()}
+     * Generate schedule in ascending order for tutor class
      */
     public List<Schedule> generate(int limit) {
+        if (timeSlots == null || timeSlots.isEmpty()) {
+            throw new RuntimeException("Timeslots are required to generate schedule");
+        }
+
         List<Schedule> schedules = new ArrayList<>();
         LocalDateTime current = startTime;
         for (int i = 1; i <= limit; i++) {

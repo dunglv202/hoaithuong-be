@@ -80,10 +80,6 @@ public class TutorClassServiceImpl implements TutorClassService {
         User signedUser = authHelper.getSignedUser();
         TutorClass old = tutorClassRepository.findByIdAndTeacher(updated.getId(), signedUser).orElseThrow();
 
-        if (!old.isActive()) {
-            throw new ClientVisibleException("{tutor_class.update_not_allowed}");
-        }
-
         if (!old.getCode().equals(updated.getCode()) && tutorClassRepository.existsByCode(updated.getCode())) {
             throw new ClientVisibleException("{tutor_class.code.existed}");
         }
@@ -92,7 +88,7 @@ public class TutorClassServiceImpl implements TutorClassService {
             scheduleService.updateScheduleForClass(old, updated.getStartDate(), updated.getTimeSlots());
         }
 
-        old.merge(updated);
+        tutorClassRepository.save(old.merge(updated));
     }
 
     @Override

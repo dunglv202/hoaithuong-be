@@ -80,6 +80,7 @@ public class ScheduleServiceImpl implements ScheduleService {
     @Override
     @Transactional
     public void addSchedulesForClass(TutorClass newClass, LocalDate startDate) {
+        if (newClass.getTimeSlots().isEmpty()) return;
         List<Schedule> schedules = new ScheduleGenerator()
             .setClass(newClass)
             .setStartTime(startDate.atStartOfDay())

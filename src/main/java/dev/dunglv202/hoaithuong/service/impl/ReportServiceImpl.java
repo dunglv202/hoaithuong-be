@@ -134,7 +134,7 @@ public class ReportServiceImpl implements ReportService {
 
     @Override
     @Transactional
-    public void uploadConfirmation(int year, int month, ConfirmationDTO confirmationDTO) {
+    public String uploadConfirmation(int year, int month, ConfirmationDTO confirmationDTO) {
         User teacher = authHelper.getSignedUser();
 
         // Check if student have lecture on that month
@@ -172,6 +172,8 @@ public class ReportServiceImpl implements ReportService {
         confirmation.setFileId(fileId);
         confirmation.setUrl(url);
         confirmationRepository.save(confirmation);
+
+        return url;
     }
 
     @Override

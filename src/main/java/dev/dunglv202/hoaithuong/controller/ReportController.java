@@ -45,8 +45,8 @@ public class ReportController {
 
     @PostMapping("/confirmations")
     @PreAuthorize("isAuthenticated()")
-    public void uploadConfirmation(@RequestParam int month, @RequestParam int year, @Valid ConfirmationDTO confirmationDTO) {
-        this.reportService.uploadConfirmation(year, month, confirmationDTO);
+    public String uploadConfirmation(@RequestParam int month, @RequestParam int year, @Valid ConfirmationDTO confirmationDTO) {
+        return this.reportService.uploadConfirmation(year, month, confirmationDTO);
     }
 
     @DeleteMapping("/confirmations")

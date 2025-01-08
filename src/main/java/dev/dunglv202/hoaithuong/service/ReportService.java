@@ -15,7 +15,7 @@ public interface ReportService {
 
     void exportGoogleSheet(User user, ReportRange range);
 
-    void uploadConfirmation(int year, int month, ConfirmationDTO confirmationDTO);
+    String uploadConfirmation(int year, int month, ConfirmationDTO confirmationDTO);
 
     void createIfNotExist(User teacher, int year, int month);
 

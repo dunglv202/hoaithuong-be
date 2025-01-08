@@ -51,6 +51,11 @@ public class ProfileController {
         return spreadsheetService.getSpreadsheetInfo(SheetHelper.extractSpreadsheetId(url));
     }
 
+    @PostMapping("/spreadsheets/{spreadsheetId}/share")
+    public void pushToSharedArea(@PathVariable String spreadsheetId) {
+        this.spreadsheetService.pushToSharedArea(spreadsheetId);
+    }
+
     @GetMapping("/calendars")
     @PreAuthorize("isAuthenticated()")
     public List<CalendarDTO> getAllCalendarInstances() {

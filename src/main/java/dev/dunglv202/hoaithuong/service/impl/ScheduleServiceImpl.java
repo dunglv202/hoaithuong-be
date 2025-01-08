@@ -48,7 +48,7 @@ public class ScheduleServiceImpl implements ScheduleService {
 
     @Override
     public List<MinimalScheduleDTO> getSchedules(Range<LocalDate> range) {
-        User signedUser = authHelper.getSignedUser();
+        User signedUser = authHelper.getSignedUserRef();
         return scheduleRepository.findAll(ScheduleCriteria.ofTeacher(signedUser).and(joinFetch()).and(inRange(range)))
             .stream()
             .map(ScheduleMapper.INSTANCE::toMinimalScheduleDTO)
@@ -58,7 +58,7 @@ public class ScheduleServiceImpl implements ScheduleService {
     @Override
     @Transactional
     public void deleteSchedule(Long id) {
-        Schedule scheduleToDelete = scheduleRepository.findByIdAndTeacher(id, authHelper.getSignedUser())
+        Schedule scheduleToDelete = scheduleRepository.findByIdAndTeacher(id, authHelper.getSignedUserRef())
             .orElseThrow();
 
         // delete
@@ -135,7 +135,7 @@ public class ScheduleServiceImpl implements ScheduleService {
     @Override
     @Transactional
     public void addNewSchedule(NewScheduleDTO newSchedule) {
-        TutorClass tutorClass = tutorClassRepository.findByIdAndTeacher(newSchedule.getClassId(), authHelper.getSignedUser())
+        TutorClass tutorClass = tutorClassRepository.findByIdAndTeacher(newSchedule.getClassId(), authHelper.getSignedUserRef())
             .orElseThrow(() -> new ClientVisibleException("{tutor_class.not_found}"));
         addSingleScheduleForClass(tutorClass, newSchedule.getStartTime());
     }
@@ -146,7 +146,7 @@ public class ScheduleServiceImpl implements ScheduleService {
     @Override
     public void syncToCalendar(Range<LocalDate> range) {
         // sync to Calendar
-        var signedUser = authHelper.getSignedUser();
+        var signedUser = authHelper.getSignedUserRef();
         var spec = Specification.allOf(
             ofTeacher(signedUser),
             inRange(range),

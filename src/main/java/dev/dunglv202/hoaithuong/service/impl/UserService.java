@@ -42,19 +42,19 @@ public class UserService implements UserDetailsService {
     }
 
     public UserInfoDTO getSignedUserInfo() {
-        User signedUser = userRepository.findById(authHelper.getSignedUser().getId())
+        User signedUser = userRepository.findById(authHelper.getSignedUserRef().getId())
             .orElseThrow();
         return new UserInfoDTO(signedUser);
     }
 
     public DetailProfileDTO getDetailProfile() {
-        User user = userRepository.findById(authHelper.getSignedUser().getId()).orElseThrow();
+        User user = userRepository.findById(authHelper.getSignedUserRef().getId()).orElseThrow();
         Configuration configs = configService.getConfigsByUser(user);
         return new DetailProfileDTO(user, configs);
     }
 
     public void updateDetailProfile(UpdatedDetailProfileDTO updateDTO) {
-        User signedUser = userRepository.findById(authHelper.getSignedUser().getId()).orElseThrow();
+        User signedUser = userRepository.findById(authHelper.getSignedUserRef().getId()).orElseThrow();
         Configuration configs = configService.getConfigsByUser(signedUser);
 
         // check valid sheet
@@ -93,7 +93,7 @@ public class UserService implements UserDetailsService {
         if (!FileUtil.isSupportedImage(file)) throw new ClientVisibleException("{file.format.unsupported}");
 
         // update avatar & delete old file
-        User signedUser = userRepository.findById(authHelper.getSignedUser().getId()).orElseThrow();
+        User signedUser = userRepository.findById(authHelper.getSignedUserRef().getId()).orElseThrow();
         String url = storageService.storeFile(file);
         String old = signedUser.getAvatar();
         signedUser.setAvatar(url);

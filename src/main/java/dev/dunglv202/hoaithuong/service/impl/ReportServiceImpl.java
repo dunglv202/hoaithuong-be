@@ -64,7 +64,7 @@ public class ReportServiceImpl implements ReportService {
 
     @Override
     public ReportDTO getReport(ReportRange range) {
-        User teacher = authHelper.getSignedUser();
+        User teacher = authHelper.getSignedUserRef();
         Specification<Lecture> criteria = Specification.allOf(
             ofTeacher(teacher),
             inRange(range),
@@ -99,7 +99,7 @@ public class ReportServiceImpl implements ReportService {
 
     @Override
     public void exportGoogleSheet(ReportRange range) {
-        User signedUser = authHelper.getSignedUser();
+        User signedUser = authHelper.getSignedUserRef();
         exportGoogleSheet(signedUser, range);
     }
 
@@ -135,7 +135,7 @@ public class ReportServiceImpl implements ReportService {
     @Override
     @Transactional
     public String uploadConfirmation(int year, int month, ConfirmationDTO confirmationDTO) {
-        User teacher = authHelper.getSignedUser();
+        User teacher = authHelper.getSignedUserRef();
 
         // Check if student have lecture on that month
         Student student = studentRepository.findByIdAndCreatedBy(confirmationDTO.getStudentId(), teacher)
@@ -187,7 +187,7 @@ public class ReportServiceImpl implements ReportService {
     @Override
     @Transactional
     public void deleteConfirmation(int year, int month, long studentId) {
-        User teacher = authHelper.getSignedUser();
+        User teacher = authHelper.getSignedUserRef();
 
         // verify existence
         Report report = reportRepository.findByTimeAndTeacher(year, month, teacher)
@@ -451,7 +451,7 @@ public class ReportServiceImpl implements ReportService {
 
     private Workbook generateReportFile(ReportRange range) {
         Workbook workbook = new XSSFWorkbook();
-        List<Lecture> lectures = getLecturesForReport(authHelper.getSignedUser(), range);
+        List<Lecture> lectures = getLecturesForReport(authHelper.getSignedUserRef(), range);
 
         // write report data
         writeGeneralReportSheet(workbook, lectures);

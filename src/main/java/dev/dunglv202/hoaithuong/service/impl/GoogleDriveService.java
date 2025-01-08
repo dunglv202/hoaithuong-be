@@ -72,4 +72,38 @@ public class GoogleDriveService {
             throw new RuntimeException(e);
         }
     }
+
+    public File makeCopy(User user, String fileId, String name) {
+        Drive driveService = googleHelper.getDriveService(user);
+        try {
+            return driveService.files().copy(fileId, new File().setName(name)).execute();
+        } catch (IOException e) {
+            log.error("Could not make copy for {} - {}", fileId, user.getUsername(), e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void moveToFolder(User user, File file, String folderId) {
+        Drive driveService = googleHelper.getDriveService(user);
+        try {
+            // Retrieve the existing parents to remove
+            File updatingFile = driveService.files().get(file.getId())
+                .setFields("parents")
+                .execute();
+            StringBuilder previousParents = new StringBuilder();
+            for (String parent : updatingFile.getParents()) {
+                previousParents.append(parent);
+                previousParents.append(',');
+            }
+
+            // Move the file to the new folder
+            driveService.files().update(file.getId(), null)
+                .setAddParents(folderId)
+                .setRemoveParents(previousParents.toString())
+                .execute();
+        } catch (IOException e) {
+            log.error("Unable to move file {} to {} for {}", file.getId(), folderId, user.getEmail(), e);
+            throw new RuntimeException(e);
+        }
+    }
 }

@@ -4,6 +4,7 @@ import dev.dunglv202.hoaithuong.entity.User;
 import dev.dunglv202.hoaithuong.model.Token;
 import dev.dunglv202.hoaithuong.model.auth.AppUser;
 import dev.dunglv202.hoaithuong.model.auth.AuthResult;
+import dev.dunglv202.hoaithuong.repository.UserRepository;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -22,8 +23,9 @@ import static dev.dunglv202.hoaithuong.controller.AuthController.COOKIE_PATH_REF
 @RequiredArgsConstructor
 public class AuthHelper {
     private final JwtProvider jwtProvider;
+    private final UserRepository userRepository;
 
-    public User getSignedUser() {
+    public User getSignedUserRef() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication instanceof AnonymousAuthenticationToken || authentication == null) {
@@ -31,6 +33,10 @@ public class AuthHelper {
         }
 
         return ((AppUser) authentication.getPrincipal()).getUser();
+    }
+
+    public User getSignedUser() {
+        return userRepository.findById(getSignedUserRef().getId()).orElseThrow();
     }
 
     public void addAuthCookies(HttpServletResponse response, AuthResult authResult) {

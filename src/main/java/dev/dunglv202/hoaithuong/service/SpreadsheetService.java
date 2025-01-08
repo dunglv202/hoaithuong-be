@@ -8,4 +8,6 @@ public interface SpreadsheetService {
     SpreadsheetInfoDTO getSpreadsheetInfo(String spreadsheetId);
 
     boolean isValidSheet(User user, SheetInfo sheet);
+
+    void pushToSharedArea(String spreadsheetId);
 }

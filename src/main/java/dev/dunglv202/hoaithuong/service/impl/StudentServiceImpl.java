@@ -33,7 +33,7 @@ public class StudentServiceImpl implements StudentService {
     @Override
     public Page<StudentDTO> getAllStudents(StudentCriteria criteria, Pagination pagination) {
         Sort activeFirst = Sort.by(Sort.Direction.DESC, Student_.ACTIVE);
-        Specification<Student> specification = StudentCriteria.ofTeacher(authHelper.getSignedUser())
+        Specification<Student> specification = StudentCriteria.ofTeacher(authHelper.getSignedUserRef())
             .and(criteria.toSpecification());
         return new Page<>(
             studentRepository.findAll(specification, pagination.withSort(activeFirst).pageable())
@@ -44,7 +44,7 @@ public class StudentServiceImpl implements StudentService {
     @Override
     public void updateStudent(UpdatedStudentDTO updated) {
         // only teacher that created this student can update
-        Student student = studentRepository.findByIdAndCreatedBy(updated.getId(), authHelper.getSignedUser())
+        Student student = studentRepository.findByIdAndCreatedBy(updated.getId(), authHelper.getSignedUserRef())
             .orElseThrow(() -> new ClientVisibleException("{student.not_found}"));
         studentRepository.save(student.merge(updated));
     }

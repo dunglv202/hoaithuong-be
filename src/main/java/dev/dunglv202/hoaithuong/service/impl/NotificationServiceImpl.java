@@ -24,7 +24,7 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     public NotificationWrapperDTO getNotifications(Pagination pagination) {
-        User user = authHelper.getSignedUser();
+        User user = authHelper.getSignedUserRef();
         List<Notification> notifications = notificationRepository.findAllByUser(user, pagination.pageable());
         int totalUnread = notificationRepository.countAllUnreadByUser(user);
 
@@ -49,7 +49,7 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     @Transactional
     public void markAllAsRead() {
-        User user = authHelper.getSignedUser();
+        User user = authHelper.getSignedUserRef();
         notificationRepository.markAllAsReadByUser(user);
     }
 

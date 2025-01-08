@@ -56,7 +56,7 @@ public class LectureServiceImpl implements LectureService {
         // set class & teacher code
         TutorClass tutorClass = tutorClassRepository.findByIdAndTeacher(
             newLectureDTO.getClassId(),
-            authHelper.getSignedUser()
+            authHelper.getSignedUserRef()
         ).orElseThrow();
         lecture.setTutorClass(tutorClass);
         lecture.setTeacherCode(configService.getConfigsByUser(tutorClass.getTeacher()).getTeacherCode());
@@ -124,7 +124,7 @@ public class LectureServiceImpl implements LectureService {
 
         // trigger create report for first lecture of month
         reportService.createIfNotExist(
-            authHelper.getSignedUser(),
+            authHelper.getSignedUserRef(),
             schedule.getStartTime().getYear(),
             schedule.getStartTime().getMonth().getValue()
         );
@@ -139,7 +139,7 @@ public class LectureServiceImpl implements LectureService {
             inRange(range),
             sortByStartTime(Sort.Direction.DESC)
         );
-        return lectureRepository.findAll(LectureCriteria.ofTeacher(authHelper.getSignedUser()).and(joinFetch()).and(criteria))
+        return lectureRepository.findAll(LectureCriteria.ofTeacher(authHelper.getSignedUserRef()).and(joinFetch()).and(criteria))
             .stream()
             .map(LectureMapper.INSTANCE::toLectureDTO)
             .toList();
@@ -147,7 +147,7 @@ public class LectureServiceImpl implements LectureService {
 
     @Override
     public void updateLecture(UpdatedLecture updatedLecture) {
-        Lecture lecture = lectureRepository.findByIdAndTeacher(updatedLecture.getId(), authHelper.getSignedUser())
+        Lecture lecture = lectureRepository.findByIdAndTeacher(updatedLecture.getId(), authHelper.getSignedUserRef())
             .orElseThrow();
 
         if (updatedLecture.getVideo() != null && !updatedLecture.getVideo().equals(lecture.getVideo())) {
@@ -160,7 +160,7 @@ public class LectureServiceImpl implements LectureService {
 
     @Override
     public void syncMyLectureVideos(ReportRange range) {
-        User teacher = authHelper.getSignedUser();
+        User teacher = authHelper.getSignedUserRef();
         taskExecutor.execute(() -> {
             syncLectureVideos(teacher, range);
             Notification notification = Notification.forUser(teacher)
@@ -205,7 +205,7 @@ public class LectureServiceImpl implements LectureService {
     @Override
     @Transactional
     public void deleteLecture(long id) {
-        Lecture lecture = lectureRepository.findByIdAndTeacher(id, authHelper.getSignedUser())
+        Lecture lecture = lectureRepository.findByIdAndTeacher(id, authHelper.getSignedUserRef())
             .orElseThrow(() -> new ClientVisibleException("{lecture.not_found}"));
 
         // delete lecture info
@@ -222,14 +222,14 @@ public class LectureServiceImpl implements LectureService {
 
     @Override
     public LectureDetails getLectureDetails(long id) {
-        Lecture lecture = lectureRepository.findByIdAndTeacher(id, authHelper.getSignedUser())
+        Lecture lecture = lectureRepository.findByIdAndTeacher(id, authHelper.getSignedUserRef())
             .orElseThrow(() -> new ClientVisibleException("{lecture.not_found}"));
         return LectureMapper.INSTANCE.toLectureDetails(lecture);
     }
 
     @Override
     public String getVideoPreview(long id) {
-        Lecture lecture = lectureRepository.findByIdAndTeacher(id, authHelper.getSignedUser())
+        Lecture lecture = lectureRepository.findByIdAndTeacher(id, authHelper.getSignedUserRef())
             .orElseThrow(() -> new ClientVisibleException("{lecture.not_found}"));
         if (lecture.getVideoId() == null) return null;
         return videoStorageService.createPreviewLink(lecture.getVideoId());

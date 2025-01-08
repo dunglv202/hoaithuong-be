@@ -42,7 +42,7 @@ public class GoogleCalendarService implements CalendarService {
     @Override
     public List<CalendarDTO> getAllCalendars() {
         try {
-            User user = authHelper.getSignedUser();
+            User user = authHelper.getSignedUserRef();
             return googleHelper.getCalendarService(user).calendarList()
                 .list().execute().getItems().stream()
                 .map(CalendarDTO::new)

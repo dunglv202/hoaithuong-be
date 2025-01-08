@@ -43,7 +43,7 @@ public class TutorClassServiceImpl implements TutorClassService {
     @Override
     @Transactional
     public void addNewClass(NewTutorClassDTO newTutorClassDTO) {
-        User signedUser = authHelper.getSignedUser();
+        User signedUser = authHelper.getSignedUserRef();
         TutorClass tutorClass = TutorClassMapper.INSTANCE.toTutorClass(newTutorClassDTO);
         tutorClass.setTeacher(signedUser);
 
@@ -67,7 +67,7 @@ public class TutorClassServiceImpl implements TutorClassService {
         Sort moreLearnedFirst = Sort.by(Sort.Direction.DESC, TutorClass_.LEARNED);
 
         Pageable pageable = pagination.withSort(activeFirst.and(moreLearnedFirst)).pageable();
-        Specification<TutorClass> specification = TutorClassCriteria.ofTeacher(authHelper.getSignedUser())
+        Specification<TutorClass> specification = TutorClassCriteria.ofTeacher(authHelper.getSignedUserRef())
             .and(criteria.toSpecification());
 
         return new Page<>(
@@ -79,7 +79,7 @@ public class TutorClassServiceImpl implements TutorClassService {
     @Override
     @Transactional
     public void updateClass(UpdatedTutorClassDTO updated) {
-        User signedUser = authHelper.getSignedUser();
+        User signedUser = authHelper.getSignedUserRef();
         TutorClass old = tutorClassRepository.findByIdAndTeacher(updated.getId(), signedUser).orElseThrow();
 
         if (!old.getCode().equals(updated.getCode()) && tutorClassRepository.existsByCode(updated.getCode())) {
@@ -95,7 +95,7 @@ public class TutorClassServiceImpl implements TutorClassService {
 
     @Override
     public DetailClassDTO getDetailClass(long id) {
-        TutorClass tutorClass = tutorClassRepository.findByIdAndTeacher(id, authHelper.getSignedUser()).orElseThrow();
+        TutorClass tutorClass = tutorClassRepository.findByIdAndTeacher(id, authHelper.getSignedUserRef()).orElseThrow();
         return TutorClassMapper.INSTANCE.toDetailClassDTO(tutorClass);
     }
 
@@ -105,7 +105,7 @@ public class TutorClassServiceImpl implements TutorClassService {
     @Override
     @Transactional
     public void stopClass(long id, LocalDate effectiveDate) {
-        User signedUser = authHelper.getSignedUser();
+        User signedUser = authHelper.getSignedUserRef();
         TutorClass tutorClass = tutorClassRepository.findByIdAndTeacher(id, signedUser).orElseThrow();
         if (!tutorClass.isActive()) {
             throw new ClientVisibleException("{class.inactive}");
@@ -123,7 +123,7 @@ public class TutorClassServiceImpl implements TutorClassService {
     @Override
     @Transactional
     public void resumeClass(long id, LocalDate effectiveDate) {
-        User signedUser = authHelper.getSignedUser();
+        User signedUser = authHelper.getSignedUserRef();
         TutorClass tutorClass = tutorClassRepository.findByIdAndTeacher(id, signedUser).orElseThrow();
         if (tutorClass.isActive()) {
             throw new ClientVisibleException("{class.still_active}");

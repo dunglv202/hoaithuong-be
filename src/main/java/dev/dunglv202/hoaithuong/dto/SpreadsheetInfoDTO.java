@@ -10,6 +10,7 @@ import java.util.List;
 @Setter
 @Builder
 public class SpreadsheetInfoDTO {
+    private String id;
     private String name;
     private List<String> sheets;
 }

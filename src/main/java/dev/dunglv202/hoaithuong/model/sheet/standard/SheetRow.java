@@ -19,7 +19,13 @@ public class SheetRow {
         return cells.get(index);
     }
 
-    public List<Object> getValues() {
-        return cells.stream().map(SheetCell::getValue).toList();
+    public void mergeWith(List<Object> cells) {
+        for (int i = 0; i < Math.min(this.cells.size(), cells.size()); i++) {
+            Object value = this.cells.get(i).getValue();
+            if (value == null || (value instanceof String str && str.isBlank())) {
+                // if cell empty, keep old value
+                this.cells.get(i).setValue(cells.get(i));
+            }
+        }
     }
 }

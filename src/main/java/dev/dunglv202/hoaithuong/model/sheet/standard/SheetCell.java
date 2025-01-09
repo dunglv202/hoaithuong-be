@@ -8,7 +8,7 @@ import lombok.experimental.Accessors;
 @Setter
 @Accessors(chain = true)
 public class SheetCell {
-    private Object value;
+    private Object value = null;
     private SheetCellStyle style = new SheetCellStyle();
     private SheetCellAttribute attribute = new SheetCellAttribute();
 }

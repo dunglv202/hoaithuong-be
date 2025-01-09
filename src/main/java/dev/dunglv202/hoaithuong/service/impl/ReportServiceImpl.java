@@ -221,8 +221,9 @@ public class ReportServiceImpl implements ReportService {
         String reportSheetName = config.getDetailReportSheet();
         var reportSheet = spreadsheet.getSheets().stream()
             .filter(sheet -> reportSheetName.equals(sheet.getProperties().getTitle()))
-            .findFirst();
-        Integer reportSheetId = reportSheet.orElseThrow().getProperties().getSheetId();
+            .findFirst()
+            .orElseThrow();
+        Integer reportSheetId = reportSheet.getProperties().getSheetId();
 
         // calculate report position
         int reportOffset = 0;
@@ -240,11 +241,17 @@ public class ReportServiceImpl implements ReportService {
 
         // generate report data
         SheetRange data = generateDetailReportData(lectures);
-
-        // update sheet
         var gridRange = new GridRange().setSheetId(reportSheetId)
             .setStartRowIndex(reportOffset)
-            .setStartColumnIndex(0);
+            .setStartColumnIndex(0)
+            .setEndRowIndex(reportOffset + data.getRowCount())
+            .setEndColumnIndex(data.getColumnCount());
+        ValueRange oldValues = sheetsService.spreadsheets().values()
+            .get(spreadsheet.getSpreadsheetId(), SheetHelper.getRange(reportSheet, gridRange))
+            .execute();
+        data.mergeWith(oldValues);
+
+        // update sheet
         sheetsService.spreadsheets().batchUpdate(
             spreadsheet.getSpreadsheetId(),
             SheetHelper.makeUpdateRequest(data, gridRange)

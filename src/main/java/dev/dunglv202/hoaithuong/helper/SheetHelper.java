@@ -24,6 +24,11 @@ public class SheetHelper {
      */
     public static BatchUpdateSpreadsheetRequest makeUpdateRequest(SheetRange src, GridRange dest) {
         var converter = new GoogleSheetConverter();
+        List<Request> requests = new ArrayList<>();
+
+        // unmerge all initially
+        UnmergeCellsRequest unmergeRequest = new UnmergeCellsRequest().setRange(dest);
+        requests.add(new Request().setUnmergeCells(unmergeRequest));
 
         // prepare layout, merge cells
         List<MergeCellsRequest> mergeRequests = new ArrayList<>();
@@ -53,11 +58,11 @@ public class SheetHelper {
             .setRange(dest)
             .setRows(src.getRows().stream().map(converter::convertRow).toList());
 
-        // make request batch
-        List<Request> reqs = new ArrayList<>(mergeRequests.stream().map((mr) -> new Request().setMergeCells(mr)).toList());
-        reqs.add(new Request().setUpdateCells(updateRequest));
+        // merge and update cells
+        requests.addAll(mergeRequests.stream().map((mr) -> new Request().setMergeCells(mr)).toList());
+        requests.add(new Request().setUpdateCells(updateRequest));
 
-        return new BatchUpdateSpreadsheetRequest().setRequests(reqs);
+        return new BatchUpdateSpreadsheetRequest().setRequests(requests);
     }
 
     /**
@@ -86,6 +91,20 @@ public class SheetHelper {
             columnIndex = (columnIndex / 26) - 1;
         }
         return columnName.toString();
+    }
+
+    public static String getRange(GridRange range) {
+        return String.format(
+            "%s%s:%s%s",
+            columnIndexToLetter(range.getStartColumnIndex()),
+            range.getStartRowIndex() + 1,
+            range.getEndColumnIndex() == null ? "" : columnIndexToLetter(range.getEndColumnIndex() - 1),
+            range.getEndRowIndex() == null ? "" : range.getEndRowIndex()
+        );
+    }
+
+    public static String getRange(Sheet sheet, GridRange range) {
+        return sheet.getProperties().getTitle() + "!" + getRange(range);
     }
 
     public static String bindToSpreadsheetURL(String spreadsheetId) {

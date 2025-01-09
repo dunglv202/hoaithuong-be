@@ -1,5 +1,6 @@
 package dev.dunglv202.hoaithuong.model.sheet.standard;
 
+import com.google.api.services.sheets.v4.model.ValueRange;
 import lombok.Getter;
 
 import java.util.ArrayList;
@@ -19,17 +20,17 @@ public class SheetRange {
         return rows.get(offset);
     }
 
-    public SheetRange union(SheetRange another) {
-        this.rows.addAll(another.getRows());
-        return this;
+    public int getRowCount() {
+        return rows.size();
     }
 
-    public List<List<Object>> getValues() {
-        return rows.stream().map(SheetRow::getValues).toList();
+    public int getColumnCount() {
+        return rows.stream().map(r -> r.getCells().size()).max(Integer::compareTo).orElse(0);
     }
 
-    public SheetRange addEmptyRow() {
-        addRow();
-        return this;
+    public void mergeWith(ValueRange oldValues) {
+        for (int i = 0; i < Math.min(this.rows.size(), oldValues.getValues().size()); i++) {
+            rows.get(i).mergeWith(oldValues.getValues().get(i));
+        }
     }
 }

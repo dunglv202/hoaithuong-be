@@ -25,16 +25,7 @@
 		<io.minio.version>8.5.10</io.minio.version>
 		<com.microsoft.graph.version>6.23.0</com.microsoft.graph.version>
 		<com.azure.azure-identity.version>1.14.2</com.azure.azure-identity.version>
-		<com.groupdocs.groupdocs-conversion>24.12.1</com.groupdocs.groupdocs-conversion>
 	</properties>
-
-	<repositories>
-		<repository>
-			<id>repository.groupdocs.com</id>
-			<name>GroupDocs Repository</name>
-			<url>https://releases.groupdocs.com/java/repo/</url>
-		</repository>
-	</repositories>
 
 	<dependencyManagement>
 		<dependencies>
@@ -205,18 +196,6 @@
 			<groupId>com.azure</groupId>
 			<artifactId>azure-identity</artifactId>
 			<version>${com.azure.azure-identity.version}</version>
-		</dependency>
-
-		<!-- DOCS/SHEETS CONVERSION -->
-		<dependency>
-			<groupId>com.groupdocs</groupId>
-			<artifactId>groupdocs-conversion</artifactId>
-			<version>${com.groupdocs.groupdocs-conversion}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.fasterxml.jackson.module</groupId>
-			<artifactId>jackson-module-jaxb-annotations</artifactId>
-			<version>2.18.2</version>
 		</dependency>
 	</dependencies>
 

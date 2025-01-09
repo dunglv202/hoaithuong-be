@@ -2,11 +2,9 @@ package dev.dunglv202.hoaithuong.service.impl;
 
 import com.google.api.client.googleapis.json.GoogleJsonResponseException;
 import com.google.api.client.http.HttpStatusCodes;
+import com.google.api.services.drive.model.File;
 import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.model.Spreadsheet;
-import com.groupdocs.conversion.Converter;
-import com.groupdocs.conversion.filetypes.FileType;
-import com.groupdocs.conversion.options.convert.SpreadsheetConvertOptions;
 import dev.dunglv202.hoaithuong.dto.SpreadsheetInfoDTO;
 import dev.dunglv202.hoaithuong.entity.User;
 import dev.dunglv202.hoaithuong.exception.ClientVisibleException;
@@ -17,13 +15,10 @@ import dev.dunglv202.hoaithuong.service.SpreadsheetService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Service
 @RequiredArgsConstructor
@@ -63,44 +58,11 @@ public class GoogleSpreadsheetService implements SpreadsheetService {
     }
 
     @Override
-    public Resource downloadSpreadsheet(String spreadsheetId) {
-        try (
-            InputStream spreadSheetStream = getSpreadsheetStream(spreadsheetId);
-            Converter converter = new Converter(() -> spreadSheetStream);
-        ) {
-            // get file name info
-            String name = googleHelper.getSheetService(authHelper.getSignedUserRef()).spreadsheets()
-                .get(spreadsheetId)
-                .execute()
-                .getProperties().getTitle();
-
-            // convert from exported stream to xlsx file
-            SpreadsheetConvertOptions options = new SpreadsheetConvertOptions();
-            options.setFormat(FileType.fromExtension("xlsx"));
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            converter.convert(() -> outputStream, options);
-
-            return new ByteArrayResource(outputStream.toByteArray()) {
-                @Override
-                public String getFilename() {
-                    return name;
-                }
-            };
-        } catch (IOException e) {
-            log.error("Could not download spreadsheet {}", spreadsheetId, e);
-            throw new RuntimeException(e);
-        }
-    }
-
-    private InputStream getSpreadsheetStream(String spreadsheetId) {
-        try {
-            return googleHelper.getDriveService(authHelper.getSignedUserRef())
-                .files()
-                .export(spreadsheetId, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-                .executeMediaAsInputStream();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+    public void pushToSharedArea(String spreadsheetId) {
+        User user = authHelper.getSignedUser();
+        String copyName = user.getEmail() + " - " + LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME);
+        File file = googleDriveService.makeCopy(user, spreadsheetId, copyName);
+        googleDriveService.moveToFolder(user, file, sharedFolderId);
     }
 
     private Spreadsheet getSpreadsheetInfoBeyondUser(User user, String spreadSheetId) {

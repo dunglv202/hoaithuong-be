@@ -180,7 +180,7 @@ public class LectureServiceImpl implements LectureService {
                 Optional<DriveItem> video = videoStorageService.findLectureVideo(lecture, config.getVideoSource());
                 if (video.isPresent()) {
                     // get & set video for lecture
-                    LocalDateTime paymentDate = lecture.getStartTime().withDayOfMonth(16).plusMonths(1);
+                    LocalDateTime paymentDate = lecture.getStartTime().plusMonths(1).withDayOfMonth(20);
                     lecture.setVideo(videoStorageService.createSharableLink(
                         video.get(),
                         OffsetDateTime.of(paymentDate, ZoneOffset.ofHours(7))

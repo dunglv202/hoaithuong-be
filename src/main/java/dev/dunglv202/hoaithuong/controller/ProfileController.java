@@ -7,6 +7,10 @@ import dev.dunglv202.hoaithuong.service.SpreadsheetService;
 import dev.dunglv202.hoaithuong.service.impl.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -51,9 +55,13 @@ public class ProfileController {
         return spreadsheetService.getSpreadsheetInfo(SheetHelper.extractSpreadsheetId(url));
     }
 
-    @PostMapping("/spreadsheets/{spreadsheetId}/share")
-    public void pushToSharedArea(@PathVariable String spreadsheetId) {
-        this.spreadsheetService.pushToSharedArea(spreadsheetId);
+    @GetMapping("/spreadsheets/{spreadsheetId}/download")
+    public ResponseEntity<Resource> downloadSpreadsheet(@PathVariable String spreadsheetId) {
+        Resource data = this.spreadsheetService.downloadSpreadsheet(spreadsheetId);
+        return ResponseEntity.ok()
+            .contentType(MediaType.APPLICATION_OCTET_STREAM)
+            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + data.getFilename()  + ".xlsx")
+            .body(data);
     }
 
     @GetMapping("/calendars")

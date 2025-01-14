@@ -24,8 +24,8 @@ import java.time.format.DateTimeFormatter;
 @RequiredArgsConstructor
 @Slf4j
 public class GoogleSpreadsheetService implements SpreadsheetService {
-    @Value("${drive.shared-folder}")
-    private String sharedFolderId;
+    @Value("${admin.email}")
+    private String adminEmail;
 
     private final AuthHelper authHelper;
     private final GoogleHelper googleHelper;
@@ -58,11 +58,16 @@ public class GoogleSpreadsheetService implements SpreadsheetService {
     }
 
     @Override
-    public void pushToSharedArea(String spreadsheetId) {
+    public void shareWithAdmin(String spreadsheetId) {
         User user = authHelper.getSignedUser();
-        String copyName = user.getEmail() + " - " + LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME);
+        Spreadsheet spreadsheet = getSpreadsheetInfoBeyondUser(user, spreadsheetId);
+        String copyName = String.format(
+            "[Generated] - %s - %s",
+            LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME),
+            spreadsheet.getProperties().getTitle()
+        );
         File file = googleDriveService.makeCopy(user, spreadsheetId, copyName);
-        googleDriveService.moveToFolder(user, file, sharedFolderId);
+        googleDriveService.shareWithUser(user, adminEmail, file.getId());
     }
 
     private Spreadsheet getSpreadsheetInfoBeyondUser(User user, String spreadSheetId) {

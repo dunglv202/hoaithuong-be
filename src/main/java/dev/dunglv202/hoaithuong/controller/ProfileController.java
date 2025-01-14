@@ -52,8 +52,8 @@ public class ProfileController {
     }
 
     @PostMapping("/spreadsheets/{spreadsheetId}/share")
-    public void pushToSharedArea(@PathVariable String spreadsheetId) {
-        this.spreadsheetService.pushToSharedArea(spreadsheetId);
+    public void shareWithAdmin(@PathVariable String spreadsheetId) {
+        this.spreadsheetService.shareWithAdmin(spreadsheetId);
     }
 
     @GetMapping("/calendars")

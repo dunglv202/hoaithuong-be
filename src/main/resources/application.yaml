@@ -57,5 +57,5 @@ microsoft:
   client-id: ${MS_CLIENT_ID}
   client-secret: ${MS_CLIENT_SECRET}
   drive-id: ${MS_DRIVE_ID}
-drive:
-  shared-folder: ${SHARED_DRIVE_FOLDER}
+admin:
+  email: dunglv202@gmail.com

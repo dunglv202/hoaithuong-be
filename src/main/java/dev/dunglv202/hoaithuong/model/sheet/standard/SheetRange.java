@@ -29,6 +29,7 @@ public class SheetRange {
     }
 
     public void mergeWith(ValueRange oldValues) {
+        if (oldValues.getValues() == null) return;
         for (int i = 0; i < Math.min(this.rows.size(), oldValues.getValues().size()); i++) {
             rows.get(i).mergeWith(oldValues.getValues().get(i));
         }

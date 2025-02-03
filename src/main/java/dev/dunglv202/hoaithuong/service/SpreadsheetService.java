@@ -9,5 +9,5 @@ public interface SpreadsheetService {
 
     boolean isValidSheet(User user, SheetInfo sheet);
 
-    void shareWithAdmin(String spreadsheetId);
+    void pushToSharedArea(String spreadsheetId);
 }

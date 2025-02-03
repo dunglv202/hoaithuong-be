@@ -16,6 +16,10 @@ public class ScheduleCriteria {
         };
     }
 
+    public static Specification<Schedule> attachedToLecture() {
+        return (root, query, cb) -> cb.isNotNull(root.get(Schedule_.lecture));
+    }
+
     public static Specification<Schedule> ofTeacher(User teacher) {
         return (root, query, cb) -> cb.equal(root.get(Schedule_.teacher), teacher);
     }

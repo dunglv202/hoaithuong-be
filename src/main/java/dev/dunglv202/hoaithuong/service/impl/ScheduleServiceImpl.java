@@ -124,7 +124,12 @@ public class ScheduleServiceImpl implements ScheduleService {
     @Override
     @Transactional
     public void updateScheduleForClass(TutorClass tutorClass, LocalDate startDate, Set<TimeSlot> timeSlots) {
-        var oldSchedules = scheduleRepository.findAll(ofClass(tutorClass).and(inRange(SimpleRange.from(startDate))));
+        Specification<Schedule> criteria = Specification.allOf(
+            ofClass(tutorClass),
+            inRange(SimpleRange.from(startDate)),
+            Specification.not(attachedToLecture())
+        );
+        List<Schedule> oldSchedules = scheduleRepository.findAll(criteria);
         deleteSchedules(oldSchedules);
         tutorClass.setTimeSlots(new ArrayList<>(timeSlots));
         if (!timeSlots.isEmpty()) {

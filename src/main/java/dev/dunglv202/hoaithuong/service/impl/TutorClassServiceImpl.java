@@ -45,6 +45,7 @@ public class TutorClassServiceImpl implements TutorClassService {
     public void addNewClass(NewTutorClassDTO newTutorClassDTO) {
         User signedUser = authHelper.getSignedUserRef();
         TutorClass tutorClass = TutorClassMapper.INSTANCE.toTutorClass(newTutorClassDTO);
+        tutorClass.setCode(newTutorClassDTO.getCode().trim());
         tutorClass.setTeacher(signedUser);
 
         Student student = studentRepository.findById(newTutorClassDTO.getStudentId())

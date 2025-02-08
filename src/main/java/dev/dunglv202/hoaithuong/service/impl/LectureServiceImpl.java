@@ -37,6 +37,8 @@ import static dev.dunglv202.hoaithuong.model.criteria.LectureCriteria.*;
 @RequiredArgsConstructor
 @Slf4j
 public class LectureServiceImpl implements LectureService {
+    private static final String DEFAULT_LECTURE_COMMENT = "Con ngoan, tập trung, tích cực trong giờ học";
+
     private final TutorClassRepository tutorClassRepository;
     private final LectureRepository lectureRepository;
     private final ScheduleRepository scheduleRepository;
@@ -52,6 +54,7 @@ public class LectureServiceImpl implements LectureService {
     @Transactional
     public void addNewLecture(NewLectureDTO newLectureDTO) {
         Lecture lecture = LectureMapper.INSTANCE.toLecture(newLectureDTO);
+        lecture.setComment(DEFAULT_LECTURE_COMMENT);
 
         // set class & teacher code
         TutorClass tutorClass = tutorClassRepository.findByIdAndTeacher(

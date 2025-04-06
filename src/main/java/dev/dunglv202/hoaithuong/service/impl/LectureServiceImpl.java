@@ -64,13 +64,6 @@ public class LectureServiceImpl implements LectureService {
         lecture.setTutorClass(tutorClass);
         lecture.setTeacherCode(configService.getConfigsByUser(tutorClass.getTeacher()).getTeacherCode());
 
-        // update learned
-        int learned = tutorClass.getLearned() + 1;
-        if (learned > tutorClass.getTotalLecture()) {
-            throw new ClientVisibleException("{tutor_class.lecture.exceed}");
-        }
-        tutorClass.setLearned(learned);
-
         // set schedule for lecture
         Schedule schedule;
         if (newLectureDTO.getScheduleId() != null) {
@@ -88,6 +81,13 @@ public class LectureServiceImpl implements LectureService {
             );
         }
         lecture.setSchedule(schedule);
+
+        // update learned
+        int learned = tutorClass.getLearned() + 1;
+        if (learned > tutorClass.getTotalLecture()) {
+            throw new ClientVisibleException("{tutor_class.lecture.exceed}");
+        }
+        tutorClass.setLearned(learned);
 
         // set lecture no
         List<Lecture> lecturesAfterThis = lectureRepository.findAll(

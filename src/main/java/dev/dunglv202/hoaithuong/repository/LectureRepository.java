@@ -42,14 +42,6 @@ public interface LectureRepository extends LectureCustomRepository, JpaRepositor
 
     @Query("""
         FROM Lecture l
-        WHERE l.videoExpiryDate IS NOT NULL
-        AND l.videoExpiryDate < :date
-        AND l.videoLinkRevoked = FALSE
-    """)
-    List<Lecture> findAllForRevokingVideoUrl(LocalDate date);
-
-    @Query("""
-        FROM Lecture l
         WHERE l.tutorClass.code = :classCode AND l.lectureNo = :lectureNo
     """)
     Optional<Lecture> findByClassCodeAndLectureNo(

@@ -51,7 +51,7 @@ public class GoogleSheetConverter {
         } else {
             if (cell.getValue() != null && cell.getAttribute().isLink()) {
                 String formulaValue = String.format(
-                    "=HYPERLINK(\"%s\", \"%s\")",
+                    "=HYPERLINK(\"%s\"; \"%s\")",
                     cell.getAttribute().getHyperlink(),
                     cell.getValue()
                 );

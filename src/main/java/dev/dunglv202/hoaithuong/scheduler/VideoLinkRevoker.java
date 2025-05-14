@@ -28,6 +28,7 @@ public class VideoLinkRevoker {
         needRevoking.forEach(lecture -> {
             try {
                 videoStorageService.revokeSharableLink(lecture.getVideoId());
+                lecture.setVideoLinkRevoked(true);
             } catch (Exception e) {
                 log.error(
                     "Could not revoke shared url for lecture #{}, item #{}",
@@ -35,5 +36,6 @@ public class VideoLinkRevoker {
                 );
             }
         });
+        lectureRepository.saveAll(needRevoking);
     }
 }

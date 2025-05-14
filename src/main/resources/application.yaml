@@ -39,7 +39,7 @@ cron:
   schedule:
     export-report: 0 0 16 * * *
     sync-video: 0 30 16 * * *
-    revoke-video-url: 0 30 17 * * *
+
 server:
   compression:
     enabled: true

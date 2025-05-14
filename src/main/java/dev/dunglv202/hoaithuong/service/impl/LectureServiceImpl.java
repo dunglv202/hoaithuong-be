@@ -23,8 +23,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 
@@ -153,7 +151,6 @@ public class LectureServiceImpl implements LectureService {
         if (updatedLecture.getVideo() != null && !updatedLecture.getVideo().equals(lecture.getVideo())) {
             // preview become unavailable after video modification
             lecture.setVideoId(null);
-            lecture.setVideoExpiryDate(null);
         }
 
         lectureRepository.save(lecture.merge(updatedLecture));
@@ -181,13 +178,7 @@ public class LectureServiceImpl implements LectureService {
                 Optional<DriveItem> video = videoStorageService.findLectureVideo(lecture, config.getVideoSource());
                 if (video.isPresent()) {
                     // get & set video for lecture
-                    LocalDate paymentDate = lecture.getStartTime().plusMonths(1).withDayOfMonth(20).toLocalDate();
-                    lecture.setVideo(videoStorageService.createSharableLink(
-                        video.get(),
-                        OffsetDateTime.of(paymentDate.atStartOfDay(), ZoneOffset.ofHours(7))
-                    ));
                     lecture.setVideoId(video.get().getId());
-                    lecture.setVideoExpiryDate(paymentDate);
                     lectureRepository.save(lecture);
 
                     // move video folder to processed area

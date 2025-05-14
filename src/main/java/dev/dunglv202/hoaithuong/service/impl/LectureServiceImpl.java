@@ -155,6 +155,7 @@ public class LectureServiceImpl implements LectureService {
         if (updatedLecture.getVideo() != null && !updatedLecture.getVideo().equals(lecture.getVideo())) {
             // preview become unavailable after video modification
             lecture.setVideoId(null);
+            lecture.setVideoExpiryDate(null);
         }
 
         lectureRepository.save(lecture.merge(updatedLecture));

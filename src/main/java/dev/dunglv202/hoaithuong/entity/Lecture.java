@@ -8,6 +8,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import org.springframework.lang.Nullable;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -32,6 +33,7 @@ public class Lecture extends Auditable {
 
     private String videoId;
 
+    @Nullable
     private LocalDate videoExpiryDate;
 
     private boolean videoLinkRevoked;

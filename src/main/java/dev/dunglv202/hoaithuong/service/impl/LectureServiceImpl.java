@@ -241,8 +241,11 @@ public class LectureServiceImpl implements LectureService {
     public LectureVideoDTO getLectureVideo(String classCode, int lectureNo) {
         Lecture lecture = lectureRepository.findByClassCodeAndLectureNo(classCode, lectureNo)
             .orElseThrow(() -> new ClientVisibleException(HttpStatus.NOT_FOUND, "404", "Invalid lecture"));
+        String url = lecture.getVideoId() != null
+            ? videoStorageService.createPreviewLink(lecture.getVideoId())
+            : lecture.getVideo();
         return LectureVideoDTO.builder()
-            .url(lecture.getVideo())
+            .url(url)
             .isIframe(lecture.getVideoId() != null)
             .build();
     }

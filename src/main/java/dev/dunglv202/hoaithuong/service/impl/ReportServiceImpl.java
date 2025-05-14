@@ -36,6 +36,7 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -82,7 +83,7 @@ public class ReportServiceImpl implements ReportService {
             confirmations = confirmationRepository.findAllByReport(report.get());
         }
 
-        ReportDTO reportDTO = new ReportDTO(lectures, confirmations);
+        ReportDTO reportDTO = new ReportDTO(lectures, confirmations, this::getLectureVideoUrl);
         int estimatedTotal = scheduleRepository.getEstimatedTotalInRange(teacher, range.getFrom(), range.getTo());
         reportDTO.setEstimatedTotal(estimatedTotal);
         report.ifPresent(value -> reportDTO.setEvidenceUrl(value.getConfirmationsUrl()));
@@ -449,8 +450,10 @@ public class ReportServiceImpl implements ReportService {
 
             SheetCell video = row.addCell();
             String videoUrl = getLectureVideoUrl(lecture);
-            video.setValue("Link");
-            video.getAttribute().setHyperlink(videoUrl);
+            if (videoUrl != null) {
+                video.setValue("Link");
+                video.getAttribute().setHyperlink(videoUrl);
+            }
 
             // add approved earning column
             row.addCell();
@@ -462,7 +465,11 @@ public class ReportServiceImpl implements ReportService {
         return range;
     }
 
+    @Nullable
     private String getLectureVideoUrl(Lecture lecture) {
+        if (lecture.getVideo() == null && lecture.getVideoId() == null) {
+            return null;
+        }
         return String.format(
             "%s/video?classCode=%s&lecture=%d",
             baseUrl,

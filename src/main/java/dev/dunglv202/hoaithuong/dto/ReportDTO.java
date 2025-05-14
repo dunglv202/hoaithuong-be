@@ -12,6 +12,7 @@ import lombok.Setter;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Getter
@@ -24,7 +25,7 @@ public class ReportDTO {
     private int totalStudents;
     private List<StudentInReportDTO> students;
 
-    public ReportDTO(List<Lecture> lectures, List<Confirmation> confirmations) {
+    public ReportDTO(List<Lecture> lectures, List<Confirmation> confirmations, Function<Lecture, String> videoGetter) {
         // aggregate report figures
         this.totalEarned = lectures.stream()
             .map(Lecture::getTutorClass)
@@ -46,7 +47,11 @@ public class ReportDTO {
                 StudentInReportDTO student = StudentMapper.INSTANCE.toStudentInReportDTO(entry.getKey());
 
                 List<LectureInReportDTO> studentLectures = entry.getValue().stream()
-                    .map(LectureMapper.INSTANCE::toLectureInReportDTO).toList();
+                    .map(lec -> {
+                        LectureInReportDTO dto = LectureMapper.INSTANCE.toLectureInReportDTO(lec);
+                        dto.setVideo(videoGetter.apply(lec));
+                        return dto;
+                    }).toList();
                 student.setLectures(studentLectures);
 
                 Optional<Confirmation> confirmation = confirmations.stream()

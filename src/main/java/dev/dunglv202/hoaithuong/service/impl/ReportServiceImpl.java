@@ -31,6 +31,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Sort;
@@ -61,6 +62,9 @@ public class ReportServiceImpl implements ReportService {
     private final StudentRepository studentRepository;
     private final ConfirmationRepository confirmationRepository;
     private final StorageService storageService;
+
+    @Value("${application.base-url}")
+    private String baseUrl;
 
     @Override
     public ReportDTO getReport(ReportRange range) {
@@ -444,7 +448,9 @@ public class ReportServiceImpl implements ReportService {
             paid.setValue((double) lecture.getTutorClass().getPayForLecture() / 1000);
 
             SheetCell video = row.addCell();
-            video.setValue(lecture.getVideo()).getAttribute().setLink(true);
+            String videoUrl = getLectureVideoUrl(lecture);
+            video.setValue("Link");
+            video.getAttribute().setHyperlink(videoUrl);
 
             // add approved earning column
             row.addCell();
@@ -454,6 +460,15 @@ public class ReportServiceImpl implements ReportService {
         }
 
         return range;
+    }
+
+    private String getLectureVideoUrl(Lecture lecture) {
+        return String.format(
+            "%s/video?classCode=%s&lecture=%d",
+            baseUrl,
+            lecture.getTutorClass().getCode(),
+            lecture.getLectureNo()
+        );
     }
 
     private Workbook generateReportFile(ReportRange range) {

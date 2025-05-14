@@ -1,3 +1,5 @@
+application:
+  base-url: https://dunglv202.site
 spring:
   application:
     name: Hoai Thuong

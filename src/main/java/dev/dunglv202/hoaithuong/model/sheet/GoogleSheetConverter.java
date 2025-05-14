@@ -50,7 +50,12 @@ public class GoogleSheetConverter {
             value.setNumberValue(Double.parseDouble(cell.getValue().toString()));
         } else {
             if (cell.getValue() != null && cell.getAttribute().isLink()) {
-                value.setFormulaValue(String.format("=HYPERLINK(\"%s\")", cell.getValue()));
+                String formulaValue = String.format(
+                    "=HYPERLINK(\"%s\", \"%s\")",
+                    cell.getAttribute().getHyperlink(),
+                    cell.getValue()
+                );
+                value.setFormulaValue(formulaValue);
             } else {
                 value.setStringValue(cell.getValue() != null ? cell.getValue().toString() : null);
             }

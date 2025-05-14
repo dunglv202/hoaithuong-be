@@ -10,5 +10,9 @@ import lombok.experimental.Accessors;
 public class SheetCellAttribute {
     private Integer colspan;
     private Integer rowspan;
-    private boolean isLink;
+    private String hyperlink;
+
+    public boolean isLink() {
+        return hyperlink != null;
+    }
 }

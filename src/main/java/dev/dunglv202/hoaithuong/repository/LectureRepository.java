@@ -39,4 +39,11 @@ public interface LectureRepository extends LectureCustomRepository, JpaRepositor
         AND l.video IS NULL
     """)
     List<Lecture> findAllNoVideoInRangeByTeacher(@Param("teacher") User teacher, @Param("range") Range<LocalDate> range);
+
+    @Query("""
+        FROM Lecture l
+        WHERE l.videoExpiryDate < :date
+        AND l.videoLinkRevoked = FALSE
+    """)
+    List<Lecture> findAllForRevokingVideoUrl(LocalDate date);
 }

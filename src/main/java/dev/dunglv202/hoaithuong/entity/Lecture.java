@@ -9,6 +9,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -30,6 +31,10 @@ public class Lecture extends Auditable {
     private String video;
 
     private String videoId;
+
+    private LocalDate videoExpiryDate;
+
+    private boolean videoLinkRevoked;
 
     private String comment;
 

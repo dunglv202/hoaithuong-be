@@ -14,6 +14,9 @@ public interface VideoStorageService {
 
     String createSharableLink(DriveItem item, OffsetDateTime expiration);
 
+    /**
+     * @throws RuntimeException Exception while trying to revoke url
+     */
     void revokeSharableLink(String itemId);
 
     String createPreviewLink(String itemId);

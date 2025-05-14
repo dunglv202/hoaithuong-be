@@ -1,9 +1,6 @@
 package dev.dunglv202.hoaithuong.controller;
 
-import dev.dunglv202.hoaithuong.dto.LectureDTO;
-import dev.dunglv202.hoaithuong.dto.LectureDetails;
-import dev.dunglv202.hoaithuong.dto.NewLectureDTO;
-import dev.dunglv202.hoaithuong.dto.UpdatedLecture;
+import dev.dunglv202.hoaithuong.dto.*;
 import dev.dunglv202.hoaithuong.model.ReportRange;
 import dev.dunglv202.hoaithuong.service.LectureService;
 import jakarta.validation.Valid;
@@ -61,5 +58,13 @@ public class LectureController {
     @PreAuthorize("isAuthenticated()")
     public void deleteLecture(@PathVariable long id) {
         lectureService.deleteLecture(id);
+    }
+
+    @GetMapping("/video")
+    public LectureVideoDTO getLectureVideo(
+        @RequestParam String classCode,
+        @RequestParam int lectureNo
+    ) {
+        return lectureService.getLectureVideo(classCode, lectureNo);
     }
 }

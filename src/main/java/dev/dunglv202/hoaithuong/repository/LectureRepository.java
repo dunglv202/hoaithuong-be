@@ -47,4 +47,13 @@ public interface LectureRepository extends LectureCustomRepository, JpaRepositor
         AND l.videoLinkRevoked = FALSE
     """)
     List<Lecture> findAllForRevokingVideoUrl(LocalDate date);
+
+    @Query("""
+        FROM Lecture l
+        WHERE l.tutorClass.code = :classCode AND l.lectureNo = :lectureNo
+    """)
+    Optional<Lecture> findByClassCodeAndLectureNo(
+        @Param("classCode") String classCode,
+        @Param("lectureNo") int lectureNo
+    );
 }

@@ -1,10 +1,7 @@
 package dev.dunglv202.hoaithuong.service.impl;
 
 import com.microsoft.graph.models.DriveItem;
-import dev.dunglv202.hoaithuong.dto.LectureDTO;
-import dev.dunglv202.hoaithuong.dto.LectureDetails;
-import dev.dunglv202.hoaithuong.dto.NewLectureDTO;
-import dev.dunglv202.hoaithuong.dto.UpdatedLecture;
+import dev.dunglv202.hoaithuong.dto.*;
 import dev.dunglv202.hoaithuong.entity.*;
 import dev.dunglv202.hoaithuong.exception.ClientVisibleException;
 import dev.dunglv202.hoaithuong.helper.AuthHelper;
@@ -21,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -237,5 +235,15 @@ public class LectureServiceImpl implements LectureService {
             .orElseThrow(() -> new ClientVisibleException("{lecture.not_found}"));
         if (lecture.getVideoId() == null) return null;
         return videoStorageService.createPreviewLink(lecture.getVideoId());
+    }
+
+    @Override
+    public LectureVideoDTO getLectureVideo(String classCode, int lectureNo) {
+        Lecture lecture = lectureRepository.findByClassCodeAndLectureNo(classCode, lectureNo)
+            .orElseThrow(() -> new ClientVisibleException(HttpStatus.NOT_FOUND, "404", "Invalid lecture"));
+        return LectureVideoDTO.builder()
+            .url(lecture.getVideo())
+            .isIframe(lecture.getVideoId() != null)
+            .build();
     }
 }

@@ -1,9 +1,6 @@
 package dev.dunglv202.hoaithuong.service;
 
-import dev.dunglv202.hoaithuong.dto.LectureDTO;
-import dev.dunglv202.hoaithuong.dto.LectureDetails;
-import dev.dunglv202.hoaithuong.dto.NewLectureDTO;
-import dev.dunglv202.hoaithuong.dto.UpdatedLecture;
+import dev.dunglv202.hoaithuong.dto.*;
 import dev.dunglv202.hoaithuong.entity.User;
 import dev.dunglv202.hoaithuong.model.Range;
 import dev.dunglv202.hoaithuong.model.ReportRange;
@@ -28,4 +25,6 @@ public interface LectureService {
     LectureDetails getLectureDetails(long id);
 
     String getVideoPreview(long id);
+
+    LectureVideoDTO getLectureVideo(String classCode, int lectureNo);
 }

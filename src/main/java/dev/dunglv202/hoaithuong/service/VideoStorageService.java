@@ -14,6 +14,8 @@ public interface VideoStorageService {
 
     String createSharableLink(DriveItem item, OffsetDateTime expiration);
 
+    void revokeSharableLink(String itemId);
+
     String createPreviewLink(String itemId);
 
     void moveToFolder(DriveItem item, String targetFolder);

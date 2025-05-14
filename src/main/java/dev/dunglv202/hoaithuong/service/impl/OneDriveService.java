@@ -19,6 +19,7 @@ import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
+import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -57,6 +58,33 @@ public class OneDriveService implements VideoStorageService {
 
         return Optional.ofNullable(permission).map(Permission::getLink).map(SharingLink::getWebUrl)
             .orElseThrow(() -> new RuntimeException("Could not create sharable link for item: " + item.getId()));
+    }
+
+    @Override
+    public void revokeSharableLink(String itemId) {
+        PermissionCollectionResponse permissionCollection = getGraphClient().drives().byDriveId(microsoftProperties.getDriveId())
+            .items().byDriveItemId(itemId)
+            .permissions()
+            .get();
+
+        if (permissionCollection == null || permissionCollection.getValue() == null) {
+            throw new RuntimeException("Could not retrieve permissions for item #" + itemId);
+        }
+
+        Predicate<Permission> sharedToAnonymous = p -> "anonymous".equals(Optional.ofNullable(p.getLink()).map(SharingLink::getScope).orElse(null));
+        Optional<Permission> anonymousSharedPermission = permissionCollection.getValue().stream()
+            .filter(sharedToAnonymous)
+            .findFirst();
+
+        if (anonymousSharedPermission.isEmpty() || anonymousSharedPermission.get().getId() == null) {
+            throw new RuntimeException("Item has not been shared yet: #" + itemId);
+        }
+
+        // revoke permission
+        getGraphClient().drives().byDriveId(microsoftProperties.getDriveId())
+            .items().byDriveItemId(itemId)
+            .permissions().byPermissionId(anonymousSharedPermission.get().getId())
+            .delete();
     }
 
     @Override

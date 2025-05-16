@@ -36,7 +36,7 @@ public interface LectureRepository extends LectureCustomRepository, JpaRepositor
         WHERE l.teacher = :teacher
         AND (:#{#range.from} IS NULL OR DATE(l.schedule.startTime) >= :#{#range.from})
         AND (:#{#range.to} IS NULL OR DATE(l.schedule.startTime) <= :#{#range.to})
-        AND l.video IS NULL
+        AND l.videoId IS NULL AND l.video IS NULL
     """)
     List<Lecture> findAllNoVideoInRangeByTeacher(@Param("teacher") User teacher, @Param("range") Range<LocalDate> range);
 

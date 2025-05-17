@@ -71,7 +71,7 @@ public class GoogleHelper {
 
     public Drive getDriveService(User user) {
         Credential credential = getCredential(user);
-        return new Drive.Builder(HTTP_TRANSPORT, JSON_FACTORY, credential)
+        return new Drive.Builder(HTTP_TRANSPORT, JSON_FACTORY, longerRequestTimeout(credential))
             .setApplicationName(applicationName)
             .build();
     }

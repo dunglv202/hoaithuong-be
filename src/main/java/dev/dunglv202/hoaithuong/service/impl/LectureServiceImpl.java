@@ -131,7 +131,7 @@ public class LectureServiceImpl implements LectureService {
     }
 
     private void syncLectureVideoAsync(Lecture lecture) {
-        new Thread(() -> this.syncLectureVideo(lecture)).start();
+        taskExecutor.execute(() -> this.syncLectureVideo(lecture));
     }
 
     private Lecture instantiateNewLecture(NewLectureDTO newLectureDTO) {

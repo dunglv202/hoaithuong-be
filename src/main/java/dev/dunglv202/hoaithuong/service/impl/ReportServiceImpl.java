@@ -37,6 +37,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.lang.Nullable;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -63,6 +64,7 @@ public class ReportServiceImpl implements ReportService {
     private final StudentRepository studentRepository;
     private final ConfirmationRepository confirmationRepository;
     private final StorageService storageService;
+    private final ThreadPoolTaskExecutor taskExecutor;
 
     @Value("${application.base-url}")
     private String baseUrl;
@@ -204,9 +206,7 @@ public class ReportServiceImpl implements ReportService {
 
         // remove from drive & storage
         driveService.deleteFile(teacher, confirmation.getFileId());
-        new Thread(() -> {
-            storageService.deleteFile(confirmation.getUrl());
-        }).start();
+        taskExecutor.execute(() -> storageService.deleteFile(confirmation.getUrl()));
 
         confirmationRepository.delete(confirmation);
     }

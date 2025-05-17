@@ -1,6 +1,7 @@
 package dev.dunglv202.hoaithuong.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import dev.dunglv202.hoaithuong.validator.WebURL;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -23,6 +24,7 @@ public class NewLectureDTO {
     private String topic;
 
     @Length(max = 512, message = "{lecture.video.url.length}")
+    @WebURL
     private String video;
 
     @Length(max = 256, message = "{lecture.comment.length}")

@@ -21,6 +21,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -44,20 +45,16 @@ public class LectureServiceImpl implements LectureService {
     private final ReportService reportService;
     private final VideoStorageService videoStorageService;
     private final TaskExecutor taskExecutor;
+    private final TransactionTemplate transactionTemplate;
 
     @Override
     @Transactional
     public void addNewLecture(NewLectureDTO newLectureDTO) {
-        Lecture lecture = LectureMapper.INSTANCE.toLecture(newLectureDTO);
-        lecture.setComment(DEFAULT_LECTURE_COMMENT);
-
-        // set class & teacher code
         TutorClass tutorClass = tutorClassRepository.findByIdAndTeacher(
             newLectureDTO.getClassId(),
             authHelper.getSignedUserRef()
         ).orElseThrow();
-        lecture.setTutorClass(tutorClass);
-        lecture.setTeacherCode(configService.getConfigsByUser(tutorClass.getTeacher()).getTeacherCode());
+        Lecture lecture = instantiateNewLecture(newLectureDTO);
 
         // set schedule for lecture
         Schedule schedule;
@@ -129,6 +126,24 @@ public class LectureServiceImpl implements LectureService {
 
         lectureRepository.save(lecture);
         tutorClassRepository.save(tutorClass);
+
+        syncLectureVideoAsync(lecture);
+    }
+
+    private void syncLectureVideoAsync(Lecture lecture) {
+        new Thread(() -> this.syncLectureVideo(lecture)).start();
+    }
+
+    private Lecture instantiateNewLecture(NewLectureDTO newLectureDTO) {
+        Lecture lecture = LectureMapper.INSTANCE.toLecture(newLectureDTO);
+        lecture.setComment(DEFAULT_LECTURE_COMMENT);
+
+        // set class & teacher code
+        TutorClass tutorClass = tutorClassRepository.getReferenceById(newLectureDTO.getClassId());
+        lecture.setTutorClass(tutorClass);
+        lecture.setTeacherCode(configService.getConfigsByUser(tutorClass.getTeacher()).getTeacherCode());
+
+        return lecture;
     }
 
     @Override
@@ -171,15 +186,20 @@ public class LectureServiceImpl implements LectureService {
     public void syncLectureVideos(User teacher, Range<LocalDate> range) {
         List<Lecture> lectures = lectureRepository.findAllNoVideoInRangeByTeacher(teacher, range);
         if (lectures.isEmpty()) return;
+        lectures.forEach(this::syncLectureVideo);
+    }
 
-        Configuration config = configService.getConfigsByUser(teacher);
-        lectures.forEach(lecture -> {
+    private void syncLectureVideo(Lecture lecture) {
+        transactionTemplate.executeWithoutResult((status) -> {
             try {
+                Configuration config = configService.getConfigsByUser(lecture.getTeacher());
                 Optional<DriveItem> video = videoStorageService.findLectureVideo(lecture, config.getVideoSource());
                 if (video.isPresent()) {
                     // get & set video for lecture
                     lecture.setVideoId(video.get().getId());
                     lectureRepository.save(lecture);
+
+                    log.info("Video synced for lecture {}", lecture);
 
                     // move video folder to processed area
                     assert video.get().getParentReference() != null;
@@ -190,6 +210,7 @@ public class LectureServiceImpl implements LectureService {
                     log.info("No video found for lecture {}", lecture);
                 }
             } catch (Exception e) {
+                status.setRollbackOnly();
                 log.error("Error occurred while syncing lecture video - lecture: {}", lecture, e);
             }
         });

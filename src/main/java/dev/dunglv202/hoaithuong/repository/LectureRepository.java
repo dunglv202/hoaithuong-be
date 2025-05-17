@@ -33,6 +33,7 @@ public interface LectureRepository extends LectureCustomRepository, JpaRepositor
     @Query("""
         FROM Lecture l
         JOIN FETCH l.schedule
+        JOIN FETCH l.teacher
         WHERE l.teacher = :teacher
         AND (:#{#range.from} IS NULL OR DATE(l.schedule.startTime) >= :#{#range.from})
         AND (:#{#range.to} IS NULL OR DATE(l.schedule.startTime) <= :#{#range.to})

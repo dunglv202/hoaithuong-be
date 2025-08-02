@@ -71,11 +71,13 @@ public class ReportServiceImpl implements ReportService {
     private String baseUrl;
 
     @Override
-    public ReportDTO getReport(ReportRange range) {
+    public ReportDTO getReport(ReportRange range, TutorClassType classType, String keyword) {
         User teacher = authHelper.getSignedUserRef();
         Specification<Lecture> criteria = Specification.allOf(
             ofTeacher(teacher),
             inRange(range),
+            ofClassType(classType),
+            matchesKeyword(keyword),
             sortByStartTime(Sort.Direction.DESC)
         );
 

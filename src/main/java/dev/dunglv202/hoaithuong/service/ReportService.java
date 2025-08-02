@@ -1,5 +1,6 @@
 package dev.dunglv202.hoaithuong.service;
 
+import dev.dunglv202.hoaithuong.constant.TutorClassType;
 import dev.dunglv202.hoaithuong.dto.ConfirmationDTO;
 import dev.dunglv202.hoaithuong.dto.ReportDTO;
 import dev.dunglv202.hoaithuong.entity.User;
@@ -9,7 +10,7 @@ import org.springframework.core.io.Resource;
 public interface ReportService {
     Resource downloadXlsx(ReportRange range);
 
-    ReportDTO getReport(ReportRange range);
+    ReportDTO getReport(ReportRange range, TutorClassType classType, String keyword);
 
     void exportGoogleSheet(ReportRange range);
 

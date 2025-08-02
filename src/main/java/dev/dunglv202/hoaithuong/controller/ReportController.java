@@ -1,5 +1,6 @@
 package dev.dunglv202.hoaithuong.controller;
 
+import dev.dunglv202.hoaithuong.constant.TutorClassType;
 import dev.dunglv202.hoaithuong.dto.ConfirmationDTO;
 import dev.dunglv202.hoaithuong.dto.ReportDTO;
 import dev.dunglv202.hoaithuong.model.ReportRange;
@@ -21,8 +22,8 @@ public class ReportController {
 
     @GetMapping
     @PreAuthorize("isAuthenticated()")
-    public ReportDTO getReport(@Valid ReportRange range) {
-        return reportService.getReport(range);
+    public ReportDTO getReport(@Valid ReportRange range, TutorClassType classType, String keyword) {
+        return reportService.getReport(range, classType, keyword);
     }
 
     @GetMapping("/download")

@@ -51,7 +51,16 @@ public class LectureCriteria {
     }
 
     public static Specification<Lecture> ofClassType(TutorClassType type) {
+        if (type == null) return Specification.where(null);
         return (root, query, cb) -> cb.equal(root.get(Lecture_.tutorClass).get(TutorClass_.type), type);
+    }
+
+    public static Specification<Lecture> matchesKeyword(String keyword) {
+        if (keyword == null || keyword.trim().isEmpty()) return Specification.where(null);
+        return (root, query, cb) -> cb.or(
+            cb.like(root.get(Lecture_.tutorClass).get(TutorClass_.code), keyword + "%"),
+            cb.like(root.get(Lecture_.tutorClass).get(TutorClass_.student).get(Student_.name), "%" + keyword + "%")
+        );
     }
 
     public static Specification<Lecture> sortByStartTime(Sort.Direction direction) {

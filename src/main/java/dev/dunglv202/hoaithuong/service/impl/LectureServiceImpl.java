@@ -74,55 +74,57 @@ public class LectureServiceImpl implements LectureService {
         }
         lecture.setSchedule(schedule);
 
-        // update learned
-        int learned = tutorClass.getLearned() + 1;
-        if (learned > tutorClass.getTotalLecture()) {
-            throw new ClientVisibleException("{tutor_class.lecture.exceed}");
-        }
-        tutorClass.setLearned(learned);
+        if (tutorClass.isInternal()) {
+            // update learned
+            int learned = tutorClass.getLearned() + 1;
+            if (learned > tutorClass.getTotalLecture()) {
+                throw new ClientVisibleException("{tutor_class.lecture.exceed}");
+            }
+            tutorClass.setLearned(learned);
 
-        // set lecture no
-        List<Lecture> lecturesAfterThis = lectureRepository.findAll(
-            LectureCriteria.ofClass(lecture.getTutorClass()).and(from(lecture.getStartTime())),
-            Sort.by(Sort.Direction.ASC, Lecture_.LECTURE_NO)
-        );
-        if (lecturesAfterThis.isEmpty()) {
-            lecture.setLectureNo(learned);
-        } else {
-            // update lecture no for ones after this lecture
-            lecture.setLectureNo(lecturesAfterThis.get(0).getLectureNo());
-            lecturesAfterThis.forEach(lec -> lec.setLectureNo(lec.getLectureNo() + 1));
-            lectureRepository.saveAll(lecturesAfterThis);
-        }
+            // set lecture no
+            List<Lecture> lecturesAfterThis = lectureRepository.findAll(
+                LectureCriteria.ofClass(lecture.getTutorClass()).and(from(lecture.getStartTime())),
+                Sort.by(Sort.Direction.ASC, Lecture_.LECTURE_NO)
+            );
+            if (lecturesAfterThis.isEmpty()) {
+                lecture.setLectureNo(learned);
+            } else {
+                // update lecture no for ones after this lecture
+                lecture.setLectureNo(lecturesAfterThis.get(0).getLectureNo());
+                lecturesAfterThis.forEach(lec -> lec.setLectureNo(lec.getLectureNo() + 1));
+                lectureRepository.saveAll(lecturesAfterThis);
+            }
 
-        // send alert notification
-        if (tutorClass.getLearned() == 18 || tutorClass.getLearned() == 8) {
-            String noti = String.format(
-                "Your class: %s has reached lecture of %d/%d",
-                tutorClass.getName(),
-                tutorClass.getLearned(),
-                tutorClass.getTotalLecture()
-            );
-            notificationService.addNotification(
-                Notification.forUser(tutorClass.getTeacher()).content(noti)
-            );
-        }
-        if (tutorClass.getLearned() == tutorClass.getTotalLecture()) {
-            String noti = String.format(
-                "%s has just reached its last lecture. Do you want to renew this class?",
-                tutorClass.getName()
-            );
-            notificationService.addNotification(
-                Notification.forUser(tutorClass.getTeacher()).content(noti)
-            );
-        }
+            // send alert notification
+            if (tutorClass.getLearned() == 18 || tutorClass.getLearned() == 8) {
+                String noti = String.format(
+                    "Your class: %s has reached lecture of %d/%d",
+                    tutorClass.getName(),
+                    tutorClass.getLearned(),
+                    tutorClass.getTotalLecture()
+                );
+                notificationService.addNotification(
+                    Notification.forUser(tutorClass.getTeacher()).content(noti)
+                );
+            }
+            if (tutorClass.getLearned() == tutorClass.getTotalLecture()) {
+                String noti = String.format(
+                    "%s has just reached its last lecture. Do you want to renew this class?",
+                    tutorClass.getName()
+                );
+                notificationService.addNotification(
+                    Notification.forUser(tutorClass.getTeacher()).content(noti)
+                );
+            }
 
-        // trigger create report for first lecture of month
-        reportService.createIfNotExist(
-            authHelper.getSignedUserRef(),
-            schedule.getStartTime().getYear(),
-            schedule.getStartTime().getMonth().getValue()
-        );
+            // trigger create report for first lecture of month
+            reportService.createIfNotExist(
+                authHelper.getSignedUserRef(),
+                schedule.getStartTime().getYear(),
+                schedule.getStartTime().getMonth().getValue()
+            );
+        }
 
         lectureRepository.save(lecture);
         tutorClassRepository.save(tutorClass);
@@ -230,7 +232,7 @@ public class LectureServiceImpl implements LectureService {
         tutorClass.setLearned(tutorClass.getLearned() - 1);
         tutorClassRepository.save(tutorClass);
 
-        // delete attached schedule then create new one for class
+        // delete attached schedule then create new one for class if needed
         scheduleService.deleteSchedule(lecture.getSchedule().getId());
     }
 

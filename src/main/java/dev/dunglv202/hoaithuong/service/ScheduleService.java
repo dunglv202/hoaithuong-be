@@ -18,7 +18,7 @@ public interface ScheduleService {
     List<MinimalScheduleDTO> getSchedules(Range<LocalDate> range);
 
     /**
-     * Delete schedule of signed user then create new one after the last schedule for tutor class
+     * Delete schedule of signed user then create new one after the last schedule for tutor class if needed
      */
     void deleteSchedule(Long id);
 
@@ -44,4 +44,6 @@ public interface ScheduleService {
     void deleteSchedules(List<Schedule> schedules);
 
     void syncToNewCalendarAsync(User signedUser);
+
+    void addSchedulesExternalClass(TutorClass tutorClass, LocalDate startDate, LocalDate endDate);
 }

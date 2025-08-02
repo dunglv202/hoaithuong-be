@@ -25,18 +25,19 @@ public class GoogleDriveService {
      * @return Created folder ID
      */
     public String createDriveFolder(User user, String name) {
-        Drive driveService = googleHelper.getDriveService(user);
-
-        File folder = new File();
-        folder.setName(name);
-        folder.setMimeType("application/vnd.google-apps.folder");
-        Permission permission = new Permission();
-        permission.setType("anyone");
-        permission.setRole("reader");
-
         try {
+            Drive driveService = googleHelper.getDriveService(user);
+
+            File folder = new File();
+            folder.setName(name);
+            folder.setMimeType("application/vnd.google-apps.folder");
+            Permission permission = new Permission();
+            permission.setType("anyone");
+            permission.setRole("reader");
+
             File createdFolder = driveService.files().create(folder).setFields("id").execute();
             driveService.permissions().create(createdFolder.getId(), permission).execute();
+
             return createdFolder.getId();
         } catch (IOException e) {
             log.error("Could not create drive folder for {}", user.getUsername(), e);
@@ -74,8 +75,8 @@ public class GoogleDriveService {
     }
 
     public File makeCopy(User user, String fileId, String name) {
-        Drive driveService = googleHelper.getDriveService(user);
         try {
+            Drive driveService = googleHelper.getDriveService(user);
             return driveService.files().copy(fileId, new File().setName(name)).execute();
         } catch (IOException e) {
             log.error("Could not make copy for {} - {}", fileId, user.getUsername(), e);
@@ -84,8 +85,9 @@ public class GoogleDriveService {
     }
 
     public void moveToFolder(User user, File file, String folderId) {
-        Drive driveService = googleHelper.getDriveService(user);
         try {
+            Drive driveService = googleHelper.getDriveService(user);
+
             // Retrieve the existing parents to remove
             File updatingFile = driveService.files().get(file.getId())
                 .setFields("parents")

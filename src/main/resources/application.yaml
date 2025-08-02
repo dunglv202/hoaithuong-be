@@ -41,6 +41,7 @@ cron:
   schedule:
     export-report: 0 0 16 * * *
     sync-video: 0 30 16 * * *
+    generate-external-schedules: 0 0 0 1 * *
 
 server:
   compression:

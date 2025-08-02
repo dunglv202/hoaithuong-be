@@ -1,8 +1,8 @@
 package dev.dunglv202.hoaithuong.dto;
 
+import dev.dunglv202.hoaithuong.constant.TutorClassType;
 import dev.dunglv202.hoaithuong.model.TimeSlot;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
@@ -19,13 +19,14 @@ import static dev.dunglv202.hoaithuong.constant.Configuration.DEFAULT_PAY_FOR_LE
 @Getter
 @Setter
 public class NewTutorClassDTO {
-    @NotBlank(message = "{tutor_class.code.not_blank}")
+    @NotNull(message = "{tutor_class.type.required}")
+    private TutorClassType type;
+
     private String code;
 
     @NotNull(message = "{tutor_class.student.required}")
     private Long studentId;
 
-    @NotNull(message = "{tutor_class.level.required}")
     private String level;
 
     @Positive(message = "{tutor_class.total_lecture.positive}")

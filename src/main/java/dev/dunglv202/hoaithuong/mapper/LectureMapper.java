@@ -23,6 +23,7 @@ public interface LectureMapper {
     @Mapping(target = "id", ignore = true)
     void mergeLecture(@MappingTarget Lecture old, UpdatedLecture updated);
 
+    @Mapping(target = "type", source = "tutorClass.type")
     @Mapping(target = "classCode", source = "tutorClass.code")
     @Mapping(target = "totalLecture", source = "tutorClass.totalLecture")
     @Mapping(target = "student", source = "tutorClass.student.name")

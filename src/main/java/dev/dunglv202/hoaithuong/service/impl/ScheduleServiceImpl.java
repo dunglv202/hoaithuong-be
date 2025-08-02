@@ -28,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.YearMonth;
 import java.util.*;
 
 import static dev.dunglv202.hoaithuong.model.criteria.ScheduleCriteria.*;
@@ -132,8 +133,13 @@ public class ScheduleServiceImpl implements ScheduleService {
         List<Schedule> oldSchedules = scheduleRepository.findAll(criteria);
         deleteSchedules(oldSchedules);
         tutorClass.setTimeSlots(new ArrayList<>(timeSlots));
-        if (!timeSlots.isEmpty()) {
+        if (!tutorClass.isManuallyScheduled()) {
             addSchedulesForClass(tutorClass, startDate);
+        }
+
+        if (tutorClass.isExternal()) {
+            LocalDate endDate = YearMonth.from(startDate).plusMonths(3).atEndOfMonth();
+            addSchedulesExternalClass(tutorClass, startDate, endDate);
         }
     }
 
@@ -197,6 +203,16 @@ public class ScheduleServiceImpl implements ScheduleService {
                 .content("{sync_to_new_calendar.failed}");
             notificationService.addNotification(notification);
         }
+    }
+
+    @Override
+    public void addSchedulesExternalClass(TutorClass tutorClass, LocalDate startDate, LocalDate endDate) {
+        if (tutorClass.getTimeSlots().isEmpty()) return;
+        List<Schedule> schedules = new ScheduleGenerator()
+            .setClass(tutorClass)
+            .setStartTime(startDate.atStartOfDay())
+            .generateUntilDate(endDate);
+        addSchedules(schedules);
     }
 
     /**

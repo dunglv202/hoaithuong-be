@@ -4,6 +4,7 @@ import dev.dunglv202.hoaithuong.entity.Schedule;
 import dev.dunglv202.hoaithuong.entity.TutorClass;
 import dev.dunglv202.hoaithuong.model.TimeSlot;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +25,26 @@ public class ScheduleGenerator {
         return this;
     }
 
+    public List<Schedule> generateUntilDate(LocalDate endDate) {
+        if (timeSlots == null || timeSlots.isEmpty()) {
+            throw new RuntimeException("Timeslots are required to generate schedule");
+        }
+
+        List<Schedule> schedules = new ArrayList<>();
+        LocalDateTime current = startTime;
+
+        while (true) {
+            Schedule schedule = generateNextSchedule(current);
+            if (schedule.getStartTime().toLocalDate().isAfter(endDate)) {
+                break;
+            }
+            schedules.add(schedule);
+            current = schedule.getEndTime();
+        }
+
+        return schedules;
+    }
+
     /**
      * Generate schedule in ascending order for tutor class
      */
@@ -35,23 +56,11 @@ public class ScheduleGenerator {
         List<Schedule> schedules = new ArrayList<>();
         LocalDateTime current = startTime;
         for (int i = 1; i <= limit; i++) {
-            // find next time slot
-            LocalDateTime curr = current;
-            TimeSlot nextTimeSlot = timeSlots.stream()
-                .filter(timeSlot -> isGreaterOrEqualsInSameWeek(timeSlot, curr))
-                .findFirst()
-                .orElse(timeSlots.get(0));
-
-            // next time slot could be in next week or current week, need to plus 7 days in case it is in next week
-            int rawDiff = nextTimeSlot.getWeekday().getValue() - current.getDayOfWeek().getValue();
-            int daysDiff = isGreaterOrEqualsInSameWeek(nextTimeSlot, curr) ? rawDiff : rawDiff + 7;
-
-            // make schedule and move to that time for next generation point
-            LocalDateTime scheduleTime = current.plusDays(daysDiff).toLocalDate().atTime(nextTimeSlot.getStartTime());
-            Schedule schedule = makeSchedule(scheduleTime);
+            Schedule schedule = generateNextSchedule(current);
             schedules.add(schedule);
             current = schedule.getEndTime();
         }
+
         return schedules;
     }
 
@@ -73,5 +82,21 @@ public class ScheduleGenerator {
         schedule.setEndTime(schedule.getStartTime().plus(tutorClass.getDuration()));
         schedule.setTutorClass(tutorClass);
         return schedule;
+    }
+
+    private Schedule generateNextSchedule(LocalDateTime current) {
+        // find next time slot
+        TimeSlot nextTimeSlot = timeSlots.stream()
+            .filter(timeSlot -> isGreaterOrEqualsInSameWeek(timeSlot, current))
+            .findFirst()
+            .orElse(timeSlots.get(0));
+
+        // next time slot could be in next week or current week, need to plus 7 days in case it is in next week
+        int rawDiff = nextTimeSlot.getWeekday().getValue() - current.getDayOfWeek().getValue();
+        int daysDiff = isGreaterOrEqualsInSameWeek(nextTimeSlot, current) ? rawDiff : rawDiff + 7;
+
+        // make schedule and move to that time for next generation point
+        LocalDateTime scheduleTime = current.plusDays(daysDiff).toLocalDate().atTime(nextTimeSlot.getStartTime());
+        return makeSchedule(scheduleTime);
     }
 }

@@ -1,5 +1,6 @@
 package dev.dunglv202.hoaithuong.dto;
 
+import dev.dunglv202.hoaithuong.constant.TutorClassType;
 import dev.dunglv202.hoaithuong.model.TimeSlot;
 import lombok.Getter;
 import lombok.Setter;
@@ -10,6 +11,7 @@ import java.util.List;
 @Setter
 public class DetailClassDTO {
     private long id;
+    private TutorClassType type;
     private String code;
     private StudentDTO student;
     private String level;

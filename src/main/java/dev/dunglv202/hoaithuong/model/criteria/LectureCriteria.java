@@ -1,5 +1,6 @@
 package dev.dunglv202.hoaithuong.model.criteria;
 
+import dev.dunglv202.hoaithuong.constant.TutorClassType;
 import dev.dunglv202.hoaithuong.entity.*;
 import dev.dunglv202.hoaithuong.model.Range;
 import jakarta.annotation.Nullable;
@@ -47,6 +48,10 @@ public class LectureCriteria {
 
     public static Specification<Lecture> ofTeacher(User teacher) {
         return (root, query, cb) -> cb.equal(root.get(Lecture_.teacher), teacher);
+    }
+
+    public static Specification<Lecture> ofClassType(TutorClassType type) {
+        return (root, query, cb) -> cb.equal(root.get(Lecture_.tutorClass).get(TutorClass_.type), type);
     }
 
     public static Specification<Lecture> sortByStartTime(Sort.Direction direction) {

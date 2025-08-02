@@ -29,6 +29,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.HashSet;
 
 @Service
@@ -45,20 +46,28 @@ public class TutorClassServiceImpl implements TutorClassService {
     public void addNewClass(NewTutorClassDTO newTutorClassDTO) {
         User signedUser = authHelper.getSignedUserRef();
         TutorClass tutorClass = TutorClassMapper.INSTANCE.toTutorClass(newTutorClassDTO);
-        tutorClass.setCode(newTutorClassDTO.getCode().trim());
+        if (tutorClass.isInternal()) {
+            tutorClass.setCode(newTutorClassDTO.getCode().trim());
+        }
         tutorClass.setTeacher(signedUser);
 
         Student student = studentRepository.findById(newTutorClassDTO.getStudentId())
             .orElseThrow(() -> new ClientVisibleException("{student.not_found}"));
         tutorClass.setStudent(student);
         
-        if (tutorClassRepository.existsByCode(newTutorClassDTO.getCode())) {
+        if (tutorClass.isInternal() && tutorClassRepository.existsByCode(newTutorClassDTO.getCode())) {
             throw new ClientVisibleException("{tutor_class.code.existed}");
         }
 
         tutorClassRepository.save(tutorClass);
         if (!tutorClass.isManuallyScheduled()) {
             scheduleService.addSchedulesForClass(tutorClass, newTutorClassDTO.getStartDate());
+        }
+
+        if (tutorClass.isExternal()) {
+            LocalDate startDate = newTutorClassDTO.getStartDate();
+            LocalDate endDate = YearMonth.from(startDate).plusMonths(3).atEndOfMonth();
+            scheduleService.addSchedulesExternalClass(tutorClass, startDate, endDate);
         }
     }
 
@@ -83,7 +92,7 @@ public class TutorClassServiceImpl implements TutorClassService {
         User signedUser = authHelper.getSignedUserRef();
         TutorClass old = tutorClassRepository.findByIdAndTeacher(updated.getId(), signedUser).orElseThrow();
 
-        if (!old.getCode().equals(updated.getCode()) && tutorClassRepository.existsByCode(updated.getCode())) {
+        if (old.isInternal() && !old.getCode().equals(updated.getCode()) && tutorClassRepository.existsByCode(updated.getCode())) {
             throw new ClientVisibleException("{tutor_class.code.existed}");
         }
 
@@ -131,6 +140,10 @@ public class TutorClassServiceImpl implements TutorClassService {
         }
         if (!tutorClass.isManuallyScheduled()) {
             scheduleService.addSchedulesForClass(tutorClass, effectiveDate);
+        }
+        if (tutorClass.isExternal()) {
+            LocalDate endDate = YearMonth.from(effectiveDate).plusMonths(3).atEndOfMonth();
+            scheduleService.addSchedulesExternalClass(tutorClass, effectiveDate, endDate);
         }
         tutorClass.setActive(true);
         tutorClassRepository.save(tutorClass);

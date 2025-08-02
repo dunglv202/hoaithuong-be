@@ -8,6 +8,7 @@ import com.google.api.services.sheets.v4.model.GridRange;
 import com.google.api.services.sheets.v4.model.Spreadsheet;
 import com.google.api.services.sheets.v4.model.ValueRange;
 import dev.dunglv202.hoaithuong.constant.ApiErrorCode;
+import dev.dunglv202.hoaithuong.constant.TutorClassType;
 import dev.dunglv202.hoaithuong.dto.ConfirmationDTO;
 import dev.dunglv202.hoaithuong.dto.ReportDTO;
 import dev.dunglv202.hoaithuong.entity.*;
@@ -328,6 +329,7 @@ public class ReportServiceImpl implements ReportService {
         Specification<Lecture> specification = Specification.allOf(
             ofTeacher(teacher),
             inRange(range),
+            ofClassType(TutorClassType.INTERNAL),
             sortByStartTime(Sort.Direction.ASC)
         );
         return lectureRepository.findAll(specification.and(joinFetch()));

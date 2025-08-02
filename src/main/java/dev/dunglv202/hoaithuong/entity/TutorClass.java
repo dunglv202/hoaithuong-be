@@ -1,5 +1,6 @@
 package dev.dunglv202.hoaithuong.entity;
 
+import dev.dunglv202.hoaithuong.constant.TutorClassType;
 import dev.dunglv202.hoaithuong.dto.UpdatedTutorClassDTO;
 import dev.dunglv202.hoaithuong.mapper.TutorClassMapper;
 import dev.dunglv202.hoaithuong.model.TimeSlot;
@@ -55,6 +56,9 @@ public class TutorClass extends Auditable {
     @JdbcTypeCode(SqlTypes.JSON)
     private List<TimeSlot> timeSlots = List.of();
 
+    @Enumerated(EnumType.STRING)
+    private TutorClassType type;
+
     @PrePersist
     public void prePersist() {
         active = learned < totalLecture;
@@ -81,6 +85,14 @@ public class TutorClass extends Auditable {
     }
 
     public boolean isManuallyScheduled() {
-        return this.timeSlots.isEmpty();
+        return this.timeSlots.isEmpty() || this.isExternal();
+    }
+
+    public boolean isInternal() {
+        return this.getType() == TutorClassType.INTERNAL;
+    }
+
+    public boolean isExternal() {
+        return this.getType() == TutorClassType.EXTERNAL;
     }
 }

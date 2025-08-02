@@ -73,6 +73,8 @@ public class ReportServiceImpl implements ReportService {
     @Override
     public ReportDTO getReport(ReportRange range, TutorClassType classType, String keyword) {
         User teacher = authHelper.getSignedUserRef();
+        keyword = keyword == null || keyword.trim().isEmpty() ? null : keyword;
+
         Specification<Lecture> criteria = Specification.allOf(
             ofTeacher(teacher),
             inRange(range),
@@ -89,7 +91,9 @@ public class ReportServiceImpl implements ReportService {
         }
 
         ReportDTO reportDTO = new ReportDTO(lectures, confirmations, this::getLectureVideoUrl);
-        int estimatedTotal = scheduleRepository.getEstimatedTotalInRange(teacher, range.getFrom(), range.getTo());
+        int estimatedTotal = scheduleRepository.getEstimatedTotalInRange(
+            teacher, range.getFrom(), range.getTo(), classType, keyword
+        );
         reportDTO.setEstimatedTotal(estimatedTotal);
         report.ifPresent(value -> reportDTO.setEvidenceUrl(value.getConfirmationsUrl()));
 

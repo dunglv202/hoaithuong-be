@@ -1,5 +1,6 @@
 package dev.dunglv202.hoaithuong.repository;
 
+import dev.dunglv202.hoaithuong.constant.TutorClassType;
 import dev.dunglv202.hoaithuong.entity.Schedule;
 import dev.dunglv202.hoaithuong.entity.TutorClass;
 import dev.dunglv202.hoaithuong.entity.User;
@@ -38,9 +39,22 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long>, JpaSp
     @Query("""
         SELECT COALESCE(SUM(s.tutorClass.payForLecture), 0)
         FROM Schedule s
-        WHERE s.teacher = :teacher AND CAST(s.startTime AS DATE) BETWEEN :from AND :to
+        WHERE s.teacher = :teacher
+        AND (CAST(s.startTime AS DATE) BETWEEN :from AND :to)
+        AND (:classType IS NULL OR s.tutorClass.type = :classType)
+        AND (
+            :keyword IS NULL
+            OR s.tutorClass.code LIKE CONCAT(:keyword, '%')
+            OR s.tutorClass.student.name LIKE CONCAT('%', :keyword, '%')
+        )
     """)
-    int getEstimatedTotalInRange(@Param("teacher") User teacher, @Param("from") LocalDate from, @Param("to") LocalDate to);
+    int getEstimatedTotalInRange(
+        @Param("teacher") User teacher,
+        @Param("from") LocalDate from,
+        @Param("to") LocalDate to,
+        @Param("classType") TutorClassType classType,
+        @Param("keyword") String keyword
+    );
 
     @Query("""
         FROM Schedule s

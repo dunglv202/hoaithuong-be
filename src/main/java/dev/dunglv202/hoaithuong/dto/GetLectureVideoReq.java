@@ -14,7 +14,7 @@ public class GetLectureVideoReq {
     @Nullable
     private String classCode;
     @Nullable
-    private Long classId;
+    private String classUid;
     @Nullable
     private Integer lecture;
     @Nullable

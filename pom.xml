@@ -205,6 +205,8 @@
 			<artifactId>jsoup</artifactId>
 			<version>${org.jsoup.jsoup.version}</version>
 		</dependency>
+
+		<!-- TEMPLATE ENGINE -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-thymeleaf</artifactId>

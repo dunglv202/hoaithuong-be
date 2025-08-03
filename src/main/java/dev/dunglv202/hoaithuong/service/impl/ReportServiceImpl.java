@@ -15,10 +15,7 @@ import dev.dunglv202.hoaithuong.entity.*;
 import dev.dunglv202.hoaithuong.exception.AuthenticationException;
 import dev.dunglv202.hoaithuong.exception.ClientVisibleException;
 import dev.dunglv202.hoaithuong.exception.InvalidConfigException;
-import dev.dunglv202.hoaithuong.helper.AuthHelper;
-import dev.dunglv202.hoaithuong.helper.DateTimeFmt;
-import dev.dunglv202.hoaithuong.helper.GoogleHelper;
-import dev.dunglv202.hoaithuong.helper.SheetHelper;
+import dev.dunglv202.hoaithuong.helper.*;
 import dev.dunglv202.hoaithuong.model.ReportRange;
 import dev.dunglv202.hoaithuong.model.sheet.standard.*;
 import dev.dunglv202.hoaithuong.repository.*;
@@ -66,6 +63,7 @@ public class ReportServiceImpl implements ReportService {
     private final ConfirmationRepository confirmationRepository;
     private final StorageService storageService;
     private final ThreadPoolTaskExecutor taskExecutor;
+    private final IdEncryptor idEncryptor;
 
     @Value("${application.base-url}")
     private String baseUrl;
@@ -489,9 +487,9 @@ public class ReportServiceImpl implements ReportService {
         }
 
         return String.format(
-            "%s/video?classId=%d&timestamp=%s",
+            "%s/video?classUid=%s&timestamp=%s",
             baseUrl,
-            lecture.getTutorClass().getId(),
+            idEncryptor.encrypt(lecture.getTutorClass().getId().toString()),
             lecture.getSchedule().getStartTime()
         );
     }

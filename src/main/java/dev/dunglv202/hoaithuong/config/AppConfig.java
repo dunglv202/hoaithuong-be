@@ -1,7 +1,9 @@
 package dev.dunglv202.hoaithuong.config;
 
 import dev.dunglv202.hoaithuong.entity.User;
+import dev.dunglv202.hoaithuong.helper.IdEncryptor;
 import dev.dunglv202.hoaithuong.model.SecurityAuditorAware;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
@@ -15,6 +17,9 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+import java.util.Base64;
 import java.util.Locale;
 
 @Configuration
@@ -46,5 +51,12 @@ public class AppConfig {
         taskExecutor.setMaxPoolSize(10);
         taskExecutor.setQueueCapacity(25);
         return taskExecutor;
+    }
+
+    @Bean
+    public IdEncryptor idEncryptor(@Value("${security.id-encryptor.secret}") String idEncryptorSecret) {
+        byte[] keyBytes = Base64.getDecoder().decode(idEncryptorSecret);
+        SecretKey secretKey = new SecretKeySpec(keyBytes, "AES");
+        return new IdEncryptor(secretKey);
     }
 }

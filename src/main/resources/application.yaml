@@ -37,6 +37,9 @@ spring:
 auth:
   jwt:
     secret: ${JWT_SECRET}
+security:
+  id-encryptor:
+    secret: ${ID_ENCRYPTOR_SECRET}
 cron:
   schedule:
     export-report: 0 0 16 * * *

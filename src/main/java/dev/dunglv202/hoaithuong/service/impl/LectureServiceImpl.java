@@ -5,6 +5,7 @@ import dev.dunglv202.hoaithuong.dto.*;
 import dev.dunglv202.hoaithuong.entity.*;
 import dev.dunglv202.hoaithuong.exception.ClientVisibleException;
 import dev.dunglv202.hoaithuong.helper.AuthHelper;
+import dev.dunglv202.hoaithuong.helper.IdEncryptor;
 import dev.dunglv202.hoaithuong.mapper.LectureMapper;
 import dev.dunglv202.hoaithuong.model.Range;
 import dev.dunglv202.hoaithuong.model.ReportRange;
@@ -50,6 +51,7 @@ public class LectureServiceImpl implements LectureService {
     private final VideoStorageService videoStorageService;
     private final TaskExecutor taskExecutor;
     private final TransactionTemplate transactionTemplate;
+    private final IdEncryptor idEncryptor;
 
     @Override
     @Transactional
@@ -258,8 +260,8 @@ public class LectureServiceImpl implements LectureService {
     @Override
     public LectureVideoDTO getLectureVideo(GetLectureVideoReq req) {
         // check existence & retrieve lecture
-        Optional<TutorClass> tutorClass = req.getClassId() != null
-            ? tutorClassRepository.findById(req.getClassId())
+        Optional<TutorClass> tutorClass = req.getClassUid() != null
+            ? tutorClassRepository.findById(Long.valueOf(idEncryptor.decrypt(req.getClassUid())))
             : tutorClassRepository.findByCode(req.getClassCode());
         if (tutorClass.isEmpty()) {
             throw new ClientVisibleException(HttpStatus.NOT_FOUND, "404", "{tutor_class.not_found}");

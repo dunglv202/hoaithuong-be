@@ -1,6 +1,7 @@
 package dev.dunglv202.hoaithuong.service;
 
 import com.microsoft.graph.models.DriveItem;
+import dev.dunglv202.hoaithuong.dto.LectureVideoMetadataDTO;
 import dev.dunglv202.hoaithuong.entity.Lecture;
 
 import java.time.OffsetDateTime;
@@ -22,4 +23,6 @@ public interface VideoStorageService {
     String createPreviewLink(String itemId);
 
     void moveToFolder(DriveItem item, String targetFolder);
+
+    LectureVideoMetadataDTO getMetadata(String videoId);
 }

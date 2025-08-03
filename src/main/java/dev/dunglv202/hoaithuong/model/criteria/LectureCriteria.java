@@ -42,6 +42,16 @@ public class LectureCriteria {
         return fromDate(range.getFrom()).and(toDate(range.getTo()));
     }
 
+    public static Specification<Lecture> startAt(@Nullable LocalDateTime time) {
+        if (time == null) return Specification.where(null);
+        return (root, query, cb) -> cb.equal(root.get(Lecture_.schedule).get(Schedule_.startTime), time);
+    }
+
+    public static Specification<Lecture> withLectureNo(@Nullable Integer lectureNo) {
+        if (lectureNo == null) return Specification.where(null);
+        return (root, query, cb) -> cb.equal(root.get(Lecture_.lectureNo), lectureNo);
+    }
+
     public static Specification<Lecture> ofClass(TutorClass tutorClass) {
         return (root, query, cb) -> cb.equal(root.get(Lecture_.tutorClass), tutorClass);
     }
@@ -50,7 +60,7 @@ public class LectureCriteria {
         return (root, query, cb) -> cb.equal(root.get(Lecture_.teacher), teacher);
     }
 
-    public static Specification<Lecture> ofClassType(TutorClassType type) {
+    public static Specification<Lecture> ofClassType(@Nullable TutorClassType type) {
         if (type == null) return Specification.where(null);
         return (root, query, cb) -> cb.equal(root.get(Lecture_.tutorClass).get(TutorClass_.type), type);
     }

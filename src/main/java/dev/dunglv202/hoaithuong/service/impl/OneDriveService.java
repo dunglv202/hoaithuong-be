@@ -7,6 +7,7 @@ import com.microsoft.graph.drives.item.items.item.preview.PreviewPostRequestBody
 import com.microsoft.graph.models.*;
 import com.microsoft.graph.serviceclient.GraphServiceClient;
 import dev.dunglv202.hoaithuong.config.prop.MicrosoftProperties;
+import dev.dunglv202.hoaithuong.dto.LectureVideoMetadataDTO;
 import dev.dunglv202.hoaithuong.entity.Lecture;
 import dev.dunglv202.hoaithuong.entity.Schedule;
 import dev.dunglv202.hoaithuong.service.VideoStorageService;
@@ -112,6 +113,30 @@ public class OneDriveService implements VideoStorageService {
         getGraphClient().drives().byDriveId(microsoftProperties.getDriveId())
             .items().byDriveItemId(item.getId())
             .patch(modified);
+    }
+
+    @Override
+    public LectureVideoMetadataDTO getMetadata(String videoId) {
+        DriveItem driveItem = getGraphClient().drives().byDriveId(microsoftProperties.getDriveId())
+            .items().byDriveItemId(videoId)
+            .get(conf -> {
+                assert conf.queryParameters != null;
+                conf.queryParameters.expand = new String[]{ "thumbnails" };
+            });
+        if (driveItem == null) return LectureVideoMetadataDTO.empty();
+
+        String title = driveItem.getName();
+        String description = driveItem.getDescription();
+        String largeThumb = Optional.ofNullable(driveItem.getThumbnails())
+            .map(thumbs -> thumbs.isEmpty() ? null : thumbs.get(0))
+            .map(ThumbnailSet::getLarge)
+            .map(Thumbnail::getUrl).orElse(null);
+
+        return LectureVideoMetadataDTO.builder()
+            .title(title)
+            .description(description)
+            .thumbnailUrl(largeThumb)
+            .build();
     }
 
     /**

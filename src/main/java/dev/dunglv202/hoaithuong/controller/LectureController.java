@@ -61,10 +61,7 @@ public class LectureController {
     }
 
     @GetMapping("/video")
-    public LectureVideoDTO getLectureVideo(
-        @RequestParam String classCode,
-        @RequestParam int lectureNo
-    ) {
-        return lectureService.getLectureVideo(classCode, lectureNo);
+    public LectureVideoDTO getLectureVideo(@Valid GetLectureVideoReq req) {
+        return lectureService.getLectureVideo(req);
     }
 }

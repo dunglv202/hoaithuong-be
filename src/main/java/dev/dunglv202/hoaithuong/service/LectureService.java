@@ -26,5 +26,5 @@ public interface LectureService {
 
     String getVideoPreview(long id);
 
-    LectureVideoDTO getLectureVideo(String classCode, int lectureNo);
+    LectureVideoDTO getLectureVideo(GetLectureVideoReq req);
 }

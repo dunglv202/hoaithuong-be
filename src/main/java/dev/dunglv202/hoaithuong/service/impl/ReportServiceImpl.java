@@ -478,11 +478,21 @@ public class ReportServiceImpl implements ReportService {
         if (lecture.getVideo() == null && lecture.getVideoId() == null) {
             return null;
         }
+
+        if (lecture.getTutorClass().isInternal()) {
+            return String.format(
+                "%s/video?classCode=%s&lecture=%d",
+                baseUrl,
+                lecture.getTutorClass().getCode(),
+                lecture.getLectureNo()
+            );
+        }
+
         return String.format(
-            "%s/video?classCode=%s&lecture=%d",
+            "%s/video?classId=%d&timestamp=%s",
             baseUrl,
-            lecture.getTutorClass().getCode(),
-            lecture.getLectureNo()
+            lecture.getTutorClass().getId(),
+            lecture.getSchedule().getStartTime()
         );
     }
 

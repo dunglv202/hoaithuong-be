@@ -12,5 +12,7 @@ public class LectureVideoDTO {
     private String url;
 
     @JsonProperty("isIframe")
-    private boolean isIframe;
+    private Boolean isIframe;
+
+    private LectureVideoMetadataDTO metadata;
 }

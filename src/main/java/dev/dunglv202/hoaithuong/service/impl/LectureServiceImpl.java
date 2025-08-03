@@ -15,6 +15,8 @@ import dev.dunglv202.hoaithuong.repository.TutorClassRepository;
 import dev.dunglv202.hoaithuong.service.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
@@ -26,6 +28,8 @@ import org.springframework.transaction.support.TransactionTemplate;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 import static dev.dunglv202.hoaithuong.model.criteria.LectureCriteria.*;
 
@@ -252,15 +256,71 @@ public class LectureServiceImpl implements LectureService {
     }
 
     @Override
-    public LectureVideoDTO getLectureVideo(String classCode, int lectureNo) {
-        Lecture lecture = lectureRepository.findByClassCodeAndLectureNo(classCode, lectureNo)
-            .orElseThrow(() -> new ClientVisibleException(HttpStatus.NOT_FOUND, "404", "Invalid lecture"));
-        String url = lecture.getVideoId() != null
+    public LectureVideoDTO getLectureVideo(GetLectureVideoReq req) {
+        // check existence & retrieve lecture
+        Optional<TutorClass> tutorClass = req.getClassId() != null
+            ? tutorClassRepository.findById(req.getClassId())
+            : tutorClassRepository.findByCode(req.getClassCode());
+        if (tutorClass.isEmpty()) {
+            throw new ClientVisibleException(HttpStatus.NOT_FOUND, "404", "{tutor_class.not_found}");
+        }
+        Specification<Lecture> specification = Specification.allOf(
+            ofClass(tutorClass.get()),
+            req.getLecture() != null ? withLectureNo(req.getLecture()) : startAt(req.getTimestamp())
+        );
+        Lecture lecture = lectureRepository.findOne(specification)
+            .orElseThrow(() -> new ClientVisibleException(HttpStatus.NOT_FOUND, "404", "{lecture.not_found}"));
+
+        // get lecture video details and return
+        try {
+            CompletableFuture<String> urlPromise = CompletableFuture.supplyAsync(
+                () -> getVideoPreview(lecture),
+                taskExecutor
+            );
+            CompletableFuture<LectureVideoMetadataDTO> metadataPromise = CompletableFuture.supplyAsync(
+                () -> getVideoMetadata(lecture),
+                taskExecutor
+            );
+
+            return LectureVideoDTO.builder()
+                .url(urlPromise.get())
+                .isIframe(lecture.getVideoId() != null)
+                .metadata(metadataPromise.get())
+                .build();
+        } catch (ExecutionException | InterruptedException e) {
+            log.error("Failed to fetch video info for lecture #{}", lecture.getId(), e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    private String getVideoPreview(Lecture lecture) {
+        return lecture.getVideoId() != null
             ? videoStorageService.createPreviewLink(lecture.getVideoId())
             : lecture.getVideo();
-        return LectureVideoDTO.builder()
-            .url(url)
-            .isIframe(lecture.getVideoId() != null)
-            .build();
+    }
+
+    private LectureVideoMetadataDTO getVideoMetadata(Lecture lecture) {
+        if (lecture.getVideo() != null) return fetchMetadataInfo(lecture.getVideo());
+        if (lecture.getVideoId() != null) return videoStorageService.getMetadata(lecture.getVideoId());
+        return LectureVideoMetadataDTO.empty();
+    }
+
+    private LectureVideoMetadataDTO fetchMetadataInfo(String url) {
+        try {
+            Document doc = Jsoup.connect(url).get();
+
+            String title = doc.select("meta[property=og:title]").attr("content");
+            String description = doc.select("meta[property=og:description]").attr("content");
+            String image = doc.select("meta[property=og:image]").attr("content");
+
+            return LectureVideoMetadataDTO.builder()
+                .title(title)
+                .description(description)
+                .thumbnailUrl(image)
+                .build();
+        }  catch (Exception e) {
+            log.error("Error occurred while fetching metadata info - url: {}", url, e);
+            throw new RuntimeException(e);
+        }
     }
 }

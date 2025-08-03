@@ -31,4 +31,6 @@ public interface TutorClassRepository extends JpaRepository<TutorClass, Long>, J
         AND t.type = dev.dunglv202.hoaithuong.constant.TutorClassType.EXTERNAL
     """)
     List<TutorClass> findAllExternalByTeacher(@Param("teacher") User teacher);
+
+    Optional<TutorClass> findByCode(String code);
 }

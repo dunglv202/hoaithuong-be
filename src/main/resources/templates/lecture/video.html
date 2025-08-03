@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${title}">Default Title</title>
+
+    <!-- Standard Meta -->
+    <meta name="description" th:content="${description}" />
+
+    <!-- Open Graph -->
+    <meta property="og:title" th:content="${title}" />
+    <meta property="og:description" th:content="${description}" />
+    <meta property="og:image" th:content="${thumbnail}" />
+    <meta property="og:type" content="website" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" th:content="${title}" />
+    <meta name="twitter:description" th:content="${description}" />
+    <meta name="twitter:image" th:content="${thumbnail}" />
+
+    <style>
+        body {
+            padding: 0;
+            margin: 0;
+        }
+
+        iframe {
+            width: 100vw;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+        }
+    </style>
+</head>
+<body>
+    <iframe th:src="${iframeSrc}"></iframe>
+</body>
+</html>

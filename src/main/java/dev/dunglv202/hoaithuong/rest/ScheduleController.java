@@ -1,4 +1,4 @@
-package dev.dunglv202.hoaithuong.controller;
+package dev.dunglv202.hoaithuong.rest;
 
 import dev.dunglv202.hoaithuong.dto.MinimalScheduleDTO;
 import dev.dunglv202.hoaithuong.dto.NewScheduleDTO;

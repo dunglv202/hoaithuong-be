@@ -1,4 +1,4 @@
-package dev.dunglv202.hoaithuong.controller;
+package dev.dunglv202.hoaithuong.rest;
 
 import dev.dunglv202.hoaithuong.dto.NewStudentDTO;
 import dev.dunglv202.hoaithuong.dto.StudentDTO;

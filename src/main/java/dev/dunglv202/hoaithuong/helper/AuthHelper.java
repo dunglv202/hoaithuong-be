@@ -16,8 +16,8 @@ import org.springframework.stereotype.Component;
 import java.util.Map;
 
 import static dev.dunglv202.hoaithuong.config.SecurityConfig.*;
-import static dev.dunglv202.hoaithuong.controller.AuthController.COOKIE_PATH_ACCESS;
-import static dev.dunglv202.hoaithuong.controller.AuthController.COOKIE_PATH_REFRESH;
+import static dev.dunglv202.hoaithuong.rest.AuthController.COOKIE_PATH_ACCESS;
+import static dev.dunglv202.hoaithuong.rest.AuthController.COOKIE_PATH_REFRESH;
 
 @Component
 @RequiredArgsConstructor

@@ -47,6 +47,8 @@ public class Lecture extends Auditable {
     @ManyToOne(fetch = FetchType.LAZY)
     private User teacher;
 
+    private int teacherEarning;
+
     @PrePersist
     public void prePersist() {
         this.teacher = this.tutorClass.getTeacher();

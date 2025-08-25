@@ -36,8 +36,12 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long>, JpaSp
     """)
     Schedule findLastByTutorClass(@Param("tutorClass") TutorClass tutorClass);
 
+    /**
+     * @return the estimated total since {@code from} to {@code to}, earning for that schedule will first be inferred
+     * from the lecture, if lecture was not added to the schedule then sum the default earning from tutor class entity
+     */
     @Query("""
-        SELECT COALESCE(SUM(s.tutorClass.payForLecture), 0)
+        SELECT SUM(COALESCE(s.lecture.teacherEarning, s.tutorClass.payForLecture, 0))
         FROM Schedule s
         WHERE s.teacher = :teacher
         AND (CAST(s.startTime AS DATE) BETWEEN :from AND :to)

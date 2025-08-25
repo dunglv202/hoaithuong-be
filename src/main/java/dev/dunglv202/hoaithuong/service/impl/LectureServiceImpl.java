@@ -149,6 +149,7 @@ public class LectureServiceImpl implements LectureService {
         // set class & teacher code
         TutorClass tutorClass = tutorClassRepository.getReferenceById(newLectureDTO.getClassId());
         lecture.setTutorClass(tutorClass);
+        lecture.setTeacherEarning(tutorClass.getPayForLecture());
         lecture.setTeacherCode(configService.getConfigsByUser(tutorClass.getTeacher()).getTeacherCode());
 
         return lecture;

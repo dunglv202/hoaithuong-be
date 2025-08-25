@@ -41,7 +41,7 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long>, JpaSp
      * from the lecture, if lecture was not added to the schedule then sum the default earning from tutor class entity
      */
     @Query("""
-        SELECT SUM(COALESCE(s.lecture.teacherEarning, s.tutorClass.payForLecture, 0))
+        SELECT COALESCE(SUM(COALESCE(s.lecture.teacherEarning, s.tutorClass.payForLecture, 0)), 0)
         FROM Schedule s
         WHERE s.teacher = :teacher
         AND (CAST(s.startTime AS DATE) BETWEEN :from AND :to)

@@ -28,8 +28,7 @@ public class ReportDTO {
     public ReportDTO(List<Lecture> lectures, List<Confirmation> confirmations, Function<Lecture, String> videoGetter) {
         // aggregate report figures
         this.totalEarned = lectures.stream()
-            .map(Lecture::getTutorClass)
-            .map(TutorClass::getPayForLecture)
+            .map(Lecture::getTeacherEarning)
             .reduce(Integer::sum)
             .orElse(0);
         this.totalLectures = lectures.size();
